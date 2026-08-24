@@ -30,6 +30,11 @@ const inlangProject = fileURLToPath(new URL("../../packages/i18n/project.inlang"
 const isCloudflareBuild = (process.env.NITRO_PRESET || "").includes("cloudflare");
 const driverStub = fileURLToPath(new URL("./src/db-driver-stub.ts", import.meta.url));
 
+// tslib's UMD/CJS entry breaks under workerd's interop when bundled by nitro
+// (pulled in by @peculiar/x509 via @simplewebauthn/server ← @better-auth/passkey):
+// "Cannot destructure property '__extends'". Force the ESM build everywhere.
+const tslibEsm = "tslib/tslib.es6.js";
+
 // Prefer wrangler.jsonc over the build-time env, which can be polluted by
 // .env.local (e.g. DATABASE_PROVIDER=sqlite for local dev).
 function workersDbProvider(): string {
@@ -61,8 +66,11 @@ export default defineConfig({
       ? {
           mysql2: driverStub,
           ...(keepPostgres ? {} : { postgres: driverStub }),
+          tslib: tslibEsm,
         }
-      : {},
+      : {
+          tslib: tslibEsm,
+        },
   },
   plugins: [
     // MDX must run before the React plugin so JSX emitted by compiled MDX is
