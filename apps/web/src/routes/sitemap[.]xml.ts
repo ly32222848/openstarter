@@ -6,7 +6,7 @@
 
 import { createFileRoute } from "@tanstack/react-router";
 
-import { buildSitemapXml, fetchSeoArticles, getSiteOrigin } from "@/lib/seo";
+import { buildSitemapXml, fetchSeoArticles, getSiteOrigin, SEO_CACHE_CONTROL } from "@/lib/seo";
 
 export const Route = createFileRoute("/sitemap.xml")({
   server: {
@@ -15,7 +15,10 @@ export const Route = createFileRoute("/sitemap.xml")({
         const origin = getSiteOrigin(request);
         const articles = await fetchSeoArticles();
         return new Response(buildSitemapXml(origin, articles), {
-          headers: { "Content-Type": "application/xml; charset=utf-8" },
+          headers: {
+            "Cache-Control": SEO_CACHE_CONTROL,
+            "Content-Type": "application/xml; charset=utf-8",
+          },
         });
       },
     },

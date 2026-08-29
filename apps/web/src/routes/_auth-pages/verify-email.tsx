@@ -12,11 +12,23 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { authClient } from "@/lib/auth-client";
+import { buildPageHead } from "@/lib/page-head";
+import { m } from "@/paraglide/messages.js";
 
 export const Route = createFileRoute("/_auth-pages/verify-email")({
+  head: () =>
+    buildPageHead({
+      title: m["common.sign.verify_email_page_title"](),
+      description: m["common.sign.verify_email_page_description"](),
+      path: "/verify-email",
+    }),
   component: VerifyEmailPage,
   validateSearch: (search: Record<string, unknown>): { email?: string; callbackUrl?: string } => ({
-    callbackUrl: typeof search.callbackUrl === "string" ? search.callbackUrl : undefined,
+    // 仅接受站内相对路径，防止邮件链接里的 callbackUrl 被用作 open redirect。
+    callbackUrl:
+      typeof search.callbackUrl === "string" && search.callbackUrl.startsWith("/")
+        ? search.callbackUrl
+        : undefined,
     email: typeof search.email === "string" ? search.email : undefined,
   }),
 });

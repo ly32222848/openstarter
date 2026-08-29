@@ -5,7 +5,7 @@
 
 import { createFileRoute } from "@tanstack/react-router";
 
-import { buildRobotsTxt, getSiteOrigin } from "@/lib/seo";
+import { buildRobotsTxt, getSiteOrigin, SEO_CACHE_CONTROL } from "@/lib/seo";
 
 export const Route = createFileRoute("/robots.txt")({
   server: {
@@ -13,7 +13,10 @@ export const Route = createFileRoute("/robots.txt")({
       GET: ({ request }) => {
         const origin = getSiteOrigin(request);
         return new Response(buildRobotsTxt(origin), {
-          headers: { "Content-Type": "text/plain; charset=utf-8" },
+          headers: {
+            "Cache-Control": SEO_CACHE_CONTROL,
+            "Content-Type": "text/plain; charset=utf-8",
+          },
         });
       },
     },

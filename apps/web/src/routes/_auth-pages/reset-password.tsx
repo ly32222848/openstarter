@@ -15,8 +15,16 @@ import { toast } from "sonner";
 import z from "zod";
 
 import { authClient } from "@/lib/auth-client";
+import { buildPageHead } from "@/lib/page-head";
+import { m } from "@/paraglide/messages.js";
 
 export const Route = createFileRoute("/_auth-pages/reset-password")({
+  head: () =>
+    buildPageHead({
+      title: m["common.sign.reset_password_title"](),
+      description: m["common.sign.reset_password_description"](),
+      path: "/reset-password",
+    }),
   component: ResetPasswordPage,
   // 令牌与错误标记来自邮件重置链接的 query（R6.2/R6.3）。
   validateSearch: (search: Record<string, unknown>): { token?: string; error?: string } => ({

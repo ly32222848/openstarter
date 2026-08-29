@@ -6,7 +6,7 @@
 
 import { createFileRoute } from "@tanstack/react-router";
 
-import { buildLlmsTxt, fetchSeoArticles, getSiteOrigin } from "@/lib/seo";
+import { buildLlmsTxt, fetchSeoArticles, getSiteOrigin, SEO_CACHE_CONTROL } from "@/lib/seo";
 
 export const Route = createFileRoute("/llms.txt")({
   server: {
@@ -15,7 +15,10 @@ export const Route = createFileRoute("/llms.txt")({
         const origin = getSiteOrigin(request);
         const articles = await fetchSeoArticles();
         return new Response(buildLlmsTxt(origin, articles), {
-          headers: { "Content-Type": "text/plain; charset=utf-8" },
+          headers: {
+            "Cache-Control": SEO_CACHE_CONTROL,
+            "Content-Type": "text/plain; charset=utf-8",
+          },
         });
       },
     },

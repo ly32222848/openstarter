@@ -45,13 +45,90 @@ describe("buildPageHead", () => {
 
   it("generates Twitter Card tags", () => {
     const result = buildPageHead({ title: "About", path: "/about" });
+    // 无 og:image 时降级为 summary，避免声明 large_image 却缺图。
     expect(result.meta).toContainEqual({
       name: "twitter:card",
-      content: "summary_large_image",
+      content: "summary",
     });
     expect(result.meta).toContainEqual({
       name: "twitter:title",
       content: "About | openstarter",
+    });
+  });
+
+  it("upgrades twitter:card to summary_large_image when an image is present", () => {
+    const result = buildPageHead({ title: "Post", path: "/blog/p", image: "/og.png" });
+    expect(result.meta).toContainEqual({
+      name: "twitter:card",
+      content: "summary_large_image",
+    });
+  });
+
+  it("does not duplicate the brand name in the title", () => {
+    const result = buildPageHead({ title: "openstarter", path: "/" });
+    expect(result.meta).toContainEqual({ title: "openstarter" });
+    expect(result.meta).not.toContainEqual({ title: "openstarter | openstarter" });
+  });
+
+  it("emits og:site_name and locale-aware og:locale", () => {
+    const result = buildPageHead({ title: "About", path: "/about" });
+    expect(result.meta).toContainEqual({ property: "og:site_name", content: "openstarter" });
+    expect(result.meta).toContainEqual({ property: "og:locale", content: "en_US" });
+    expect(result.meta).toContainEqual({ property: "og:locale:alternate", content: "zh_CN" });
+  });
+
+  it("emits og:url matching the canonical URL", () => {
+    const result = buildPageHead({ title: "About", path: "/about" });
+    const canonical = result.links.find((link) => link.rel === "canonical");
+    expect(result.meta).toContainEqual({
+      property: "og:url",
+      content: canonical?.href,
+    });
+  });
+
+  describe("locale-aware canonical and hreflang", () => {
+    it("self-canonicalizes the default locale without a prefix", () => {
+      const result = buildPageHead({ title: "About", path: "/about", locale: "en" });
+      expect(result.links).toContainEqual({
+        rel: "canonical",
+        href: "https://example.com/about",
+      });
+    });
+
+    it("self-canonicalizes a localized URL instead of pointing at the default locale", () => {
+      const result = buildPageHead({ title: "About", path: "/about", locale: "zh" });
+      // 修复前：/zh/about 的 canonical 会指向英文版 /about，zh 内容被判为重复。
+      expect(result.links).toContainEqual({
+        rel: "canonical",
+        href: "https://example.com/zh/about",
+      });
+    });
+
+    it("declares hreflang alternates for every locale plus x-default", () => {
+      const result = buildPageHead({ title: "About", path: "/about", locale: "en" });
+      expect(result.links).toContainEqual({
+        rel: "alternate",
+        hreflang: "en",
+        href: "https://example.com/about",
+      });
+      expect(result.links).toContainEqual({
+        rel: "alternate",
+        hreflang: "zh",
+        href: "https://example.com/zh/about",
+      });
+      expect(result.links).toContainEqual({
+        rel: "alternate",
+        hreflang: "x-default",
+        href: "https://example.com/about",
+      });
+    });
+
+    it("keeps og:url consistent with the localized canonical", () => {
+      const result = buildPageHead({ title: "About", path: "/about", locale: "zh" });
+      expect(result.meta).toContainEqual({
+        property: "og:url",
+        content: "https://example.com/zh/about",
+      });
     });
   });
 

@@ -28,7 +28,23 @@ const LLMS_STATIC_PAGES: { path: string; title: string; description: string }[] 
 ];
 
 // robots 屏蔽的路径：鉴权 / 私有区与 API（避免抓取工具索引），并屏蔽带查询串的 URL。
-const ROBOTS_DISALLOW = ["/admin", "/dashboard", "/settings", "/api/", "/*?*"];
+// 注：ssr:false 页面对爬虫只输出空壳，屏蔽可避免 soft-404 / 重复内容噪音。
+const ROBOTS_DISALLOW = [
+  "/admin",
+  "/api/",
+  "/dashboard",
+  "/device",
+  "/forgot-password",
+  "/login",
+  "/reset-password",
+  "/settings",
+  "/verify-email",
+  "/*?*",
+];
+
+// SEO 端点（sitemap / llms*.txt / robots.txt）响应缓存：内容低频变化，
+// 允许边缘/CDN 缓存 1h，过期后可先返回陈旧内容并后台再验证。
+export const SEO_CACHE_CONTROL = "public, s-maxage=3600, stale-while-revalidate=86400";
 
 const HOME_PRIORITY = 1;
 const STATIC_PAGE_PRIORITY = 0.8;

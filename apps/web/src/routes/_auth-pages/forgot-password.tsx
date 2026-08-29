@@ -14,8 +14,16 @@ import { useState } from "react";
 import z from "zod";
 
 import { authClient } from "@/lib/auth-client";
+import { buildPageHead } from "@/lib/page-head";
+import { m } from "@/paraglide/messages.js";
 
 export const Route = createFileRoute("/_auth-pages/forgot-password")({
+  head: () =>
+    buildPageHead({
+      title: m["common.sign.forgot_password_title"](),
+      description: m["common.sign.forgot_password_description"](),
+      path: "/forgot-password",
+    }),
   component: ForgotPasswordPage,
 });
 
