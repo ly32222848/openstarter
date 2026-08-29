@@ -13,6 +13,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { authClient } from "@/lib/auth-client";
+import { m } from "@/paraglide/messages.js";
 
 export function ProfilePage() {
   const { data: session } = authClient.useSession();
@@ -26,17 +27,20 @@ export function ProfilePage() {
       try {
         const result = await authClient.updateUser({ name: value.name });
         if (result.error) {
-          toast.error(result.error.message || "Failed to update profile");
+          toast.error(result.error.message || m["common.profile.update_failed"]());
           return;
         }
-        toast.success("Profile updated");
+        toast.success(m["common.profile.updated"]());
       } finally {
         setSubmitting(false);
       }
     },
     validators: {
       onSubmit: z.object({
-        name: z.string().min(1, "Name is required").max(100, "Name too long"),
+        name: z
+          .string()
+          .min(1, m["common.profile.name_required"]())
+          .max(100, m["common.profile.name_too_long"]()),
       }),
     },
   });
