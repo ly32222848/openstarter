@@ -10,20 +10,11 @@ import type { PricingCheckout } from "@/lib/marketing/pricing";
 const mutations = {
   create: () =>
     mutationOptions({
-      mutationFn: async (input: PricingCheckout) => {
+      // 只上送 productId：价格/货币/积分由服务端产品目录决定（server-side pricing），
+      // 客户端不传任何金额字段。PricingCheckout 里的其余字段仅用于本地展示。
+      mutationFn: async (input: Pick<PricingCheckout, "productId">) => {
         const res = await client.api.checkout.$post({
-          json: {
-            amount: input.amount,
-            credits: input.credits,
-            creditsValidDays: input.creditsValidDays,
-            currency: input.currency,
-            interval: input.interval,
-            intervalCount: input.intervalCount,
-            planName: input.planName,
-            productId: input.productId,
-            productName: input.planName ?? input.productId,
-            type: input.type,
-          },
+          json: { productId: input.productId },
         });
         const json = await res.json();
         if ("code" in json && json.code === 0 && json.data) {

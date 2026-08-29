@@ -14,26 +14,18 @@ import { HTTPException } from "hono/http-exception";
 import { z } from "zod";
 
 import { requireAuth } from "../../middleware/auth";
+import { resolveProduct } from "./products";
 
-const DEFAULT_CURRENCY = "usd";
-const DEFAULT_INTERVAL = "month";
 const PROVIDER_UNAVAILABLE_STATUS = 400;
 const UNAUTHORIZED = 401;
+const UNKNOWN_PRODUCT_STATUS = 400;
 
-// 结账入参：所选产品/套餐（金额以最小货币单位，如「分」）与支付渠道。
+// 结账入参：只接受产品引用与支付渠道。价格/货币/积分/订阅周期一律由服务端
+// 产品目录（./products）按 productId 解析 —— 客户端传金额一律忽略，
+// 杜绝「客户端改价」漏洞。
 const checkoutBody = z.object({
-  amount: z.number().int().nonnegative(),
-  credits: z.number().int().nonnegative().optional(),
-  creditsValidDays: z.number().int().nonnegative().optional(),
-  currency: z.string().min(1).default(DEFAULT_CURRENCY),
-  description: z.string().min(1).optional(),
-  interval: z.enum(["day", "week", "month", "year"]).optional(),
-  intervalCount: z.number().int().positive().optional(),
-  planName: z.string().min(1).optional(),
   productId: z.string().min(1),
-  productName: z.string().min(1).optional(),
   provider: z.string().min(1).optional(),
-  type: z.enum(["one-time", "subscription", "renew"]).default("one-time"),
 });
 
 export const billingRouter = new Hono()
@@ -42,30 +34,38 @@ export const billingRouter = new Hono()
     const session = c.get("session");
     const origin = new URL(c.req.url).origin;
 
+    // 服务端定价：未知产品直接拒绝，不落任何订单。
+    const product = resolveProduct(body.productId);
+    if (!product) {
+      throw new HTTPException(UNKNOWN_PRODUCT_STATUS, {
+        message: `unknown product: ${body.productId}`,
+      });
+    }
+
     const paymentOrder: PaymentOrder = {
       cancelUrl: `${origin}/pricing`,
-      description: body.description ?? body.productName ?? body.productId,
-      price: { amount: body.amount, currency: body.currency },
-      productId: body.productId,
+      description: product.productName,
+      price: { amount: product.amount, currency: product.currency },
+      productId: product.productId,
       successUrl: `${origin}/dashboard?checkout=success`,
-      type: body.type,
+      type: product.type,
     };
 
-    if (body.type === "subscription") {
+    if (product.type === "subscription") {
       paymentOrder.plan = {
-        interval: body.interval ?? DEFAULT_INTERVAL,
-        intervalCount: body.intervalCount,
-        name: body.planName ?? body.productName ?? body.productId,
+        interval: product.interval ?? "month",
+        intervalCount: product.intervalCount,
+        name: product.planName ?? product.productName,
       };
     }
 
     try {
       const result = await createCheckout({
-        credits: body.credits,
-        creditsValidDays: body.creditsValidDays,
+        credits: product.credits,
+        creditsValidDays: product.creditsValidDays,
         paymentOrder,
-        planName: body.planName,
-        productName: body.productName,
+        planName: product.planName,
+        productName: product.productName,
         provider: body.provider,
         userEmail: session?.user?.email,
         userId: c.get("userId"),
