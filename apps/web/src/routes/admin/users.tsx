@@ -16,6 +16,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 
 import { AdminHeader, Pagination, StatusText } from "@/components/admin/list";
+import { useDebouncedValue } from "@/lib/use-debounced-value";
 import { admin } from "@/modules/admin/lib/api";
 
 export const Route = createFileRoute("/admin/users")({
@@ -23,13 +24,16 @@ export const Route = createFileRoute("/admin/users")({
 });
 
 const PAGE_SIZE = 20;
+const SEARCH_DEBOUNCE_MS = 300;
 
 function AdminUsersPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
+  // 防抖后进 queryKey：避免每敲一个键就发一次 /api/admin/users 请求。
+  const debouncedSearch = useDebouncedValue(search, SEARCH_DEBOUNCE_MS);
 
   const usersQuery = useQuery({
-    ...admin.queries.users(page, search),
+    ...admin.queries.users(page, debouncedSearch),
     placeholderData: keepPreviousData,
   });
 
@@ -42,11 +46,13 @@ function AdminUsersPage() {
       <AdminHeader description="All registered users." title="Users" />
       <div className="mb-4 max-w-xs">
         <Input
+          aria-label="Search users by email"
           onChange={(e) => {
             setPage(1);
             setSearch(e.target.value);
           }}
           placeholder="Search by email..."
+          type="search"
           value={search}
         />
       </div>

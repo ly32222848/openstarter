@@ -35,9 +35,17 @@ async function createRpc() {
   });
 }
 
-/** 读取公开分析配置；失败或无数据时回退为空配置（不注入任何脚本）。 */
-export const getAnalyticsConfigFn = createServerFn({ method: "GET" }).handler(
-  async (): Promise<AnalyticsConfig> => {
+// 配置缓存 TTL：管理员改配置后最多 30s 生效，可接受。
+const CONFIG_TTL_MS = 30_000;
+
+// 模块级缓存槽（单例 server 进程内共享；仅整体替换，不就地修改）。
+let configCache: { at: number; value: AnalyticsConfig | undefined } = {
+  at: 0,
+  value: undefined,
+};
+
+async function fetchAnalyticsConfig(): Promise<AnalyticsConfig> {
+  try {
     const rpc = await createRpc();
     const res = await rpc.api.analytics.config.$get();
     if (!res.ok) {
@@ -45,5 +53,23 @@ export const getAnalyticsConfigFn = createServerFn({ method: "GET" }).handler(
     }
     const json = await res.json();
     return json.data ?? EMPTY_ANALYTICS_CONFIG;
+  } catch {
+    // 配置读取失败不阻塞页面渲染：视为未配置，不注入任何脚本。
+    return EMPTY_ANALYTICS_CONFIG;
+  }
+}
+
+/** 读取公开分析配置；失败或无数据时回退为空配置（不注入任何脚本）。 */
+export const getAnalyticsConfigFn = createServerFn({ method: "GET" }).handler(
+  async (): Promise<AnalyticsConfig> => {
+    // 根路由 loader 在每次 SSR 都会调用本函数；配置几乎不变，
+    // 加短 TTL 内存缓存，避免每个页面请求都多一次 RPC → DB 往返。
+    const now = Date.now();
+    if (configCache.value && now - configCache.at < CONFIG_TTL_MS) {
+      return configCache.value;
+    }
+    const config = await fetchAnalyticsConfig();
+    configCache = { at: now, value: config };
+    return config;
   },
 );
