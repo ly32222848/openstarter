@@ -147,6 +147,87 @@ describe("renderMarkdown", () => {
     });
   });
 
+  describe("link href scheme allowlist", () => {
+    it("renders javascript: links as plain text", () => {
+      const result = renderMarkdown("[click me](javascript:alert)");
+      expect(result).not.toContain("<a ");
+      expect(result).not.toContain("javascript:");
+      expect(result).toContain("click me");
+    });
+
+    it("renders javascript: links with call expressions as plain text", () => {
+      const result = renderMarkdown("[click me](javascript:alert(1))");
+      expect(result).not.toContain("<a ");
+      expect(result).not.toContain("javascript:");
+    });
+
+    it("blocks mixed-case scheme bypasses", () => {
+      const result = renderMarkdown("[click me](JaVaScRiPt:alert)");
+      expect(result).not.toContain("<a ");
+      expect(result).not.toContain("alert");
+    });
+
+    it("blocks data: URLs", () => {
+      const result = renderMarkdown("[click me](data:text/html;base64,PHNjcmlwdD4)");
+      expect(result).not.toContain("<a ");
+      expect(result).not.toContain("data:");
+    });
+
+    it("blocks vbscript: URLs", () => {
+      const result = renderMarkdown("[click me](vbscript:msgbox)");
+      expect(result).not.toContain("<a ");
+    });
+
+    it("keeps https links clickable", () => {
+      expect(renderMarkdown("[site](https://example.com)")).toBe(
+        '<p><a href="https://example.com">site</a></p>',
+      );
+    });
+
+    it("keeps http links clickable", () => {
+      expect(renderMarkdown("[site](http://example.com)")).toBe(
+        '<p><a href="http://example.com">site</a></p>',
+      );
+    });
+
+    it("keeps mailto links clickable", () => {
+      expect(renderMarkdown("[mail](mailto:hi@example.com)")).toBe(
+        '<p><a href="mailto:hi@example.com">mail</a></p>',
+      );
+    });
+
+    it("keeps anchor and relative links clickable", () => {
+      expect(renderMarkdown("[top](#top)")).toBe('<p><a href="#top">top</a></p>');
+      expect(renderMarkdown("[docs](/docs)")).toBe('<p><a href="/docs">docs</a></p>');
+      expect(renderMarkdown("[bare](next-section)")).toBe(
+        '<p><a href="next-section">bare</a></p>',
+      );
+    });
+  });
+
+  describe("code block language sanitization", () => {
+    it("drops attribute injection attempts in the language tag", () => {
+      const result = renderMarkdown('```" onclick="alert(1)\ncode\n```');
+      expect(result).not.toContain("onclick");
+      expect(result).toBe("<pre><code>code</code></pre>");
+    });
+
+    it("drops language tags containing markup characters", () => {
+      const result = renderMarkdown("```<script>\ncode\n```");
+      expect(result).not.toContain("<script>");
+      expect(result).toBe("<pre><code>code</code></pre>");
+    });
+
+    it("keeps ordinary language tags", () => {
+      expect(renderMarkdown("```c++\ncode\n```")).toBe(
+        '<pre><code class="language-c++">code</code></pre>',
+      );
+      expect(renderMarkdown("```tsx\ncode\n```")).toBe(
+        '<pre><code class="language-tsx">code</code></pre>',
+      );
+    });
+  });
+
   describe("mixed content", () => {
     it("renders a full blog post", () => {
       const md = [
