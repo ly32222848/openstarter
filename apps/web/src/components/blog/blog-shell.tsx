@@ -11,7 +11,7 @@ export function BlogShell({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-svh flex-col">
       <MarketingHeader />
-      <main className="flex-1">{children}</main>
+      <main id="main" className="flex-1">{children}</main>
       <MarketingFooter />
     </div>
   );

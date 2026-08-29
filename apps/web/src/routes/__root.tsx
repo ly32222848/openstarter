@@ -53,12 +53,24 @@ function RootDocument() {
         <HeadContent />
       </head>
       <body>
+        {/* 键盘用户跳过页头导航直达主内容；各布局的 <main> 均携带 id="main"。 */}
+        <a
+          className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-background focus:px-4 focus:py-2"
+          href="#main"
+        >
+          Skip to content
+        </a>
         <ThemeProvider>
           <Outlet />
           <Toaster richColors />
         </ThemeProvider>
-        <TanStackRouterDevtools position="bottom-left" />
-        <ReactQueryDevtools buttonPosition="bottom-right" position="bottom" />
+        {/* DEV 门控：生产构建时 vite 以 false 替换并摇树掉 devtools，不再进客户端包。 */}
+        {import.meta.env.DEV && (
+          <>
+            <TanStackRouterDevtools position="bottom-left" />
+            <ReactQueryDevtools buttonPosition="bottom-right" position="bottom" />
+          </>
+        )}
         <Scripts />
       </body>
     </html>

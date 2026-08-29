@@ -11,7 +11,7 @@ function MarketingLayout() {
   return (
     <div className="flex min-h-svh flex-col">
       <MarketingHeader />
-      <main className="flex-1">
+      <main id="main" className="flex-1">
         <Outlet />
       </main>
       <MarketingFooter />

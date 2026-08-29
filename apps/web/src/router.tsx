@@ -3,6 +3,7 @@ import { createRouter as createTanStackRouter } from "@tanstack/react-router";
 import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query";
 import { toast } from "sonner";
 
+import { m } from "@/paraglide/messages.js";
 import { deLocalizeUrl, localizeUrl } from "@/paraglide/runtime.js";
 
 import Loader from "./components/loader";
@@ -14,11 +15,20 @@ function createQueryClient() {
   return new QueryClient({
     queryCache: new QueryCache({
       onError: (error, query) => {
-        toast.error(error.message, {
+        // 已有数据的后台刷新失败不再弹 toast：界面仍展示旧数据，逐次弹窗只会造成噪音。
+        if (query.state.data !== undefined) {
+          return;
+        }
+        // 不透传原始 error.message（可能泄漏内部实现/网络细节）；
+        // 仅 DEV 环境保留原始信息便于排查。
+        const message = import.meta.env.DEV
+          ? error.message
+          : m["common.error.message"]();
+        toast.error(message, {
           action: {
-            label: "retry",
+            label: m["common.error.retry"](),
             onClick: () => {
-              query.invalidate();
+              void query.invalidate();
             },
           },
         });

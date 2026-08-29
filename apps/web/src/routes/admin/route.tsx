@@ -69,8 +69,15 @@ export const Route = createFileRoute("/admin")({
       throw redirect({ to: "/login" });
     }
 
-    const res = await client.api.user.permissions.$get();
-    const permissions = res.ok ? ((await res.json()).data ?? []) : [];
+    // 权限接口网络失败时抛异常会落到通用错误页；按「无权限」降级重定向更合理
+    // （真正的数据边界由 API 侧每个 admin 路由的 requirePermission 保证，此处只是 UX 门面）。
+    let permissions: string[] = [];
+    try {
+      const res = await client.api.user.permissions.$get();
+      permissions = res.ok ? ((await res.json()).data ?? []) : [];
+    } catch {
+      permissions = [];
+    }
 
     // 无任何后台入口权限 → 拒绝访问并重定向（R26.1）。
     if (!matchAnyPermission(ALL_ADMIN_PERMISSIONS, permissions)) {
@@ -135,7 +142,7 @@ function AdminLayout() {
           </Link>
         </div>
       </aside>
-      <main className="min-w-0 flex-1 overflow-y-auto p-6">
+      <main id="main" className="min-w-0 flex-1 overflow-y-auto p-6">
         <Outlet />
       </main>
     </div>

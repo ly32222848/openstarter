@@ -18,9 +18,10 @@ function AuthPagesLayout() {
   return (
     <div className="flex min-h-svh flex-col items-center justify-center gap-8 px-4">
       <span className="font-semibold text-lg">{BRAND_NAME}</span>
-      <div className="w-full max-w-md">
+      {/* 认证页此前缺少 main landmark；同时作为 skip-to-content 的目标。 */}
+      <main id="main" className="w-full max-w-md">
         <Outlet />
-      </div>
+      </main>
     </div>
   );
 }

@@ -16,7 +16,7 @@ function PagesLayout() {
   return (
     <div className="flex min-h-svh flex-col">
       <MarketingHeader />
-      <main className="flex-1">
+      <main id="main" className="flex-1">
         <article className="mx-auto max-w-3xl px-4 py-16">
           <MDXProvider components={mdxComponents}>
             <Outlet />
