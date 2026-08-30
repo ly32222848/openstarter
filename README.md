@@ -69,7 +69,7 @@ boring 80% that every SaaS needs but nobody wants to build:
 | Mini-App | Taro (WeChat) |
 | Email | Resend + Cloudflare, React Email |
 | Payments | Stripe, PayPal, Alipay, WeChat Pay |
-| i18n | inlang / Paraglide |
+| i18n | inlang / Paraglide (web, extension)、i18next + react-i18next (mobile) |
 | Testing | Vitest + fast-check |
 | Linting | oxlint + oxfmt |
 
@@ -99,6 +99,8 @@ openstarter/
 │   ├── shared/      # Response envelope, logging, ID, hash, config
 │   ├── ui/          # Shared UI components (web + mobile per-platform)
 │   ├── i18n/        # Internationalization (inlang/Paraglide)
+│   │   ├── web/     # @openstarter/i18n-web — web/extension/auth/email shared
+│   │   └── mobile/  # @openstarter/i18n-mobile — mobile-specific messages
 │   ├── email/       # React Email templates (7 templates, bilingual)
 │   ├── billing/     # Subscriptions, credits, payment providers
 │   ├── analytics/   # Analytics provider abstraction (web + mobile)
