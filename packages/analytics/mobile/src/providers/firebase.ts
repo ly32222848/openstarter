@@ -34,9 +34,9 @@ function warnOnce(message: string): void {
 export async function createFirebaseProvider(): Promise<AnalyticsProvider> {
   try {
     const mod = await import("@react-native-firebase/analytics");
-    // 模块化 API（v23+）：实例取值器是具名导出 getAnalytics()，等同旧版
-    // firebase.analytics()；旧版的 default 导出在 v26 已不存在。
-    const getAnalytics = mod.getAnalytics;
+    // 模块化 API（v23+）：实例取值器是具名导出 getAnalytics(app?)，等同
+    // 旧版 firebase.analytics()；v26 已无 default 导出。
+    const { getAnalytics } = mod;
 
     return {
       async identify(_profileId: string, traits?: UserTraits): Promise<void> {
@@ -64,7 +64,12 @@ export async function createFirebaseProvider(): Promise<AnalyticsProvider> {
       name: "firebase",
       async setScreenName(name: string, params?: EventProperties): Promise<void> {
         try {
-          await getAnalytics().logScreenView({
+          // 映射为 screen_view 自定义事件而非 logScreenView：__DEV__ 下
+          // logScreenView 按superstruct ScreenView 结构校验（只认
+          // screen_class/screen_name），附加 params 会抛错、事件被静默
+          // 丢弃；logEvent 仅校验事件名与 params 的对象性，附加字段
+          // 全平台透传。
+          await getAnalytics().logEvent("screen_view", {
             screen_name: name,
             ...params,
           });

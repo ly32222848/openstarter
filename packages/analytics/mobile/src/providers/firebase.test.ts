@@ -5,7 +5,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockAnalyticsInstance = {
   logEvent: vi.fn(),
-  logScreenView: vi.fn(),
   setUserProperties: vi.fn(),
   setUserId: vi.fn(),
 };
@@ -85,12 +84,15 @@ describe("createFirebaseProvider", () => {
     expect(mockAnalyticsInstance.setUserId).toHaveBeenLastCalledWith(null);
   });
 
-  it("maps setScreenName() to logScreenView", async () => {
+  it("maps setScreenName() to a screen_view logEvent (extras pass through)", async () => {
     const provider = await createFirebaseProvider();
     await provider.init();
     await provider.setScreenName("/profile", { tab: "credits" });
 
-    expect(mockAnalyticsInstance.logScreenView).toHaveBeenCalledWith({
+    // 不走 logScreenView：__DEV__ 下它对 ScreenView 结构外的附加参数会抛错
+    // （superstruct 只认 screen_class/screen_name）；logEvent 仅校验事件名，
+    // 附加 params 全平台都能透传。
+    expect(mockAnalyticsInstance.logEvent).toHaveBeenCalledWith("screen_view", {
       screen_name: "/profile",
       tab: "credits",
     });
