@@ -1,7 +1,7 @@
 import { useTranslation } from "@openstarter/i18n-mobile";
+import { Button, Text } from "@openstarter/ui-mobile";
 import { View } from "react-native";
 
-import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
 import type { MobileSocialProvider } from "@/lib/public-config";
 
@@ -27,12 +27,9 @@ export function SocialButtons(props: {
   return (
     <View className="gap-2">
       {props.providers.map((provider) => (
-        <Button
-          key={provider}
-          label={t(LABEL_KEYS[provider])}
-          onPress={() => handlePress(provider)}
-          variant="outline"
-        />
+        <Button key={provider} onPress={() => handlePress(provider)} variant="outline">
+          <Text>{t(LABEL_KEYS[provider])}</Text>
+        </Button>
       ))}
     </View>
   );

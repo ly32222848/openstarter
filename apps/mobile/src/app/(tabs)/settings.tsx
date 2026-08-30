@@ -1,11 +1,9 @@
 import type { SupportedLocale } from "@openstarter/i18n-mobile";
-import { SUPPORTED_LOCALES } from "@openstarter/i18n-mobile";
+import { SUPPORTED_LOCALES, useTranslation } from "@openstarter/i18n-mobile";
+import { Button, Card, CardContent, CardTitle, Text } from "@openstarter/ui-mobile";
 import Constants from "expo-constants";
-import { useTranslation } from "@openstarter/i18n-mobile";
-import { Text, View } from "react-native";
+import { View } from "react-native";
 
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Screen } from "@/components/ui/screen";
 import { authClient } from "@/lib/auth-client";
 import { useAppLocale } from "@/lib/i18n";
@@ -33,50 +31,55 @@ export default function SettingsScreen() {
   return (
     <Screen>
       <View className="gap-4 p-6">
-        <Card title={t("mobile.settings.appearance")}>
-          <View className="gap-2">
+        <Card className="gap-3 p-4">
+          <CardTitle>{t("mobile.settings.appearance")}</CardTitle>
+          <CardContent className="flex flex-col gap-2 p-0">
             {THEME_OPTIONS.map((option) => (
               <Button
                 key={option}
-                label={t(THEME_LABEL_KEYS[option])}
                 onPress={() => setPreference(option)}
-                variant={option === preference ? "primary" : "outline"}
-              />
+                variant={option === preference ? "default" : "outline"}
+              >
+                <Text>{t(THEME_LABEL_KEYS[option])}</Text>
+              </Button>
             ))}
-          </View>
+          </CardContent>
         </Card>
 
-        <Card title={t("common.nav.language")}>
-          <View className="gap-2">
+        <Card className="gap-3 p-4">
+          <CardTitle>{t("common.nav.language")}</CardTitle>
+          <CardContent className="flex flex-col gap-2 p-0">
             {SUPPORTED_LOCALES.map((option) => (
               <Button
                 key={option}
-                label={LOCALE_LABELS[option]}
                 onPress={() => setAppLocale(option)}
-                variant={option === locale ? "primary" : "outline"}
-              />
+                variant={option === locale ? "default" : "outline"}
+              >
+                <Text>{LOCALE_LABELS[option]}</Text>
+              </Button>
             ))}
-          </View>
+          </CardContent>
         </Card>
 
-        <Card>
-          <View className="flex-row items-center justify-between">
+        <Card className="p-4">
+          <CardContent className="flex-row items-center justify-between p-0">
             <Text className="text-muted-foreground text-xs dark:text-dark-muted-foreground">
               {t("mobile.settings.version")}
             </Text>
             <Text className="text-foreground text-sm dark:text-dark-foreground">
               {Constants.expoConfig?.version ?? "-"}
             </Text>
-          </View>
+          </CardContent>
         </Card>
 
         <Button
-          label={t("common.sign.sign_out_title")}
           onPress={() => {
             authClient.signOut().catch(() => undefined);
           }}
           variant="outline"
-        />
+        >
+          <Text>{t("common.sign.sign_out_title")}</Text>
+        </Button>
       </View>
     </Screen>
   );

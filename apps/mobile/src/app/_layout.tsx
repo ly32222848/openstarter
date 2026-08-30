@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { PortalHost } from "@openstarter/ui-mobile";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useState } from "react";
@@ -33,6 +34,9 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <StatusBar style="auto" />
         <Stack screenOptions={{ headerShown: false }} />
+        {/* PortalHost 是 overlay 类组件（Dialog/DropdownMenu/Tooltip 等）的
+            渲染宿主，须作为 providers 的最后一个子节点（react-native-reusables 约定）。 */}
+        <PortalHost />
       </SafeAreaProvider>
     </QueryClientProvider>
   );

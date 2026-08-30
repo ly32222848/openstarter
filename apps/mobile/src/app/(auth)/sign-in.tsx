@@ -1,13 +1,12 @@
 import { useForm } from "@tanstack/react-form";
 import { Link } from "expo-router";
 import { useState } from "react";
-import { Text, View } from "react-native";
+import { View } from "react-native";
 import { useTranslation } from "@openstarter/i18n-mobile";
+import { Button, Field, Text } from "@openstarter/ui-mobile";
 import z from "zod";
 
 import { SocialButtons } from "@/components/auth/social-buttons";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Screen } from "@/components/ui/screen";
 import { authClient } from "@/lib/auth-client";
 import { resolveEnabledProviders } from "@/lib/public-config";
@@ -63,7 +62,7 @@ export default function SignInScreen() {
           <View className="gap-4">
             <form.Field name="email">
               {(field) => (
-                <Input
+                <Field
                   autoComplete="email"
                   errors={field.state.meta.errors.map((item) => item?.message ?? "")}
                   label={t("common.sign.email_title")}
@@ -77,7 +76,7 @@ export default function SignInScreen() {
 
             <form.Field name="password">
               {(field) => (
-                <Input
+                <Field
                   autoComplete="password"
                   errors={field.state.meta.errors.map((item) => item?.message ?? "")}
                   label={t("common.sign.password_title")}
@@ -98,13 +97,13 @@ export default function SignInScreen() {
             >
               {({ canSubmit, isSubmitting }) => (
                 <Button
-                  disabled={!canSubmit}
-                  label={t("common.sign.sign_in_title")}
-                  loading={isSubmitting}
+                  disabled={!canSubmit || isSubmitting}
                   onPress={() => {
                     form.handleSubmit();
                   }}
-                />
+                >
+                  <Text>{t("common.sign.sign_in_title")}</Text>
+                </Button>
               )}
             </form.Subscribe>
           </View>

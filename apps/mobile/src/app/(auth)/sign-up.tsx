@@ -1,12 +1,11 @@
 import { useForm } from "@tanstack/react-form";
 import { Link } from "expo-router";
 import { useState } from "react";
-import { Text, View } from "react-native";
+import { View } from "react-native";
 import { useTranslation } from "@openstarter/i18n-mobile";
+import { Button, Field, Text } from "@openstarter/ui-mobile";
 import z from "zod";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Screen } from "@/components/ui/screen";
 import { authClient } from "@/lib/auth-client";
 
@@ -54,7 +53,7 @@ export default function SignUpScreen() {
         <View className="gap-4">
           <form.Field name="name">
             {(field) => (
-              <Input
+              <Field
                 autoComplete="name"
                 errors={field.state.meta.errors.map((item) => item?.message ?? "")}
                 label={t("common.sign.name_title")}
@@ -68,7 +67,7 @@ export default function SignUpScreen() {
 
           <form.Field name="email">
             {(field) => (
-              <Input
+              <Field
                 autoComplete="email"
                 errors={field.state.meta.errors.map((item) => item?.message ?? "")}
                 label={t("common.sign.email_title")}
@@ -82,7 +81,7 @@ export default function SignUpScreen() {
 
           <form.Field name="password">
             {(field) => (
-              <Input
+              <Field
                 autoComplete="password"
                 errors={field.state.meta.errors.map((item) => item?.message ?? "")}
                 label={t("common.sign.password_title")}
@@ -103,13 +102,13 @@ export default function SignUpScreen() {
           >
             {({ canSubmit, isSubmitting }) => (
               <Button
-                disabled={!canSubmit}
-                label={t("common.sign.sign_up_title")}
-                loading={isSubmitting}
+                disabled={!canSubmit || isSubmitting}
                 onPress={() => {
                   form.handleSubmit();
                 }}
-              />
+              >
+                <Text>{t("common.sign.sign_up_title")}</Text>
+              </Button>
             )}
           </form.Subscribe>
         </View>

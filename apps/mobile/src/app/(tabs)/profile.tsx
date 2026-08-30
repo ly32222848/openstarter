@@ -1,12 +1,10 @@
 import { useForm } from "@tanstack/react-form";
 import { useState } from "react";
-import { Text, View } from "react-native";
+import { View } from "react-native";
 import { useTranslation } from "@openstarter/i18n-mobile";
+import { Button, Card, CardContent, CardTitle, Field, Text } from "@openstarter/ui-mobile";
 import z from "zod";
 
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Screen } from "@/components/ui/screen";
 import { authClient } from "@/lib/auth-client";
 
@@ -40,56 +38,61 @@ export default function ProfileScreen() {
   return (
     <Screen>
       <View className="gap-4 p-6">
-        <Card title={t("common.nav.profile")}>
-          <View className="gap-1">
-            <Text className="text-muted-foreground text-xs dark:text-dark-muted-foreground">
-              {t("settings.profile.email")}
-            </Text>
-            <Text className="text-foreground text-sm dark:text-dark-foreground">
-              {session?.user.email ?? ""}
-            </Text>
-          </View>
+        <Card className="gap-3 p-4">
+          <CardTitle>{t("common.nav.profile")}</CardTitle>
+          <CardContent className="flex flex-col gap-3 p-0">
+            <View className="gap-1">
+              <Text className="text-muted-foreground text-xs dark:text-dark-muted-foreground">
+                {t("settings.profile.email")}
+              </Text>
+              <Text className="text-foreground text-sm dark:text-dark-foreground">
+                {session?.user.email ?? ""}
+              </Text>
+            </View>
 
-          <form.Field name="name">
-            {(field) => (
-              <Input
-                autoComplete="name"
-                errors={field.state.meta.errors.map((item) => item?.message ?? "")}
-                label={t("settings.profile.name")}
-                onBlur={field.handleBlur}
-                onChangeText={field.handleChange}
-                value={field.state.value}
-              />
-            )}
-          </form.Field>
+            <form.Field name="name">
+              {(field) => (
+                <Field
+                  autoComplete="name"
+                  errors={field.state.meta.errors.map((item) => item?.message ?? "")}
+                  label={t("settings.profile.name")}
+                  onBlur={field.handleBlur}
+                  onChangeText={field.handleChange}
+                  value={field.state.value}
+                />
+              )}
+            </form.Field>
 
-          <form.Subscribe
-            selector={(state) => ({
-              canSubmit: state.canSubmit,
-              isSubmitting: state.isSubmitting,
-            })}
-          >
-            {({ canSubmit, isSubmitting }) => (
-              <Button
-                disabled={!canSubmit}
-                label={isSubmitting ? t("settings.profile.saving") : t("settings.profile.save")}
-                loading={isSubmitting}
-                onPress={() => {
-                  form.handleSubmit();
-                }}
-              />
-            )}
-          </form.Subscribe>
+            <form.Subscribe
+              selector={(state) => ({
+                canSubmit: state.canSubmit,
+                isSubmitting: state.isSubmitting,
+              })}
+            >
+              {({ canSubmit, isSubmitting }) => (
+                <Button
+                  disabled={!canSubmit || isSubmitting}
+                  onPress={() => {
+                    form.handleSubmit();
+                  }}
+                >
+                  <Text>
+                    {isSubmitting ? t("settings.profile.saving") : t("settings.profile.save")}
+                  </Text>
+                </Button>
+              )}
+            </form.Subscribe>
 
-          {saved ? (
-            <Text className="text-muted-foreground text-xs dark:text-dark-muted-foreground">
-              {t("settings.profile.saved")}
-            </Text>
-          ) : null}
+            {saved ? (
+              <Text className="text-muted-foreground text-xs dark:text-dark-muted-foreground">
+                {t("settings.profile.saved")}
+              </Text>
+            ) : null}
 
-          {error.length > 0 ? (
-            <Text className="text-destructive text-sm dark:text-dark-destructive">{error}</Text>
-          ) : null}
+            {error.length > 0 ? (
+              <Text className="text-destructive text-sm dark:text-dark-destructive">{error}</Text>
+            ) : null}
+          </CardContent>
         </Card>
       </View>
     </Screen>

@@ -1,10 +1,8 @@
 import { useEffect } from "react";
-import { Text, View } from "react-native";
+import { View } from "react-native";
 import { useTranslation } from "@openstarter/i18n-mobile";
+import { Badge, Button, Card, CardContent, CardTitle, Text } from "@openstarter/ui-mobile";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Screen } from "@/components/ui/screen";
 import { Spinner } from "@/components/ui/spinner";
 import { authClient } from "@/lib/auth-client";
@@ -39,44 +37,53 @@ export default function HomeScreen() {
           </Text>
         </View>
 
-        <Card title={t("settings.overview.plan")}>
-          {result.status === "success" ? <Badge label={result.data.plan} /> : null}
+        <Card className="gap-3 p-4">
+          <CardTitle>{t("settings.overview.plan")}</CardTitle>
+          <CardContent className="flex flex-col gap-3 p-0">
+            {result.status === "success" ? (
+              <Badge variant="secondary">
+                <Text>{result.data.plan}</Text>
+              </Badge>
+            ) : null}
 
-          {result.status === "unreachable" ? (
-            <View className="gap-3">
-              <Text className="text-destructive text-sm dark:text-dark-destructive">
-                {t("common.error.unreachable")}
+            {result.status === "unreachable" ? (
+              <View className="gap-3">
+                <Text className="text-destructive text-sm dark:text-dark-destructive">
+                  {t("common.error.unreachable")}
+                </Text>
+                <Button
+                  onPress={() => {
+                    planQuery.refetch().catch(() => undefined);
+                  }}
+                  variant="outline"
+                >
+                  <Text>{t("common.error.retry")}</Text>
+                </Button>
+              </View>
+            ) : null}
+
+            {result.status === "server-error" ? (
+              <View className="gap-3">
+                <Text className="text-destructive text-sm dark:text-dark-destructive">
+                  {result.message}
+                </Text>
+                <Button
+                  onPress={() => {
+                    planQuery.refetch().catch(() => undefined);
+                  }}
+                  variant="outline"
+                >
+                  <Text>{t("common.error.retry")}</Text>
+                </Button>
+              </View>
+            ) : null}
+
+            {result.status === "unauthorized" ? (
+              <Text className="text-muted-foreground text-sm dark:text-dark-muted-foreground">
+                {t("common.sign.sign_in_title")}
               </Text>
-              <Button
-                label={t("common.error.retry")}
-                onPress={() => {
-                  planQuery.refetch().catch(() => undefined);
-                }}
-                variant="outline"
-              />
-            </View>
-          ) : null}
-
-          {result.status === "server-error" ? (
-            <View className="gap-3">
-              <Text className="text-destructive text-sm dark:text-dark-destructive">
-                {result.message}
-              </Text>
-              <Button
-                label={t("common.error.retry")}
-                onPress={() => {
-                  planQuery.refetch().catch(() => undefined);
-                }}
-                variant="outline"
-              />
-            </View>
-          ) : null}
-
-          {result.status === "unauthorized" ? (
-            <Text className="text-muted-foreground text-sm dark:text-dark-muted-foreground">
-              {t("common.sign.sign_in_title")}
-            </Text>
-          ) : null}
+            ) : null}
+          </CardContent>
         </Card>
       </View>
     </Screen>

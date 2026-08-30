@@ -1,25 +1,6 @@
-// 设计 token 镜像自 packages/ui/ui-web/src/styles/globals.css 的 :root / .dark 语义色。
-// 那边是 oklch()，React Native 不支持该颜色空间，故此处存等价 hex。
-// 唯一权威来源仍是 ui-web 的 globals.css —— 改那边时必须同步改这里（见 spec §9）。
-const light = {
-  accent: "#f5f5f5",
-  "accent-foreground": "#171717",
-  background: "#ffffff",
-  border: "#e5e5e5",
-  card: "#ffffff",
-  "card-foreground": "#0a0a0a",
-  destructive: "#df2225",
-  foreground: "#0a0a0a",
-  input: "#e5e5e5",
-  muted: "#f5f5f5",
-  "muted-foreground": "#737373",
-  primary: "#171717",
-  "primary-foreground": "#fafafa",
-  ring: "#a1a1a1",
-  secondary: "#f5f5f5",
-  "secondary-foreground": "#171717",
-};
-
+// 基础语义色走 CSS 变量（见 ./global.css 的 :root / .dark），随 setColorScheme
+// 自动切换 —— reusables 组件（@openstarter/ui-mobile）直接消费这些 token。
+// 历史的 dark- 前缀 token（dark 对象）仅为存量 className 保留，新代码勿用。
 const dark = {
   accent: "#404040",
   "accent-foreground": "#fafafa",
@@ -40,14 +21,53 @@ const dark = {
 };
 
 module.exports = {
-  content: ["./src/**/*.{js,jsx,ts,tsx}"],
+  // @openstarter/ui-mobile 的组件源码也要被扫描，否则 Tailwind 不会产出对应样式。
+  content: ["./src/**/*.{js,jsx,ts,tsx}", "../../packages/ui/mobile/src/**/*.{js,jsx,ts,tsx}"],
   darkMode: "class",
   presets: [require("nativewind/preset")],
   theme: {
     extend: {
       colors: {
-        ...light,
+        background: "var(--background)",
+        foreground: "var(--foreground)",
+        card: {
+          DEFAULT: "var(--card)",
+          foreground: "var(--card-foreground)",
+        },
+        popover: {
+          DEFAULT: "var(--popover)",
+          foreground: "var(--popover-foreground)",
+        },
+        primary: {
+          DEFAULT: "var(--primary)",
+          foreground: "var(--primary-foreground)",
+        },
+        secondary: {
+          DEFAULT: "var(--secondary)",
+          foreground: "var(--secondary-foreground)",
+        },
+        muted: {
+          DEFAULT: "var(--muted)",
+          foreground: "var(--muted-foreground)",
+        },
+        accent: {
+          DEFAULT: "var(--accent)",
+          foreground: "var(--accent-foreground)",
+        },
+        destructive: {
+          DEFAULT: "var(--destructive)",
+          foreground: "var(--destructive-foreground)",
+        },
+        border: "var(--border)",
+        input: "var(--input)",
+        ring: "var(--ring)",
+        // 存量 dark- 前缀 token（见文件头注释）。
         dark,
+      },
+      borderRadius: {
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
       },
     },
   },
