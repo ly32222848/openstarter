@@ -1,7 +1,7 @@
 import { useForm } from "@tanstack/react-form";
 import { useState } from "react";
 import { Text, View } from "react-native";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@openstarter/i18n-mobile";
 import z from "zod";
 
 import { Button } from "@/components/ui/button";

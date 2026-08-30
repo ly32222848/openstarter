@@ -1,7 +1,7 @@
 import type { SupportedLocale } from "@openstarter/i18n-mobile";
 import { SUPPORTED_LOCALES } from "@openstarter/i18n-mobile";
 import Constants from "expo-constants";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@openstarter/i18n-mobile";
 import { Text, View } from "react-native";
 
 import { Button } from "@/components/ui/button";

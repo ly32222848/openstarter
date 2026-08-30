@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Text, View } from "react-native";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@openstarter/i18n-mobile";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

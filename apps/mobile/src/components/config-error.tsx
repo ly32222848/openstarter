@@ -1,4 +1,4 @@
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@openstarter/i18n-mobile";
 import { Text, View } from "react-native";
 
 import { Screen } from "./ui/screen";
