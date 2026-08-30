@@ -1,13 +1,14 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Redirect, Tabs } from "expo-router";
+import { useTranslation } from "react-i18next";
 
 import { Spinner } from "@/components/ui/spinner";
 import { authClient } from "@/lib/auth-client";
 import { deriveAuthGate } from "@/lib/auth-gate";
-import { m } from "@/paraglide/messages.js";
 
 export default function TabsLayout() {
   const { data: session, isPending } = authClient.useSession();
+  const { t } = useTranslation();
   const gate = deriveAuthGate({ isPending, session });
 
   if (gate === "loading") {
@@ -26,7 +27,7 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, size }) => (
             <Ionicons color={color} name="home-outline" size={size} />
           ),
-          title: m["common.nav.home"](),
+          title: t("common.nav.home"),
         }}
       />
       <Tabs.Screen
@@ -35,7 +36,7 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, size }) => (
             <Ionicons color={color} name="person-outline" size={size} />
           ),
-          title: m["common.nav.profile"](),
+          title: t("common.nav.profile"),
         }}
       />
       <Tabs.Screen
@@ -44,7 +45,7 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, size }) => (
             <Ionicons color={color} name="settings-outline" size={size} />
           ),
-          title: m["common.nav.settings"](),
+          title: t("common.nav.settings"),
         }}
       />
     </Tabs>

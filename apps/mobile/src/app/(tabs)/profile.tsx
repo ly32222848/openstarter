@@ -1,6 +1,7 @@
 import { useForm } from "@tanstack/react-form";
 import { useState } from "react";
 import { Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 import z from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -8,11 +9,11 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Screen } from "@/components/ui/screen";
 import { authClient } from "@/lib/auth-client";
-import { m } from "@/paraglide/messages.js";
 
 const MIN_NAME_LENGTH = 2;
 
 export default function ProfileScreen() {
+  const { t } = useTranslation();
   const { data: session } = authClient.useSession();
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
@@ -39,10 +40,10 @@ export default function ProfileScreen() {
   return (
     <Screen>
       <View className="gap-4 p-6">
-        <Card title={m["common.nav.profile"]()}>
+        <Card title={t("common.nav.profile")}>
           <View className="gap-1">
             <Text className="text-muted-foreground text-xs dark:text-dark-muted-foreground">
-              {m["settings.profile.email"]()}
+              {t("settings.profile.email")}
             </Text>
             <Text className="text-foreground text-sm dark:text-dark-foreground">
               {session?.user.email ?? ""}
@@ -54,7 +55,7 @@ export default function ProfileScreen() {
               <Input
                 autoComplete="name"
                 errors={field.state.meta.errors.map((item) => item?.message ?? "")}
-                label={m["settings.profile.name"]()}
+                label={t("settings.profile.name")}
                 onBlur={field.handleBlur}
                 onChangeText={field.handleChange}
                 value={field.state.value}
@@ -71,7 +72,7 @@ export default function ProfileScreen() {
             {({ canSubmit, isSubmitting }) => (
               <Button
                 disabled={!canSubmit}
-                label={isSubmitting ? m["settings.profile.saving"]() : m["settings.profile.save"]()}
+                label={isSubmitting ? t("settings.profile.saving") : t("settings.profile.save")}
                 loading={isSubmitting}
                 onPress={() => {
                   form.handleSubmit();
@@ -82,7 +83,7 @@ export default function ProfileScreen() {
 
           {saved ? (
             <Text className="text-muted-foreground text-xs dark:text-dark-muted-foreground">
-              {m["settings.profile.saved"]()}
+              {t("settings.profile.saved")}
             </Text>
           ) : null}
 

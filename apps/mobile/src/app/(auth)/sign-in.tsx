@@ -2,6 +2,7 @@ import { useForm } from "@tanstack/react-form";
 import { Link } from "expo-router";
 import { useState } from "react";
 import { Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 import z from "zod";
 
 import { SocialButtons } from "@/components/auth/social-buttons";
@@ -11,11 +12,11 @@ import { Screen } from "@/components/ui/screen";
 import { authClient } from "@/lib/auth-client";
 import { resolveEnabledProviders } from "@/lib/public-config";
 import { usePublicConfig } from "@/lib/queries";
-import { m } from "@/paraglide/messages.js";
 
 const MIN_PASSWORD_LENGTH = 8;
 
 export default function SignInScreen() {
+  const { t } = useTranslation();
   const [error, setError] = useState("");
   const configQuery = usePublicConfig();
   const methods = resolveEnabledProviders(configQuery.data ?? {});
@@ -45,7 +46,7 @@ export default function SignInScreen() {
     <Screen>
       <View className="flex-1 justify-center gap-5 p-6">
         <Text className="text-center font-bold text-2xl text-foreground dark:text-dark-foreground">
-          {m["common.sign.sign_in_title"]()}
+          {t("common.sign.sign_in_title")}
         </Text>
 
         {methods.socialProviders.length > 0 ? (
@@ -54,7 +55,7 @@ export default function SignInScreen() {
 
         {methods.socialProviders.length > 0 && methods.emailPassword ? (
           <Text className="text-center text-muted-foreground text-xs dark:text-dark-muted-foreground">
-            {m["common.sign.or"]()}
+            {t("common.sign.or")}
           </Text>
         ) : null}
 
@@ -65,10 +66,10 @@ export default function SignInScreen() {
                 <Input
                   autoComplete="email"
                   errors={field.state.meta.errors.map((item) => item?.message ?? "")}
-                  label={m["common.sign.email_title"]()}
+                  label={t("common.sign.email_title")}
                   onBlur={field.handleBlur}
                   onChangeText={field.handleChange}
-                  placeholder={m["common.sign.email_placeholder"]()}
+                  placeholder={t("common.sign.email_placeholder")}
                   value={field.state.value}
                 />
               )}
@@ -79,10 +80,10 @@ export default function SignInScreen() {
                 <Input
                   autoComplete="password"
                   errors={field.state.meta.errors.map((item) => item?.message ?? "")}
-                  label={m["common.sign.password_title"]()}
+                  label={t("common.sign.password_title")}
                   onBlur={field.handleBlur}
                   onChangeText={field.handleChange}
-                  placeholder={m["common.sign.password_placeholder"]()}
+                  placeholder={t("common.sign.password_placeholder")}
                   secureTextEntry
                   value={field.state.value}
                 />
@@ -98,7 +99,7 @@ export default function SignInScreen() {
               {({ canSubmit, isSubmitting }) => (
                 <Button
                   disabled={!canSubmit}
-                  label={m["common.sign.sign_in_title"]()}
+                  label={t("common.sign.sign_in_title")}
                   loading={isSubmitting}
                   onPress={() => {
                     form.handleSubmit();
@@ -118,14 +119,14 @@ export default function SignInScreen() {
         {methods.passwordReset ? (
           <Link asChild href="/forgot-password">
             <Text className="text-center text-muted-foreground text-sm underline dark:text-dark-muted-foreground">
-              {m["common.sign.forgot_password"]()}
+              {t("common.sign.forgot_password")}
             </Text>
           </Link>
         ) : null}
 
         <Link asChild href="/sign-up">
           <Text className="text-center text-foreground text-sm dark:text-dark-foreground">
-            {m["common.sign.no_account"]()}
+            {t("common.sign.no_account")}
           </Text>
         </Link>
       </View>

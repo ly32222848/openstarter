@@ -2,18 +2,19 @@ import { useForm } from "@tanstack/react-form";
 import { Link } from "expo-router";
 import { useState } from "react";
 import { Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 import z from "zod";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Screen } from "@/components/ui/screen";
 import { authClient } from "@/lib/auth-client";
-import { m } from "@/paraglide/messages.js";
 
 const MIN_PASSWORD_LENGTH = 8;
 const MIN_NAME_LENGTH = 2;
 
 export default function SignUpScreen() {
+  const { t } = useTranslation();
   const [error, setError] = useState("");
   const [pendingVerification, setPendingVerification] = useState(false);
 
@@ -47,7 +48,7 @@ export default function SignUpScreen() {
     <Screen>
       <View className="flex-1 justify-center gap-5 p-6">
         <Text className="text-center font-bold text-2xl text-foreground dark:text-dark-foreground">
-          {m["common.sign.sign_up_title"]()}
+          {t("common.sign.sign_up_title")}
         </Text>
 
         <View className="gap-4">
@@ -56,10 +57,10 @@ export default function SignUpScreen() {
               <Input
                 autoComplete="name"
                 errors={field.state.meta.errors.map((item) => item?.message ?? "")}
-                label={m["common.sign.name_title"]()}
+                label={t("common.sign.name_title")}
                 onBlur={field.handleBlur}
                 onChangeText={field.handleChange}
-                placeholder={m["common.sign.name_placeholder"]()}
+                placeholder={t("common.sign.name_placeholder")}
                 value={field.state.value}
               />
             )}
@@ -70,10 +71,10 @@ export default function SignUpScreen() {
               <Input
                 autoComplete="email"
                 errors={field.state.meta.errors.map((item) => item?.message ?? "")}
-                label={m["common.sign.email_title"]()}
+                label={t("common.sign.email_title")}
                 onBlur={field.handleBlur}
                 onChangeText={field.handleChange}
-                placeholder={m["common.sign.email_placeholder"]()}
+                placeholder={t("common.sign.email_placeholder")}
                 value={field.state.value}
               />
             )}
@@ -84,10 +85,10 @@ export default function SignUpScreen() {
               <Input
                 autoComplete="password"
                 errors={field.state.meta.errors.map((item) => item?.message ?? "")}
-                label={m["common.sign.password_title"]()}
+                label={t("common.sign.password_title")}
                 onBlur={field.handleBlur}
                 onChangeText={field.handleChange}
-                placeholder={m["common.sign.password_placeholder"]()}
+                placeholder={t("common.sign.password_placeholder")}
                 secureTextEntry
                 value={field.state.value}
               />
@@ -103,7 +104,7 @@ export default function SignUpScreen() {
             {({ canSubmit, isSubmitting }) => (
               <Button
                 disabled={!canSubmit}
-                label={m["common.sign.sign_up_title"]()}
+                label={t("common.sign.sign_up_title")}
                 loading={isSubmitting}
                 onPress={() => {
                   form.handleSubmit();
@@ -115,7 +116,7 @@ export default function SignUpScreen() {
 
         {pendingVerification ? (
           <Text className="text-center text-muted-foreground text-sm dark:text-dark-muted-foreground">
-            {m["common.sign.sign_up_description"]()}
+            {t("common.sign.sign_up_description")}
           </Text>
         ) : null}
 
@@ -127,7 +128,7 @@ export default function SignUpScreen() {
 
         <Link asChild href="/sign-in">
           <Text className="text-center text-foreground text-sm dark:text-dark-foreground">
-            {m["common.sign.already_have_account"]()}
+            {t("common.sign.already_have_account")}
           </Text>
         </Link>
       </View>

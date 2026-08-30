@@ -2,6 +2,7 @@ import { useForm } from "@tanstack/react-form";
 import { Link } from "expo-router";
 import { useState } from "react";
 import { Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 import z from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -9,9 +10,9 @@ import { Input } from "@/components/ui/input";
 import { Screen } from "@/components/ui/screen";
 import { authClient } from "@/lib/auth-client";
 import { getEnv } from "@/lib/env";
-import { m } from "@/paraglide/messages.js";
 
 export default function ForgotPasswordScreen() {
+  const { t } = useTranslation();
   const [error, setError] = useState("");
   const [sent, setSent] = useState(false);
   const env = getEnv();
@@ -42,12 +43,12 @@ export default function ForgotPasswordScreen() {
     <Screen>
       <View className="flex-1 justify-center gap-5 p-6">
         <Text className="text-center font-bold text-2xl text-foreground dark:text-dark-foreground">
-          {m["common.sign.forgot_password_title"]()}
+          {t("common.sign.forgot_password_title")}
         </Text>
 
         {sent ? (
           <Text className="text-center text-muted-foreground text-sm dark:text-dark-muted-foreground">
-            {m["common.sign.forgot_password"]()}
+            {t("common.sign.forgot_password")}
           </Text>
         ) : (
           <View className="gap-4">
@@ -56,10 +57,10 @@ export default function ForgotPasswordScreen() {
                 <Input
                   autoComplete="email"
                   errors={field.state.meta.errors.map((item) => item?.message ?? "")}
-                  label={m["common.sign.email_title"]()}
+                  label={t("common.sign.email_title")}
                   onBlur={field.handleBlur}
                   onChangeText={field.handleChange}
-                  placeholder={m["common.sign.email_placeholder"]()}
+                  placeholder={t("common.sign.email_placeholder")}
                   value={field.state.value}
                 />
               )}
@@ -74,7 +75,7 @@ export default function ForgotPasswordScreen() {
               {({ canSubmit, isSubmitting }) => (
                 <Button
                   disabled={!canSubmit}
-                  label={m["common.sign.forgot_password_title"]()}
+                  label={t("common.sign.forgot_password_title")}
                   loading={isSubmitting}
                   onPress={() => {
                     form.handleSubmit();
@@ -93,7 +94,7 @@ export default function ForgotPasswordScreen() {
 
         <Link asChild href="/sign-in">
           <Text className="text-center text-foreground text-sm dark:text-dark-foreground">
-            {m["common.sign.sign_in_title"]()}
+            {t("common.sign.sign_in_title")}
           </Text>
         </Link>
       </View>
