@@ -14,7 +14,7 @@
   "dependencies": {
     "@openstarter/api": "workspace:*",
     "@openstarter/auth": "workspace:*",
-    "@openstarter/i18n": "workspace:*",
+    "@openstarter/i18n-web": "workspace:*",
     "@openstarter/ui-web": "workspace:*",
     "@tanstack/react-query": "^5.99.0",
     "better-auth": "catalog:",

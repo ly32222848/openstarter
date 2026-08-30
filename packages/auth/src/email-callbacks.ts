@@ -1,6 +1,6 @@
 import { EmailTemplate } from "@openstarter/email";
 import type { SendEmailParams } from "@openstarter/email/server";
-import { getLocaleFromRequest } from "@openstarter/i18n/server";
+import { getLocaleFromRequest } from "@openstarter/i18n-web/server";
 import type { BetterAuthOptions } from "better-auth";
 
 import { getUrl } from "./lib/utils";

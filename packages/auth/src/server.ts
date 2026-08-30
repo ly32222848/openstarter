@@ -4,7 +4,7 @@ import { passkey } from "@better-auth/passkey";
 import { db, getAuthAdapterProvider } from "@openstarter/db/server";
 import { EmailTemplate } from "@openstarter/email";
 import { sendEmail as deliverEmail, type SendEmailParams } from "@openstarter/email/server";
-import { getLocaleFromRequest } from "@openstarter/i18n/server";
+import { getLocaleFromRequest } from "@openstarter/i18n-web/server";
 import { getAllConfigs } from "@openstarter/shared/config";
 import { NodeEnv } from "@openstarter/shared/constants";
 import { logger } from "@openstarter/shared/logger";

@@ -1,6 +1,6 @@
 // apps/extension/src/lib/i18n.ts —— Locale detection for the extension.
 // Fallback chain: cookie → browser.i18n.getUILanguage() → DEFAULT_LOCALE.
-import { DEFAULT_LOCALE } from "@openstarter/i18n";
+import { DEFAULT_LOCALE } from "@openstarter/i18n-web";
 
 const COOKIE_NAME = "openstarter.locale";
 
@@ -10,7 +10,7 @@ const COOKIE_NAME = "openstarter.locale";
  * Priority:
  * 1. Cookie 'openstarter.locale' (set by setLocale() from the web app)
  * 2. browser.i18n.getUILanguage() (browser's UI language)
- * 3. DEFAULT_LOCALE (from @openstarter/i18n, typically "en")
+ * 3. DEFAULT_LOCALE (from @openstarter/i18n-web, typically "en")
  */
 export async function getLocale(appUrl: string): Promise<string> {
   try {

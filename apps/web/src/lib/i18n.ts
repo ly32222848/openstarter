@@ -1,5 +1,5 @@
 // Locale-aware message helpers built on the Paraglide runtime that the vite
-// plugin compiles into src/paraglide from the shared packages/i18n catalog.
+// plugin compiles into src/paraglide from the shared packages/i18n/web catalog.
 //
 // Prefer static access — `m["ns.key"]()` — wherever the key is known at author
 // time: it lets Paraglide tree-shake unused messages. Use tDynamic only for

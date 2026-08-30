@@ -1,5 +1,5 @@
 // 邮件模板本地化：将任意 locale 字符串收敛为模板支持的语言（en/zh）。
-// 与 @openstarter/i18n 的受支持语言集合（en/zh，默认 en）保持一致，
+// 与 @openstarter/i18n-web 的受支持语言集合（en/zh，默认 en）保持一致，
 // 但本文件零外部依赖，避免让 @openstarter/email 根导出被 i18n 运行时耦合。
 // Requirements: 22.5、22.6。
 

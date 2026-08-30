@@ -1,4 +1,4 @@
-import type { TranslationKey } from "@openstarter/i18n";
+import type { TranslationKey } from "@openstarter/i18n-web";
 // biome-ignore lint/performance/noNamespaceImport: zod 的 z.infer 等类型助手以命名空间形式导出，具名导入会丢失部分类型推断；沿用 packages/auth/src/env.ts 同款写法。
 import * as z from "zod";
 import type { AuthErrorCode } from "./server";

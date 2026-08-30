@@ -21,7 +21,7 @@
     "@openstarter/billing-web": "workspace:*",
     "@openstarter/db": "workspace:*",
     "@openstarter/email": "workspace:*",
-    "@openstarter/i18n": "workspace:*",
+    "@openstarter/i18n-web": "workspace:*",
     "@openstarter/shared": "workspace:*",
     "better-auth": "catalog:",
     "dotenv": "catalog:",

@@ -20,7 +20,7 @@
     "@openstarter/analytics-web": "workspace:*",
     "@openstarter/api": "workspace:*",
     "@openstarter/auth": "workspace:*",
-    "@openstarter/i18n": "workspace:*",
+    "@openstarter/i18n-web": "workspace:*",
     "@openstarter/ui-web": "workspace:*",
     "@tailwindcss/vite": "^4.2.2",
     "@tanstack/react-form": "^1.28.0",

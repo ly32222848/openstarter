@@ -11,7 +11,7 @@
 // （会编译成 undefined），故回退 window.location.origin，避免客户端导航时
 // canonical 指向 http://localhost:3000。
 
-import { DEFAULT_LOCALE, SUPPORTED_LOCALES, type SupportedLocale } from "@openstarter/i18n";
+import { DEFAULT_LOCALE, SUPPORTED_LOCALES, type SupportedLocale } from "@openstarter/i18n-web";
 
 import { BRAND_DESCRIPTION, BRAND_NAME } from "@/lib/branding";
 import { getLocale, localizeUrl } from "@/paraglide/runtime.js";
