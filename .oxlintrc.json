@@ -23,6 +23,12 @@
       "rules": {
         "@typescript-eslint/no-explicit-any": "off"
       }
+    },
+    {
+      "files": ["packages/ui/mobile/**"],
+      "rules": {
+        "import/namespace": "off"
+      }
     }
   ]
 }
