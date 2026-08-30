@@ -427,15 +427,9 @@ importers:
       hono:
         specifier: 'catalog:'
         version: 4.12.27
-      i18next:
-        specifier: 'catalog:'
-        version: 26.4.0(typescript@6.0.3)
       react:
         specifier: 'catalog:'
         version: 19.2.7
-      react-i18next:
-        specifier: 'catalog:'
-        version: 17.0.12(i18next@26.4.0(typescript@6.0.3))(react-dom@19.2.7(react@19.2.7))(react-native@0.86.2(@babel/core@7.29.7)(@react-native/metro-config@0.86.2(@babel/core@7.29.7))(@types/react@19.2.17)(react@19.2.7))(react@19.2.7)(typescript@6.0.3)
       react-native:
         specifier: 0.86.2
         version: 0.86.2(@babel/core@7.29.7)(@react-native/metro-config@0.86.2(@babel/core@7.29.7))(@types/react@19.2.17)(react@19.2.7)
@@ -810,6 +804,16 @@ importers:
         version: 6.0.3
 
   packages/i18n/mobile:
+    dependencies:
+      i18next:
+        specifier: 'catalog:'
+        version: 26.4.0(typescript@6.0.3)
+      react:
+        specifier: '*'
+        version: 19.2.7
+      react-i18next:
+        specifier: 'catalog:'
+        version: 17.0.12(i18next@26.4.0(typescript@6.0.3))(react@19.2.7)(typescript@6.0.3)
     devDependencies:
       typescript:
         specifier: 'catalog:'
@@ -25977,7 +25981,7 @@ snapshots:
     dependencies:
       react: 19.2.7
 
-  react-i18next@17.0.12(i18next@26.4.0(typescript@6.0.3))(react-dom@19.2.7(react@19.2.7))(react-native@0.86.2(@babel/core@7.29.7)(@react-native/metro-config@0.86.2(@babel/core@7.29.7))(@types/react@19.2.17)(react@19.2.7))(react@19.2.7)(typescript@6.0.3):
+  react-i18next@17.0.12(i18next@26.4.0(typescript@6.0.3))(react@19.2.7)(typescript@6.0.3):
     dependencies:
       '@babel/runtime': 7.29.7
       html-parse-stringify: 4.0.1
@@ -25985,8 +25989,6 @@ snapshots:
       react: 19.2.7
       use-sync-external-store: 1.6.0(react@19.2.7)
     optionalDependencies:
-      react-dom: 19.2.7(react@19.2.7)
-      react-native: 0.86.2(@babel/core@7.29.7)(@react-native/metro-config@0.86.2(@babel/core@7.29.7))(@types/react@19.2.17)(react@19.2.7)
       typescript: 6.0.3
 
   react-is@17.0.2: {}

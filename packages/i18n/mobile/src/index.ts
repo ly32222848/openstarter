@@ -1,25 +1,20 @@
-// @openstarter/i18n-mobile —— 移动端专用的 i18next 翻译资源与受支持语言集合。
+// @openstarter/i18n-mobile —— 移动端专用的 i18next 翻译资源与运行时。
 // 与 packages/i18n/web（Web/扩展端，inlang/Paraglide）相互独立：
-// 移动端采用 i18next + react-i18next，本包提供 resources（i18next 资源结构）
-// 与 locale 常量，消息文件（messages/{locale}.json）可按端各自演化。
-// 位于 auth 依赖层之下，不依赖 packages/api、packages/auth。
+// 移动端采用 i18next + react-i18next，本包统一持有 i18next 技术栈（依赖声明、
+// 运行时初始化、resources 与 locale 常量），消息文件（messages/{locale}.json）
+// 可按端各自演化。位于 auth 依赖层之下，不依赖 packages/api、packages/auth。
+//
+// 业务侧（apps/mobile）不直接依赖 i18next/react-i18next：
+//   - 初始化：initI18next({ initialLocale })
+//   - 组件内取译文：useTranslation()（react-i18next re-export）
+//   - 命令式操作（changeLanguage 等）：i18next 实例
 
-// 受支持的界面语言集合（en/zh）。消息文件（messages/{locale}.json）与
-// resources 导出的语言键保持一致。
-export const SUPPORTED_LOCALES = ["en", "zh"] as const;
+// 受支持语言集合与类型。
+export * from "./locales";
 
-// 受支持 locale 的字面量联合类型。
-export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
+// i18next 运行时：初始化入口与实例。
+export { i18next, initI18next } from "./runtime";
 
-// 基准/兜底默认语言（i18next 的 fallbackLng）。移动端初始语言由
-// expo-localization 的系统语言与本地用户偏好共同决定（见 apps/mobile/src/lib/locale.ts），
-// 此常量为无任何匹配时的最终回落值。
-export const DEFAULT_LOCALE: SupportedLocale = "en";
-
-// 翻译键类型：en/zh 消息文件覆盖相同键集合（键为带命名空间前缀的扁平字符串，
-// i18next 以 keySeparator: false 消费）。此处以 string 承载，
-// 供调用方按字符串键消费，不与具体消息键联合类型强耦合。
-export type TranslationKey = string;
-
-// i18next 资源（en/zh），供 apps/mobile 初始化 i18next 时直接注入。
-export { resources } from "./resources";
+// react-i18next 全量 re-export：useTranslation / Trans / initReactI18next 等，
+// 保证组件与本包内 i18next 实例消费同一份模块。
+export * from "react-i18next";
