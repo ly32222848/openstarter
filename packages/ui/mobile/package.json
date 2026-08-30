@@ -45,6 +45,7 @@
   },
   "devDependencies": {
     "@types/react": "catalog:",
+    "nativewind": "4.2.6",
     "react-native-reanimated": "^4.6.0",
     "react-native-screens": "~4.26.2",
     "typescript": "catalog:"
