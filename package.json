@@ -40,10 +40,6 @@
     "seed:admin": "pnpm with-env pnpm --filter @openstarter/auth exec pnpm dlx tsx scripts/seed-admin.ts",
     "with-env": "dotenv -c --"
   },
-  "dependencies": {
-    "dotenv": "catalog:",
-    "zod": "catalog:"
-  },
   "devDependencies": {
     "@types/node": "catalog:",
     "@vitest/coverage-v8": "4.1.10",
