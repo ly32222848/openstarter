@@ -2,13 +2,14 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { PortalHost } from "@openstarter/ui-mobile";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import "../../global.css";
 
 import { ConfigError } from "@/components/config-error";
 import { getEnv } from "@/lib/env";
+import { initAnalyticsFromApi } from "@/lib/analytics";
 import { useAppLocale } from "@/lib/i18n";
 import { useThemePreference } from "@/lib/theme";
 
@@ -20,6 +21,11 @@ export default function RootLayout() {
   // 两个钩子必须无条件调用（React hooks 规则），因此放在 env 分支之前。
   useThemePreference();
   useAppLocale();
+
+  // 分析初始化：配置拉取失败等价于未配置，静默跳过（fire-and-forget）。
+  useEffect(() => {
+    void initAnalyticsFromApi();
+  }, []);
 
   if (!env.ok) {
     return (
