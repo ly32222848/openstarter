@@ -2,19 +2,22 @@
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
   "tasks": {
+    "transit": {
+      "dependsOn": ["^transit"]
+    },
     "build": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["^build", "transit"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": ["dist/**", "src/routeTree.gen.ts", ".output/**"]
     },
     "check-types": {
-      "dependsOn": ["^check-types"]
+      "dependsOn": ["transit"]
     },
     "test": {
-      "dependsOn": ["^test"]
+      "dependsOn": ["transit"]
     },
     "test:coverage": {
-      "dependsOn": ["^test:coverage"],
+      "dependsOn": ["transit"],
       "outputs": ["coverage/**"]
     },
     "dev": {
@@ -48,6 +51,17 @@
     },
     "db:local": {
       "cache": false
+    },
+    "seed:admin": {
+      "cache": false
+    },
+    "package": {
+      "dependsOn": ["build"],
+      "cache": false
+    },
+    "release": {
+      "dependsOn": ["build"],
+      "cache": false
     }
   },
   "globalEnv": [
@@ -58,5 +72,34 @@
     "URL",
     "DEFAULT_LOCALE",
     "OPENSTARTER_API_URL"
-  ]
+  ],
+  "boundaries": {
+    "tags": {
+      "app": {
+        "dependencies": {
+          "deny": ["app"]
+        }
+      },
+      "platform:web": {
+        "dependencies": {
+          "deny": ["platform:mobile", "platform:extension"]
+        }
+      },
+      "platform:mobile": {
+        "dependencies": {
+          "deny": ["platform:web", "platform:extension"]
+        }
+      },
+      "platform:extension": {
+        "dependencies": {
+          "deny": ["platform:web", "platform:mobile"]
+        }
+      },
+      "core": {
+        "dependencies": {
+          "deny": ["platform:mobile", "platform:extension", "app"]
+        }
+      }
+    }
+  }
 }
