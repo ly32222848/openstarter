@@ -65,7 +65,7 @@ export async function createFirebaseProvider(): Promise<AnalyticsProvider> {
       async setScreenName(name: string, params?: EventProperties): Promise<void> {
         try {
           // 映射为 screen_view 自定义事件而非 logScreenView：__DEV__ 下
-          // logScreenView 按superstruct ScreenView 结构校验（只认
+          // logScreenView 按 superstruct ScreenView 结构校验（只认
           // screen_class/screen_name），附加 params 会抛错、事件被静默
           // 丢弃；logEvent 仅校验事件名与 params 的对象性，附加字段
           // 全平台透传。
