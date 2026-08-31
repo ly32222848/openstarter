@@ -7,7 +7,7 @@
 // 平台级授权仅依通配符 RBAC，与 organization 解耦。ssr:false 对齐 _app（认证态在客户端解析）。
 
 import { cn } from "@openstarter/ui-web/lib/utils";
-import { createFileRoute, Link, Outlet, redirect, useRouterState } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, redirect } from "@tanstack/react-router";
 
 import { client } from "@/lib/api";
 import { authClient } from "@/lib/auth-client";
@@ -92,7 +92,6 @@ export const Route = createFileRoute("/admin")({
 
 function AdminLayout() {
   const { permissions } = Route.useRouteContext();
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   const visibleGroups = ADMIN_NAV.map((group) => ({
     group: group.group,
@@ -114,24 +113,21 @@ function AdminLayout() {
                 {group.group}
               </p>
               <div className="flex flex-col gap-0.5">
-                {group.items.map((item) => {
-                  const active =
-                    item.to === "/admin" ? pathname === "/admin" : pathname.startsWith(item.to);
-                  return (
-                    <Link
-                      className={cn(
-                        "rounded-md px-2 py-1.5 text-sm transition-colors",
-                        active
-                          ? "bg-muted font-medium text-foreground"
-                          : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
-                      )}
-                      key={item.to}
-                      to={item.to}
-                    >
-                      {item.label}
-                    </Link>
-                  );
-                })}
+                {group.items.map((item) => (
+                  <Link
+                    // Dashboard 是列表入口的父路径，仅精确匹配时高亮，避免 /admin/xxx 误点亮。
+                    activeOptions={{ exact: item.to === "/admin" }}
+                    className={cn(
+                      "rounded-md px-2 py-1.5 text-sm transition-colors",
+                      "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+                      "data-[status=active]:bg-muted data-[status=active]:font-medium data-[status=active]:text-foreground",
+                    )}
+                    key={item.to}
+                    to={item.to}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
               </div>
             </div>
           ))}

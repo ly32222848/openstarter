@@ -21,9 +21,7 @@ function createQueryClient() {
         }
         // 不透传原始 error.message（可能泄漏内部实现/网络细节）；
         // 仅 DEV 环境保留原始信息便于排查。
-        const message = import.meta.env.DEV
-          ? error.message
-          : m["common.error.message"]();
+        const message = import.meta.env.DEV ? error.message : m["common.error.message"]();
         toast.error(message, {
           action: {
             label: m["common.error.retry"](),
@@ -44,6 +42,8 @@ export const getRouter = () => {
   const router = createTanStackRouter({
     routeTree,
     scrollRestoration: true,
+    // Link 悬停/聚焦时预加载目标路由（intent）；配合 staleTime:0 让预加载的数据始终最新。
+    defaultPreload: "intent",
     defaultPreloadStaleTime: 0,
     context: { queryClient },
     // Paraglide owns locale prefixes: incoming URLs are de-localized before

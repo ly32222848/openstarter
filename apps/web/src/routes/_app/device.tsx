@@ -15,12 +15,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 
 import { m } from "@/paraglide/messages.js";
-import {
-  approveDevice,
-  claimDevice,
-  denyDevice,
-  DeviceFlowError,
-} from "@/modules/device/lib/api";
+import { approveDevice, claimDevice, denyDevice, DeviceFlowError } from "@/modules/device/lib/api";
 
 type Phase = "claiming" | "ready" | "approving" | "approved" | "denied" | "error";
 

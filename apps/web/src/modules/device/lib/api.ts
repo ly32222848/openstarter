@@ -42,10 +42,9 @@ async function assertOk(res: Response): Promise<void> {
 
 /** 把当前登录会话 claim 到该设备码（GET /api/auth/device）。 */
 export async function claimDevice(userCode: string): Promise<void> {
-  const res = await fetch(
-    `${DEVICE_ENDPOINT_BASE}?user_code=${encodeURIComponent(userCode)}`,
-    { method: "GET" },
-  );
+  const res = await fetch(`${DEVICE_ENDPOINT_BASE}?user_code=${encodeURIComponent(userCode)}`, {
+    method: "GET",
+  });
   await assertOk(res);
 }
 

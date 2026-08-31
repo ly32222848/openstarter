@@ -199,9 +199,7 @@ describe("renderMarkdown", () => {
     it("keeps anchor and relative links clickable", () => {
       expect(renderMarkdown("[top](#top)")).toBe('<p><a href="#top">top</a></p>');
       expect(renderMarkdown("[docs](/docs)")).toBe('<p><a href="/docs">docs</a></p>');
-      expect(renderMarkdown("[bare](next-section)")).toBe(
-        '<p><a href="next-section">bare</a></p>',
-      );
+      expect(renderMarkdown("[bare](next-section)")).toBe('<p><a href="next-section">bare</a></p>');
     });
   });
 
