@@ -40,7 +40,7 @@ openstarter/
 │   │   └── mobile/        # @openstarter/i18n-mobile (mobile-specific)
 │   ├── shared/            # Constants, validators, utilities, logger
 │   ├── storage/           # S3/R2 storage abstractions
-│   ├── analytics/         # Event tracking (web, mobile, extension variants)
+│   ├── analytics/         # Event tracking (web + mobile variants; mobile is a single package with dual adapters: OpenPanel + GA4 Firebase)
 │   ├── monitoring/        # Error tracking (web, mobile, extension variants)
 │   ├── notifications/     # Notification providers
 │   └── ui/                # shadcn components, Tailwind (web, mobile variants)
