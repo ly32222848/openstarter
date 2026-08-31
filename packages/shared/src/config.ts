@@ -216,6 +216,13 @@ export function getSettingGroups(): SettingGroup[] {
       title: "Plausible",
     },
     {
+      description:
+        "OpenPanel product analytics. The RN SDK officially requires the clientSecret in the client; rotate it in the OpenPanel dashboard anytime",
+      name: "openpanel",
+      tab: "analytics",
+      title: "OpenPanel",
+    },
+    {
       description: "Crisp live chat widget",
       name: "crisp",
       tab: "customer_service",
@@ -912,6 +919,33 @@ export function getSettings(): Setting[] {
       tip: "Use https://plausible.io/js/script.js for cloud, or your self-hosted URL",
       title: "Script Src",
       type: "text",
+    },
+
+    // Analytics / OpenPanel（移动端）
+    {
+      group: "openpanel",
+      name: "openpanel_client_id",
+      placeholder: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+      tab: "analytics",
+      tip: "Client ID from your OpenPanel dashboard",
+      title: "Client ID",
+      type: "text",
+    },
+    {
+      group: "openpanel",
+      name: "openpanel_client_secret",
+      placeholder: "xxxxxxxx",
+      tab: "analytics",
+      tip: "Required by the official RN SDK; rotate in the OpenPanel dashboard",
+      title: "Client Secret",
+      type: "password",
+    },
+    {
+      group: "google_analytics",
+      name: "ga_mobile_enabled",
+      tab: "analytics",
+      title: "Enable Mobile (Firebase)",
+      type: "switch",
     },
 
     // Customer Service / Crisp

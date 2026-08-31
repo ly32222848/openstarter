@@ -33,11 +33,19 @@ export interface AdminMetrics {
 }
 
 /**
- * 公开分析配置（R25.1/R25.2 数据面）：仅含分析供应商标识与度量 ID（非敏感）。
- * 空字符串表示未配置该供应商——apps/web 据此决定是否注入对应脚本。
+ * 公开分析配置（R25.1/R25.2 数据面 + 移动端扩展）：仅含分析供应商标识与
+ * 度量 ID（非敏感）。空字符串表示未配置该供应商——apps/web 据此决定是否注入
+ * 对应脚本，apps/mobile 据此决定是否初始化对应 SDK。
+ *
+ * 移动端三键的设计决策（spec §6）：openpanel_client_secret 经公开端点下发是
+ * **有意的** —— 官方 RN SDK 即要求 clientSecret 进客户端（认证用），暴露面与
+ * 打进 app bundle 等价；该 secret 可在 OpenPanel 面板随时轮换。
  */
 export interface PublicAnalyticsConfig {
+  gaMobileEnabled: boolean;
   googleAnalyticsId: string;
+  openpanelClientId: string;
+  openpanelClientSecret: string;
   plausibleDomain: string;
   plausibleSrc: string;
 }
@@ -85,13 +93,17 @@ export async function getAdminMetrics(): Promise<AdminMetrics> {
 }
 
 /**
- * 读取公开分析配置（R25.1/R25.2 数据面）：从 Config 取分析供应商标识与度量 ID，去空白后返回；
+ * 读取公开分析配置：从 Config 取分析供应商标识与度量 ID，去空白后返回；
  * 未配置项为空字符串。**绝不**下发其它（含敏感）配置项——仅白名单内的分析键。
+ * `ga_mobile_enabled` 严格 `=== "true"`（与开关语义一致），映射为 boolean。
  */
 export async function getPublicAnalyticsConfig(): Promise<PublicAnalyticsConfig> {
   const configs = await getAllConfigs();
   return {
+    gaMobileEnabled: configs.ga_mobile_enabled === "true",
     googleAnalyticsId: configs.google_analytics_id?.trim() ?? "",
+    openpanelClientId: configs.openpanel_client_id?.trim() ?? "",
+    openpanelClientSecret: configs.openpanel_client_secret?.trim() ?? "",
     plausibleDomain: configs.plausible_domain?.trim() ?? "",
     plausibleSrc: configs.plausible_src?.trim() ?? "",
   };

@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
+  getSettingGroups,
   isMaskedConfigValue,
   isSecretConfigKey,
   maskConfigValue,
@@ -67,5 +68,20 @@ describe("isSecretConfigKey suffix detection", () => {
 
   it.each(NON_SECRET_NAMES)("flags %s as non-secret", (name) => {
     expect(isSecretConfigKey(name)).toBe(false);
+  });
+});
+
+describe("getSettingGroups — mobile analytics groups", () => {
+  it("exposes the openpanel group on the analytics tab", () => {
+    const groups = getSettingGroups();
+    const openpanel = groups.find((g) => g.name === "openpanel");
+    expect(openpanel?.tab).toBe("analytics");
+    expect(openpanel?.title).toBe("OpenPanel");
+  });
+
+  it("keeps google_analytics group on the analytics tab (hosts ga_mobile_enabled)", () => {
+    const groups = getSettingGroups();
+    const ga = groups.find((g) => g.name === "google_analytics");
+    expect(ga?.tab).toBe("analytics");
   });
 });
