@@ -13,7 +13,9 @@ import { defineConfig } from "vite";
 // packages/i18n/web) into the locale runtime consumed here in apps/web. The
 // inlang project + messages live in packages/i18n/web; the compiled runtime
 // lands in src/paraglide (git-ignored, regenerated on every dev/build).
-const inlangProject = fileURLToPath(new URL("../../packages/i18n/web/project.inlang", import.meta.url));
+const inlangProject = fileURLToPath(
+  new URL("../../packages/i18n/web/project.inlang", import.meta.url),
+);
 
 // Cloudflare Workers build (`pnpm cf:build`, NITRO_PRESET=cloudflare_module):
 // stub out DB drivers that don't match the runtime database. mysql2 crashes
