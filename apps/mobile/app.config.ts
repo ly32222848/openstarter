@@ -20,7 +20,8 @@ const config: ExpoConfig = {
   // expo-router 插件启用文件式路由。
   // expo-iap 插件为 IAP 调整 Android Kotlin 版本等构建配置；react-native-purchases
   // 无需 plugin，仅要求 dev client/prebuild（StoreKit 能力在 Xcode 侧启用）。
-  plugins: ["expo-router", "expo-secure-store", "expo-iap"],
+  // with-firebase-config 在两个 Firebase 配置文件都缺失时 no-op。
+  plugins: ["expo-router", "expo-secure-store", "expo-iap", "./plugins/with-firebase-config"],
   scheme: "openstarter",
   slug: "openstarter",
   userInterfaceStyle: "automatic",
