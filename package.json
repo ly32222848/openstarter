@@ -28,7 +28,7 @@
     "build:extension": "pnpm with-env turbo run -F extension build",
     "build:mobile": "pnpm with-env turbo run -F mobile build",
     "build:cli": "pnpm with-env turbo run -F @openstarter/cli build",
-    "build:mini-app": "pnpm with-env turbo run -F mini-app build:mini-app",
+    "build:mini-app": "pnpm with-env turbo run -F mini-app build",
     "build:desktop": "pnpm with-env pnpm --filter desktop build",
     "package:desktop": "pnpm with-env pnpm --filter desktop package",
     "release:desktop": "pnpm with-env pnpm --filter desktop release",
