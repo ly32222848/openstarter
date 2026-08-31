@@ -55,23 +55,23 @@ boring 80% that every SaaS needs but nobody wants to build:
 
 ## Tech Stack
 
-| Layer | Technology |
-| --- | --- |
-| Framework | TanStack Start + TanStack Router (file-based, SSR) |
-| Backend | Hono (mounted at `/api/*`, RPC client) |
-| Auth | Better-Auth (sessions, OAuth, 2FA, passkey, orgs) |
-| Database | Drizzle ORM — SQLite / Turso (libSQL) / Postgres / MySQL |
-| UI | shadcn + Base UI primitives, Tailwind CSS v4, next-themes |
-| Monorepo | Turborepo + pnpm workspaces |
-| Desktop | Electron (electron-builder + auto-update) |
-| Mobile | Expo (React Native) |
-| Extension | WXT + React |
-| Mini-App | Taro (WeChat) |
-| Email | Resend + Cloudflare, React Email |
-| Payments | Stripe, PayPal, Alipay, WeChat Pay |
-| i18n | inlang / Paraglide (web, extension)、i18next + react-i18next (mobile) |
-| Testing | Vitest + fast-check |
-| Linting | oxlint + oxfmt |
+| Layer     | Technology                                                            |
+| --------- | --------------------------------------------------------------------- |
+| Framework | TanStack Start + TanStack Router (file-based, SSR)                    |
+| Backend   | Hono (mounted at `/api/*`, RPC client)                                |
+| Auth      | Better-Auth (sessions, OAuth, 2FA, passkey, orgs)                     |
+| Database  | Drizzle ORM — SQLite / Turso (libSQL) / Postgres / MySQL              |
+| UI        | shadcn + Base UI primitives, Tailwind CSS v4, next-themes             |
+| Monorepo  | Turborepo + pnpm workspaces                                           |
+| Desktop   | Electron (electron-builder + auto-update)                             |
+| Mobile    | Expo (React Native)                                                   |
+| Extension | WXT + React                                                           |
+| Mini-App  | Taro (WeChat)                                                         |
+| Email     | Resend + Cloudflare, React Email                                      |
+| Payments  | Stripe, PayPal, Alipay, WeChat Pay                                    |
+| i18n      | inlang / Paraglide (web, extension)、i18next + react-i18next (mobile) |
+| Testing   | Vitest + fast-check                                                   |
+| Linting   | oxlint + oxfmt                                                        |
 
 ## Project Structure
 

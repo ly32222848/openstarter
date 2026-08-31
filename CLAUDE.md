@@ -5,6 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project Overview
 
 openstarter is a production-ready full-stack SaaS starter built with:
+
 - **Monorepo**: Turborepo + pnpm workspaces
 - **Framework**: TanStack Start + TanStack Router (web)
 - **Backend**: Hono RPC API mounted at `/api/*`
@@ -83,6 +84,7 @@ src/
 ### Module Pattern
 
 Each domain module follows this pattern:
+
 ```
 modules/{domain}/
 ├── router.ts              # Hono router (includes route definitions + validation)
@@ -91,6 +93,7 @@ modules/{domain}/
 ```
 
 For larger modules with sub-domains:
+
 ```
 modules/{domain}/
 ├── router.ts              # Domain aggregator router
@@ -103,11 +106,13 @@ modules/{domain}/
 ### Schema Organization
 
 Shared schemas are centralized in `src/schema/shared.ts`:
+
 - `idParam` — standard ID parameter schema
 - `paginationSchema` — default pagination (page + pageSize)
 - `createPaginationSchema(max, default)` — custom pagination
 
 Routers extend these with domain-specific fields:
+
 ```ts
 const listQuery = paginationSchema.extend({
   status: z.enum(STATUS_VALUES).optional(),
@@ -117,22 +122,23 @@ const listQuery = paginationSchema.extend({
 
 ## Commands
 
-| Task | Command |
-| --- | --- |
-| **Install deps** | `pnpm install` |
-| **Dev (all/specific)** | `pnpm dev` / `pnpm --filter web dev` |
-| **Build (all/specific)** | `pnpm build` / `pnpm --filter api build` |
-| **Lint / Format** | `pnpm lint` / `pnpm format` |
-| **Lint fix / Format fix** | `pnpm lint:fix` / `pnpm format:fix` |
-| **Test (all/specific)** | `pnpm test` / `pnpm --filter @openstarter/api test` |
-| **Test coverage** | `pnpm test:coverage` |
-| **Type check** | `pnpm check-types` |
-| **Database** | `pnpm with-env pnpm -F @workspace/db db:migrate` |
-| **Services** | `pnpm services:setup` / `services:start` / `services:stop` |
+| Task                      | Command                                                    |
+| ------------------------- | ---------------------------------------------------------- |
+| **Install deps**          | `pnpm install`                                             |
+| **Dev (all/specific)**    | `pnpm dev` / `pnpm --filter web dev`                       |
+| **Build (all/specific)**  | `pnpm build` / `pnpm --filter api build`                   |
+| **Lint / Format**         | `pnpm lint` / `pnpm format`                                |
+| **Lint fix / Format fix** | `pnpm lint:fix` / `pnpm format:fix`                        |
+| **Test (all/specific)**   | `pnpm test` / `pnpm --filter @openstarter/api test`        |
+| **Test coverage**         | `pnpm test:coverage`                                       |
+| **Type check**            | `pnpm check-types`                                         |
+| **Database**              | `pnpm with-env pnpm -F @workspace/db db:migrate`           |
+| **Services**              | `pnpm services:setup` / `services:start` / `services:stop` |
 
 ## Environment
 
 Create `.env` at the repo root with required variables:
+
 - `DATABASE_URL` — SQLite/Postgres/MySQL connection string
 - `PRODUCT_NAME` — Used in emails, marketing site
 - `URL` — Deployment base URL
@@ -155,6 +161,7 @@ See apps/web and packages/auth for app-specific env vars.
 ### RPC Type Safety
 
 The API uses Hono RPC for end-to-end type safety:
+
 ```ts
 // Backend: export the Hono app type
 export type AppType = typeof routes;
@@ -183,11 +190,13 @@ const { data } = await client.user.orders.$get({ query: { page: 1 } });
 ## Recent Optimizations (Phase 2 & 3)
 
 ### Phase 2: Module Reorganization
+
 - Moved top-level service folders into `modules/` for domain cohesion
 - Each domain now colocates router + service (e.g., `modules/user/router.ts` + `modules/user/service.ts`)
 - Enables isolated testing and clear ownership per domain
 
 ### Phase 3: Schema Centralization
+
 - Extracted repeated schemas to `src/schema/shared.ts` (pagination, idParam)
 - Routers now `.extend()` shared schemas instead of duplicating definitions
 - Eliminates ~27 lines of boilerplate across modules
@@ -199,6 +208,7 @@ const { data } = await client.user.orders.$get({ query: { page: 1 } });
 - **Coverage target** — 80%+ for critical paths (auth, billing, api)
 
 Run specific test:
+
 ```bash
 pnpm --filter @openstarter/api test -- path/to/test.test.ts
 ```
@@ -206,6 +216,7 @@ pnpm --filter @openstarter/api test -- path/to/test.test.ts
 ## Deployment
 
 Apps share one Hono backend at `/api/*`. Deploy patterns:
+
 - **Web**: Vercel (Next.js App Router via TanStack Start), Cloudflare Workers, self-hosted Node
 - **Desktop**: electron-builder auto-update
 - **Mobile**: EAS (Expo Application Services)
@@ -217,9 +228,9 @@ Database migrations run on startup via `@openstarter/db/src/scripts/migrate.ts`.
 
 ## Troubleshooting
 
-| Issue | Fix |
-| --- | --- |
-| Env vars not loaded | Create `.env` at repo root; use `pnpm with-env` for migrations |
-| Module resolution fails | `pnpm clean && pnpm install` |
-| Type errors in IDE | `pnpm check-types`; restart TS server |
-| Tests fail on import | Verify workspace alias in `tsconfig.json` (check `@openstarter/*` → `packages/*/src`) |
+| Issue                   | Fix                                                                                   |
+| ----------------------- | ------------------------------------------------------------------------------------- |
+| Env vars not loaded     | Create `.env` at repo root; use `pnpm with-env` for migrations                        |
+| Module resolution fails | `pnpm clean && pnpm install`                                                          |
+| Type errors in IDE      | `pnpm check-types`; restart TS server                                                 |
+| Tests fail on import    | Verify workspace alias in `tsconfig.json` (check `@openstarter/*` → `packages/*/src`) |

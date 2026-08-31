@@ -25,7 +25,9 @@ const APP_URL_FALLBACK = "http://localhost:3000";
 // packages/i18n/web) into the locale runtime consumed here in the extension.
 // The inlang project + messages live in packages/i18n/web; the compiled
 // runtime lands in src/paraglide (git-ignored, regenerated on every dev/build).
-const inlangProject = fileURLToPath(new URL("../../packages/i18n/web/project.inlang", import.meta.url));
+const inlangProject = fileURLToPath(
+  new URL("../../packages/i18n/web/project.inlang", import.meta.url),
+);
 
 function resolveAppUrl(): string {
   if (process.env.VITE_APP_URL) {
