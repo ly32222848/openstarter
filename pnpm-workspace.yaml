@@ -44,4 +44,13 @@ catalog:
   uuid: ^13.0.0
   zod: ^4.1.13
 
-onlyBuiltDependencies: '["esbuild","msw","sharp","workerd","electron","@tarojs/binding","@tarojs/cli","core-js","core-js-pure"]'
+onlyBuiltDependencies:
+  - esbuild
+  - msw
+  - sharp
+  - workerd
+  - electron
+  - "@tarojs/binding"
+  - "@tarojs/cli"
+  - core-js
+  - core-js-pure

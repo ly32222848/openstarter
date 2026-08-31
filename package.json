@@ -3,7 +3,8 @@
   "private": true,
   "workspaces": [
     "apps/*",
-    "packages/*"
+    "packages/*",
+    "packages/*/*"
   ],
   "type": "module",
   "scripts": {
@@ -52,18 +53,5 @@
     "typescript": "catalog:",
     "vitest": "4.1.10"
   },
-  "packageManager": "pnpm@10.25.0",
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "esbuild",
-      "msw",
-      "sharp",
-      "workerd",
-      "electron",
-      "@tarojs/binding",
-      "@tarojs/cli",
-      "core-js",
-      "core-js-pure"
-    ]
-  }
+  "packageManager": "pnpm@10.25.0"
 }
