@@ -7,6 +7,7 @@ import { authSchema, organizationTeams } from "./auth-database-schema";
 
 const EXPECTED_AUTH_MODELS = [
   "account",
+  "deviceCode",
   "invitation",
   "member",
   "organization",

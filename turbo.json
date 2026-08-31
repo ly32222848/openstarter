@@ -7,8 +7,8 @@
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": ["dist/**", "src/routeTree.gen.ts", ".output/**"]
     },
-    "lint": {
-      "dependsOn": ["^lint"]
+    "check-types": {
+      "dependsOn": ["^check-types"]
     },
     "test": {
       "dependsOn": ["^test"]
@@ -16,9 +16,6 @@
     "test:coverage": {
       "dependsOn": ["^test:coverage"],
       "outputs": ["coverage/**"]
-    },
-    "check-types": {
-      "dependsOn": ["^check-types"]
     },
     "dev": {
       "cache": false,
@@ -43,8 +40,7 @@
       "cache": false
     },
     "db:migrate": {
-      "cache": false,
-      "persistent": true
+      "cache": false
     },
     "db:studio": {
       "cache": false,
@@ -52,15 +48,6 @@
     },
     "db:local": {
       "cache": false
-    },
-    "dev:mini-app": {
-      "cache": false,
-      "persistent": true
-    },
-    "build:mini-app": {
-      "dependsOn": ["^build"],
-      "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": [".temp/**", "dist/**"]
     }
   },
   "globalEnv": [

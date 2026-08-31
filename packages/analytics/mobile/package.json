@@ -17,6 +17,9 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {},
+  "devDependencies": {
+    "typescript": "catalog:"
+  },
   "peerDependencies": {
     "@openpanel/react-native": "*",
     "@react-native-firebase/analytics": "*",
@@ -27,11 +30,14 @@
     "react-native": "*"
   },
   "peerDependenciesMeta": {
-    "@openpanel/react-native": { "optional": true },
-    "@react-native-firebase/analytics": { "optional": true },
-    "@react-native-firebase/app": { "optional": true }
-  },
-  "devDependencies": {
-    "typescript": "catalog:"
+    "@openpanel/react-native": {
+      "optional": true
+    },
+    "@react-native-firebase/analytics": {
+      "optional": true
+    },
+    "@react-native-firebase/app": {
+      "optional": true
+    }
   }
 }

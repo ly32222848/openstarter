@@ -11,14 +11,12 @@ concurrency:
   group: ci-${{ github.ref }}
 
 jobs:
-  quality:
+  lint-format:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
@@ -30,19 +28,85 @@ jobs:
           node-version: 22
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      - name: Run tests
-        run: pnpm test
-      - name: Collect coverage
-        run: pnpm test:coverage
-      - name: Generate route tree
-        run: pnpm generate:routes
-      - name: Check types
-        run: pnpm exec turbo check-types
       - name: Check formatting and lint
         run: |
           pnpm format:check
           pnpm lint
+
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # --affected needs the base commit for comparison
+          fetch-depth: 2
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.25.0
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          cache: pnpm
+          node-version: 22
+      - name: Setup turbo cache
+        uses: rharkor/caching-for-turbo@v1.9
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      # Coverage in a single pass — test and test:coverage run the same suites,
+      # so running both would execute every test twice.
+      - name: Run tests with coverage
+        run: pnpm with-env turbo run test:coverage ${{ github.event_name == 'pull_request' && '--affected' || '' }}
+
+  typecheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.25.0
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          cache: pnpm
+          node-version: 22
+      - name: Setup turbo cache
+        uses: rharkor/caching-for-turbo@v1.9
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Check types
+        run: pnpm with-env turbo run check-types ${{ github.event_name == 'pull_request' && '--affected' || '' }}
+
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.25.0
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          cache: pnpm
+          node-version: 22
+      - name: Setup turbo cache
+        uses: rharkor/caching-for-turbo@v1.9
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
       - name: Build Node target
-        run: pnpm build
+        run: pnpm with-env turbo run build ${{ github.event_name == 'pull_request' && '--affected' || '' }}
       - name: Build Cloudflare target
+        if: github.event_name == 'push'
         run: pnpm --filter web cf:build
