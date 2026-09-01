@@ -39,6 +39,7 @@
     "db:migrate": "pnpm with-env turbo run -F @openstarter/db db:migrate",
     "db:local": "pnpm with-env turbo run -F @openstarter/db db:local",
     "seed:admin": "pnpm with-env turbo run -F @openstarter/auth seed:admin",
+    "gen:package": "node scripts/gen-package.mjs",
     "with-env": "dotenv -c --"
   },
   "devDependencies": {
