@@ -161,6 +161,12 @@ export function getSettingGroups(): SettingGroup[] {
       title: "WeChat Pay",
     },
     {
+      description: "RevenueCat in-app purchase (mobile IAP)",
+      name: "revenuecat",
+      tab: "payment",
+      title: "RevenueCat",
+    },
+    {
       description: "Email provider selection",
       name: "email_general",
       tab: "email",
@@ -728,6 +734,32 @@ export function getSettings(): Setting[] {
       type: "number",
     },
 
+    // Payment / RevenueCat（移动端 IAP；webhook 验签与后台开关）。
+    {
+      group: "revenuecat",
+      name: "revenuecat_enabled",
+      tab: "payment",
+      title: "Enable RevenueCat",
+      type: "switch",
+    },
+    {
+      group: "revenuecat",
+      name: "revenuecat_webhook_secret",
+      placeholder: "whsec_xxx",
+      tab: "payment",
+      title: "Webhook Signing Secret",
+      type: "password",
+    },
+    {
+      group: "revenuecat",
+      name: "revenuecat_secret_api_key",
+      placeholder: "sk_xxx",
+      tab: "payment",
+      tip: "Reserved for future server-side entitlement verification.",
+      title: "Secret API Key",
+      type: "password",
+    },
+
     // Email / General
     {
       defaultValue: "resend",
@@ -1066,6 +1098,11 @@ export const envConfigs: ConfigMap = {
   paypal_client_secret: readEnv("PAYPAL_CLIENT_SECRET") ?? "",
   paypal_environment: readEnv("PAYPAL_ENVIRONMENT") ?? "sandbox",
   paypal_webhook_id: readEnv("PAYPAL_WEBHOOK_ID") ?? "",
+
+  // 支付 - RevenueCat（移动端 IAP）
+  revenuecat_enabled: readEnv("REVENUECAT_ENABLED") ?? "",
+  revenuecat_secret_api_key: readEnv("REVENUECAT_SECRET_API_KEY") ?? "",
+  revenuecat_webhook_secret: readEnv("REVENUECAT_WEBHOOK_SECRET") ?? "",
 
   // AI（Replicate 提供 env 兜底；OpenAI/Anthropic 仅后台配置以避免误用机器环境变量）
   replicate_api_token: readEnv("REPLICATE_API_TOKEN") ?? "",

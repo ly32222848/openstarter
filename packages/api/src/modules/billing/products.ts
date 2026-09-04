@@ -19,6 +19,12 @@ export interface ProductEntry {
   creditsValidDays?: number;
   /** 三字母小写货币代码。 */
   currency: string;
+  /**
+   * 商店商品 ID（可选）：App Store Connect 订阅产品 ID / Google Play
+   * `<subscription_id>:<base_plan_id>`。RevenueCat webhook 按它反查目录，
+   * 金额/积分仍以本目录为唯一事实来源。缺省表示未上架商店。
+   */
+  iapProductId?: string;
   /** 订阅周期单位（type=subscription 时必填）。 */
   interval?: "day" | "week" | "month" | "year";
   /** 订阅周期数（type=subscription 时可选，默认 1）。 */
@@ -39,6 +45,9 @@ export const PRODUCT_CATALOG: readonly ProductEntry[] = [
     amount: 2900,
     credits: 50_000,
     currency: "usd",
+    // App Store Connect 订阅产品 ID（与 productId 恒等；Google Play 为
+    // "<subscription_id>:<base_plan_id>" 形态，同样填这里）。
+    iapProductId: "pro_monthly",
     interval: "month",
     intervalCount: 1,
     planName: "Pro",
@@ -53,7 +62,19 @@ const PRODUCT_INDEX: ReadonlyMap<string, ProductEntry> = new Map(
   PRODUCT_CATALOG.map((entry) => [entry.productId, entry]),
 );
 
+/** 按商店商品 ID 索引（仅登记了 iapProductId 的条目参与），O(1) 反查。 */
+const IAP_PRODUCT_INDEX: ReadonlyMap<string, ProductEntry> = new Map(
+  PRODUCT_CATALOG.flatMap((entry) =>
+    entry.iapProductId ? [[entry.iapProductId, entry] as const] : [],
+  ),
+);
+
 /** 解析产品；未知 productId 返回 undefined（由调用方转为 400）。 */
 export function resolveProduct(productId: string): ProductEntry | undefined {
   return PRODUCT_INDEX.get(productId);
+}
+
+/** 按商店商品 ID（App Store / Google Play）反查产品；未登记返回 undefined。 */
+export function resolveProductByIapId(iapProductId: string): ProductEntry | undefined {
+  return IAP_PRODUCT_INDEX.get(iapProductId);
 }

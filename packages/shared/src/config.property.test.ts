@@ -85,3 +85,18 @@ describe("getSettingGroups — mobile analytics groups", () => {
     expect(ga?.tab).toBe("analytics");
   });
 });
+
+describe("getSettingGroups — RevenueCat group", () => {
+  const SECRET_NAMES = ["revenuecat_webhook_secret", "revenuecat_secret_api_key"];
+
+  it.each(SECRET_NAMES)("flags %s as secret", (name) => {
+    expect(isSecretConfigKey(name)).toBe(true);
+  });
+
+  it("exposes the revenuecat group on the payment tab", () => {
+    const groups = getSettingGroups();
+    const revenuecat = groups.find((g) => g.name === "revenuecat");
+    expect(revenuecat?.tab).toBe("payment");
+    expect(revenuecat?.title).toBe("RevenueCat");
+  });
+});
