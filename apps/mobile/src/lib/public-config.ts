@@ -47,3 +47,22 @@ export function resolveEnabledProviders(config: PublicConfig): EnabledAuthMethod
     socialProviders,
   };
 }
+
+/** 无密码登录模式：magic link（点邮件里的链接）或 email OTP（回填验证码）。 */
+export type PasswordlessMode = "email-otp" | "magic-link";
+
+export interface EnabledPasswordlessModes {
+  emailOtp: boolean;
+  magicLink: boolean;
+}
+
+/**
+ * 由公开配置解析可用的无密码模式（严格 === "true"，对齐服务端 isEnabled）。
+ * 两个开关都关时返回空集合 —— 调用方据此不渲染无密码入口。
+ */
+export function resolvePasswordlessModes(config: PublicConfig): EnabledPasswordlessModes {
+  return {
+    emailOtp: config.email_otp_enabled === "true",
+    magicLink: config.magic_link_enabled === "true",
+  };
+}

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { resolveEnabledProviders } from "./public-config";
+import { resolveEnabledProviders, resolvePasswordlessModes } from "./public-config";
 
 describe("resolveEnabledProviders", () => {
   it("treats an empty config as email-only with no social providers", () => {
@@ -44,5 +44,23 @@ describe("resolveEnabledProviders", () => {
   it("reads password reset straight from the derived server flag", () => {
     expect(resolveEnabledProviders({ password_reset_enabled: "true" }).passwordReset).toBe(true);
     expect(resolveEnabledProviders({ password_reset_enabled: "false" }).passwordReset).toBe(false);
+  });
+});
+
+describe("resolvePasswordlessModes", () => {
+  it("returns both modes off for an empty config", () => {
+    expect(resolvePasswordlessModes({})).toEqual({ emailOtp: false, magicLink: false });
+  });
+
+  it('enables each mode only on the exact "true" value', () => {
+    expect(resolvePasswordlessModes({ magic_link_enabled: "true" }).magicLink).toBe(true);
+    expect(resolvePasswordlessModes({ email_otp_enabled: "true" }).emailOtp).toBe(true);
+  });
+
+  it("rejects loose truthy values", () => {
+    for (const value of ["false", "1", "TRUE", "on", ""]) {
+      expect(resolvePasswordlessModes({ magic_link_enabled: value }).magicLink).toBe(false);
+      expect(resolvePasswordlessModes({ email_otp_enabled: value }).emailOtp).toBe(false);
+    }
   });
 });

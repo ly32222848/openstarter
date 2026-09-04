@@ -1,24 +1,28 @@
 import { useForm } from "@tanstack/react-form";
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import { useState } from "react";
 import { View } from "react-native";
 import { useTranslation } from "@openstarter/i18n-mobile";
 import { Button, Field, Text } from "@openstarter/ui-mobile";
 import z from "zod";
 
+import { PasswordlessForm } from "@/components/auth/passwordless-form";
 import { SocialButtons } from "@/components/auth/social-buttons";
 import { Screen } from "@/components/ui/screen";
 import { authClient } from "@/lib/auth-client";
-import { resolveEnabledProviders } from "@/lib/public-config";
+import { resolveEnabledProviders, resolvePasswordlessModes } from "@/lib/public-config";
 import { usePublicConfig } from "@/lib/queries";
 
 const MIN_PASSWORD_LENGTH = 8;
 
 export default function SignInScreen() {
   const { t } = useTranslation();
+  const router = useRouter();
   const [error, setError] = useState("");
   const configQuery = usePublicConfig();
   const methods = resolveEnabledProviders(configQuery.data ?? {});
+  const passwordless = resolvePasswordlessModes(configQuery.data ?? {});
+  const hasPasswordless = passwordless.magicLink || passwordless.emailOtp;
 
   const form = useForm({
     defaultValues: { email: "", password: "" },
@@ -29,6 +33,17 @@ export default function SignInScreen() {
         password: value.password,
       });
       if (result.error) {
+        // 邮箱未验证：先发验证邮件，再进 verify-email 屏（对齐 web sign-in-form 行为）。
+        if (result.error.code === "EMAIL_NOT_VERIFIED") {
+          authClient
+            .sendVerificationEmail({ email: value.email })
+            .catch(() => undefined);
+          router.replace({
+            pathname: "/verify-email",
+            params: { email: value.email },
+          });
+          return;
+        }
         setError(result.error.message ?? "Sign in failed");
       }
       // 成功后不手动跳转：(auth)/_layout.tsx 的门禁会因会话变化把人带到 "/"。
@@ -121,6 +136,13 @@ export default function SignInScreen() {
               {t("common.sign.forgot_password")}
             </Text>
           </Link>
+        ) : null}
+
+        {hasPasswordless ? (
+          <PasswordlessForm
+            emailOtpEnabled={passwordless.emailOtp}
+            magicLinkEnabled={passwordless.magicLink}
+          />
         ) : null}
 
         <Link asChild href="/sign-up">

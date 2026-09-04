@@ -17,7 +17,11 @@ import {
   setupExpoFocusManager,
   setupExpoOnlineManager,
 } from "@better-auth/expo/client";
-import { createAuthClient } from "@openstarter/auth/client/native";
+import {
+  createAuthClient,
+  emailOTPClient,
+  magicLinkClient,
+} from "@openstarter/auth/client/native";
 import { getItem, setItem } from "expo-secure-store";
 
 import { getEnv } from "./env";
@@ -36,6 +40,10 @@ export const authClient = createAuthClient({
   // 不会真的发出请求，但 createAuthClient 需要一个可解析的字符串。
   baseURL: env.ok ? env.apiUrl : "http://127.0.0.1",
   plugins: [
+    // 无密码登录（服务端按 magic_link_enabled / email_otp_enabled 条件注册对应端点，
+    // 客户端插件只是把 signIn.magicLink / signIn.emailOtp 挂到 API 面上）。
+    emailOTPClient(),
+    magicLinkClient(),
     expoClient({
       cookiePrefix: "openstarter",
       scheme: "openstarter",

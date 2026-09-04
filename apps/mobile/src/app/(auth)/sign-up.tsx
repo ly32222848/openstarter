@@ -1,5 +1,5 @@
 import { useForm } from "@tanstack/react-form";
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import { useState } from "react";
 import { View } from "react-native";
 import { useTranslation } from "@openstarter/i18n-mobile";
@@ -14,6 +14,7 @@ const MIN_NAME_LENGTH = 2;
 
 export default function SignUpScreen() {
   const { t } = useTranslation();
+  const router = useRouter();
   const [error, setError] = useState("");
   const [pendingVerification, setPendingVerification] = useState(false);
 
@@ -27,6 +28,15 @@ export default function SignUpScreen() {
         password: value.password,
       });
       if (result.error) {
+        // 邮箱未验证（重复注册已验证账号等场景）：转 verify-email 屏处理。
+        if (result.error.code === "EMAIL_NOT_VERIFIED") {
+          authClient.sendVerificationEmail({ email: value.email }).catch(() => undefined);
+          router.replace({
+            pathname: "/verify-email",
+            params: { email: value.email },
+          });
+          return;
+        }
         setError(result.error.message ?? "Sign up failed");
         return;
       }
@@ -114,9 +124,25 @@ export default function SignUpScreen() {
         </View>
 
         {pendingVerification ? (
-          <Text className="text-center text-muted-foreground text-sm dark:text-dark-muted-foreground">
-            {t("common.sign.sign_up_description")}
-          </Text>
+          <View className="gap-2">
+            <Text className="text-center text-muted-foreground text-sm dark:text-dark-muted-foreground">
+              {t("common.sign.sign_up_description")}
+            </Text>
+            <Button
+              onPress={() => {
+                authClient
+                  .sendVerificationEmail({ email: form.state.values.email })
+                  .catch(() => undefined);
+                router.replace({
+                  pathname: "/verify-email",
+                  params: { email: form.state.values.email },
+                });
+              }}
+              variant="outline"
+            >
+              <Text>{t("common.sign.resend_verification")}</Text>
+            </Button>
+          </View>
         ) : null}
 
         {error.length > 0 ? (
