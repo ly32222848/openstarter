@@ -112,6 +112,8 @@ export default defineProject({
     environment: "node",
     include: ["src/**/*.test.ts"],
     name: "${spec.vitestName}",
+    // 新包尚未有测试时保持 vitest 通过；首个测试落地后此开关不再生效。
+    passWithNoTests: true,
   },
 });
 `,
