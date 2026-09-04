@@ -1,6 +1,8 @@
 // apps/extension/src/components/account-panel.tsx —— 已登录态：只读账户面板。
 // 字段与 apps/web 的 settings/billing.tsx、settings/credits.tsx 对齐（同一后端投影）。
-// 见 spec §6。
+// 文案经 #i18n（@wxt-dev/i18n，跟随浏览器 UI 语言）取译文。见 spec §6。
+import { i18n } from "#i18n";
+
 import { Badge } from "@openstarter/ui-web/components/badge";
 import { Button } from "@openstarter/ui-web/components/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@openstarter/ui-web/components/card";
@@ -33,43 +35,43 @@ export function AccountPanel(props: {
 
       <Card>
         <CardHeader>
-          <CardTitle>Account</CardTitle>
+          <CardTitle>{i18n.t("account.title")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-muted-foreground text-xs">Plan</span>
+            <span className="text-muted-foreground text-xs">{i18n.t("account.plan")}</span>
             <Badge variant="secondary">{props.data.plan}</Badge>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-muted-foreground text-xs">Credits</span>
+            <span className="text-muted-foreground text-xs">{i18n.t("account.credits")}</span>
             <span className="font-medium text-sm tabular-nums">{props.data.creditsBalance}</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-muted-foreground text-xs">Subscription</span>
+            <span className="text-muted-foreground text-xs">{i18n.t("account.subscription")}</span>
             <span className="font-medium text-sm">
               {subscription.hasSubscription
                 ? (subscription.status ?? "—")
-                : "No active subscription"}
+                : i18n.t("account.no_subscription")}
             </span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-muted-foreground text-xs">Next billing date</span>
+            <span className="text-muted-foreground text-xs">
+              {i18n.t("account.next_billing_date")}
+            </span>
             <span className="font-medium text-sm">{formatDate(subscription.nextBillingDate)}</span>
           </div>
         </CardContent>
       </Card>
 
       <Button onClick={props.onManage} type="button" variant="outline">
-        Manage in web app
+        {i18n.t("account.manage_in_web_app")}
       </Button>
 
       <div className="space-y-1">
         <Button onClick={props.onSignOut} type="button" variant="ghost">
-          Sign out
+          {i18n.t("account.sign_out")}
         </Button>
-        <p className="text-muted-foreground text-xs">
-          This will also sign you out of the web app, since the extension shares its session.
-        </p>
+        <p className="text-muted-foreground text-xs">{i18n.t("account.sign_out_warning")}</p>
       </div>
     </div>
   );

@@ -1,8 +1,9 @@
 import { createRequire } from "node:module";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { paraglideVitePlugin } from "@inlang/paraglide-js";
 import { defineConfig } from "wxt";
+
+import { EXTENSION_DEFAULT_LOCALE } from "@openstarter/i18n-extension";
 
 // 加载根 .env，把跨端共享的 OPENSTARTER_API_URL 派生为 VITE_APP_URL。
 // host_permissions 与 API base URL 都由 VITE_APP_URL 派生，二者不会漂移
@@ -21,13 +22,12 @@ loadDotenv({ path: resolve(monorepoRoot, ".env"), quiet: true });
 
 const APP_URL_FALLBACK = "http://localhost:3000";
 
-// Paraglide compiles the shared en/zh message catalog (defined in
-// packages/i18n/web) into the locale runtime consumed here in the extension.
-// The inlang project + messages live in packages/i18n/web; the compiled
-// runtime lands in src/paraglide (git-ignored, regenerated on every dev/build).
-const inlangProject = fileURLToPath(
-  new URL("../../packages/i18n/web/project.inlang", import.meta.url),
-);
+// 插件端 i18n：@wxt-dev/i18n（browser.i18n 封装）。消息目录在
+// packages/i18n/extension/locales（插件专属精简目录，与 web 端 Paraglide 目录独立），
+// 构建期由该模块编译为 _locales/<locale>/messages.json 并生成 #i18n 的类型安全 i18n.t。
+// 语言跟随浏览器 UI 语言 —— browser.i18n 不支持运行时切换，也不读 web 端 locale cookie
+// （用户确认的取舍）；localesDir 必须是绝对路径（模块内部不基于 config 解析相对路径）。
+const extensionLocalesDir = resolve(extensionDir, "../../packages/i18n/extension/locales");
 
 function resolveAppUrl(): string {
   if (process.env.VITE_APP_URL) {
@@ -44,27 +44,16 @@ export default defineConfig({
     const appUrl = resolveAppUrl();
     const { origin } = new URL(appUrl);
     return {
+      default_locale: EXTENSION_DEFAULT_LOCALE,
       host_permissions: [`${origin}/*`],
       name: "OpenStarter Account",
       permissions: ["cookies"],
     };
   },
-  modules: ["@wxt-dev/module-react"],
+  // wxt module 在 "@wxt-dev/i18n/module" 子导出（根入口是运行时 createI18n，无 default module 导出）。
+  modules: ["@wxt-dev/module-react", "@wxt-dev/i18n/module"],
   srcDir: "src",
-  vite: () => ({
-    plugins: [
-      // Paraglide: locale-aware message compilation for the extension popup.
-      // Unlike apps/web there is no URL strategy — the popup has no routable
-      // path — so we read the preference from the cookie (set via setLocale()
-      // against the same origin the API lives on) and fall back to the base
-      // locale (en). No urlPatterns needed for the same reason.
-      paraglideVitePlugin({
-        project: inlangProject,
-        outdir: "./src/paraglide",
-        outputStructure: "message-modules",
-        cookieName: "PARAGLIDE_LOCALE",
-        strategy: ["cookie", "baseLocale"],
-      }),
-    ],
-  }),
+  i18n: {
+    localesDir: extensionLocalesDir,
+  },
 });

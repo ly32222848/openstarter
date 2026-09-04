@@ -1,0 +1,24 @@
+{
+  "app": {
+    "loading": "Loading...",
+    "misconfigured": "Extension is misconfigured: {reason}"
+  },
+  "auth": {
+    "sign_in_prompt": "Sign in to the OpenStarter web app to see your account here.",
+    "sign_in": "Sign in"
+  },
+  "error": {
+    "retry": "Retry"
+  },
+  "account": {
+    "title": "Account",
+    "plan": "Plan",
+    "credits": "Credits",
+    "subscription": "Subscription",
+    "no_subscription": "No active subscription",
+    "next_billing_date": "Next billing date",
+    "manage_in_web_app": "Manage in web app",
+    "sign_out": "Sign out",
+    "sign_out_warning": "This will also sign you out of the web app, since the extension shares its session."
+  }
+}

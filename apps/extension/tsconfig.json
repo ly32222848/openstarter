@@ -4,6 +4,7 @@
     "jsx": "react-jsx",
     "verbatimModuleSyntax": true,
     "paths": {
+      "#i18n": ["./.wxt/i18n/index.ts"],
       "@openstarter/ui-web/*": ["../../packages/ui/ui-web/src/*"]
     }
   },

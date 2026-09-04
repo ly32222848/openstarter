@@ -13,7 +13,7 @@ openstarter is a production-ready full-stack SaaS starter built with:
 - **Multi-platform**: Web, Desktop (Electron), Mobile (Expo), Browser Extension (WXT), CLI, Mini-App (Taro)
 - **Auth**: Better-Auth with OAuth, passkey, 2FA, organizations
 - **Billing**: Stripe/PayPal/Alipay/WeChat Pay with credit system
-- **i18n**: inlang/Paraglide (web/extension)、i18next + react-i18next (mobile)
+- **i18n**: inlang/Paraglide (web)、@wxt-dev/i18n (extension)、i18next + react-i18next (mobile)
 - **Testing**: Vitest + fast-check
 - **Linting**: oxlint + oxfmt (Oxc toolchain)
 
@@ -35,9 +35,10 @@ openstarter/
 │   ├── billing/           # Billing logic (shared, web, mobile providers)
 │   ├── db/                # Drizzle schema, migrations, seed scripts
 │   ├── email/             # React Email templates + providers (Resend, Cloudflare)
-│   ├── i18n/              # Per-platform i18n (inlang/Paraglide)
-│   │   ├── web/           # @openstarter/i18n-web (web/extension/auth/email)
-│   │   └── mobile/        # @openstarter/i18n-mobile (mobile-specific)
+│   ├── i18n/              # Per-platform i18n
+│   │   ├── web/           # @openstarter/i18n-web (web/auth/email, inlang/Paraglide)
+│   │   ├── extension/     # @openstarter/i18n-extension (extension, @wxt-dev/i18n)
+│   │   └── mobile/        # @openstarter/i18n-mobile (mobile-specific, i18next)
 │   ├── shared/            # Constants, validators, utilities, logger
 │   ├── storage/           # S3/R2 storage abstractions
 │   ├── analytics/         # Event tracking (web + mobile variants; mobile is a single package with dual adapters: OpenPanel + GA4 Firebase)

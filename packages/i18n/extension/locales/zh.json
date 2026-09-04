@@ -1,0 +1,24 @@
+{
+  "app": {
+    "loading": "加载中...",
+    "misconfigured": "插件配置错误：{reason}"
+  },
+  "auth": {
+    "sign_in_prompt": "登录 OpenStarter 网页版后，即可在此查看你的账户。",
+    "sign_in": "登录"
+  },
+  "error": {
+    "retry": "重试"
+  },
+  "account": {
+    "title": "账户",
+    "plan": "套餐",
+    "credits": "额度",
+    "subscription": "当前订阅",
+    "no_subscription": "暂无活跃订阅",
+    "next_billing_date": "下次扣款日期",
+    "manage_in_web_app": "在网页端管理",
+    "sign_out": "退出登录",
+    "sign_out_warning": "退出登录会同时退出网页端，插件与网页端共享同一会话。"
+  }
+}

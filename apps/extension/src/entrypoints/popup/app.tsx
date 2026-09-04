@@ -1,6 +1,9 @@
 // apps/extension/src/entrypoints/popup/app.tsx —— popup 根组件：使用 TanStack Query
 // hooks 和 AuthState 实现 5 状态机。依赖通过 hooks 注入，main.tsx 负责装配。
+// 文案经 #i18n（@wxt-dev/i18n，跟随浏览器 UI 语言）取译文。
 // 见 spec §6（状态机）/§7（错误处理）。
+import { i18n } from "#i18n";
+
 import { useCreditsQuery, usePlanQuery, useSubscriptionQuery, useUserQuery } from "../../lib/hooks";
 import { useIsSignedOut } from "../../lib/auth-state";
 
@@ -32,7 +35,7 @@ export function App(props: { deps: AppDeps }) {
   if (!props.deps.env.ok) {
     return (
       <div className="p-6 text-destructive text-sm">
-        Extension is misconfigured: {props.deps.env.reason}
+        {i18n.t("app.misconfigured", { reason: props.deps.env.reason })}
       </div>
     );
   }
@@ -44,7 +47,7 @@ export function App(props: { deps: AppDeps }) {
 
   // 3. Any query is pending → loading
   if (creditsQuery.isPending || planQuery.isPending || subscriptionQuery.isPending) {
-    return <p className="p-6 text-muted-foreground text-sm">Loading...</p>;
+    return <p className="p-6 text-muted-foreground text-sm">{i18n.t("app.loading")}</p>;
   }
 
   // 4. Any query has error → ErrorState with retry
