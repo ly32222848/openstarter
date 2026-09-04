@@ -13,6 +13,12 @@ const config: ExpoConfig = {
   ios: {
     bundleIdentifier: BUNDLE_IDENTIFIER,
     supportsTablet: true,
+    // Apple 登录（servicesIdentityKey 由 expo-apple-authentication 运行时处理）：
+    // Sign in with Apple entitlement 是 App Store 审核的硬性要求 —— 只要应用
+    // 提供任何第三方登录（Google），就必须同时提供 Apple 登录（指南 4.8）。
+    entitlements: {
+      "com.apple.developer.applesignin": ["Default"],
+    },
   },
   name: "OpenStarter",
   orientation: "portrait",
@@ -26,6 +32,13 @@ const config: ExpoConfig = {
   slug: "openstarter",
   userInterfaceStyle: "automatic",
   version: "0.1.0",
+  // EAS 项目 ID：`eas init` 后由用户回填（eas init 只会补丁 app.json，不会改本文件）。
+  // 缺失时 eas build/submit 会报 "project not linked"，属预期占位而非配置错误。
+  extra: {
+    // eas: {
+    //   projectId: "00000000-0000-0000-0000-000000000000",
+    // },
+  },
 };
 
 export default config;
