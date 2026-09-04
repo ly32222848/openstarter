@@ -10,7 +10,6 @@ interface ButtonProps {
   disabled?: boolean;
   fullWidth?: boolean;
   onClick?: () => void;
-  type?: "submit" | "button";
 }
 
 function cn(...classes: (string | false | null | undefined)[]): string {
@@ -24,7 +23,6 @@ export default function Button({
   disabled = false,
   fullWidth = false,
   onClick,
-  type = "button",
 }: ButtonProps) {
   const handleClick = () => {
     if (!loading && !disabled && onClick) {

@@ -1,4 +1,4 @@
-import { View, Text } from "@tarojs/components";
+import { Text } from "@tarojs/components";
 import "./index.scss";
 
 interface IconProps {

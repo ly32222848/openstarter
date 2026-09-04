@@ -1,4 +1,4 @@
-import { ReactNode, useEffect } from "react";
+import { useEffect, type ReactNode } from "react";
 import { View, Text } from "@tarojs/components";
 import Taro from "@tarojs/taro";
 import { useAuthStore } from "@/stores/auth-store";
