@@ -76,9 +76,9 @@ export class S3Provider implements StorageProvider {
           "Content-Length": options.body.length.toString(),
         },
         // aws4fetch 需按字节内容计算 SigV4 签名，故必须直传 ArrayBufferView（不可用 Blob）。
-        // `Uint8Array` 在运行时即合法 body，此处仅消解 `ArrayBufferLike` 与 `BodyInit` 期望的
-        // `ArrayBuffer` 泛型差异（零成本，非运行时转换）。
-        body: options.body as BodyInit,
+        // `Uint8Array` 在运行时即合法请求体；这里以环境声明的 RequestInit["body"] 形态收窄，
+        // 不引用 DOM 全局 `BodyInit`（无 DOM lib 的消费方如 Taro 端直读本包源码时会缺该名）。
+        body: options.body as RequestInit["body"],
       });
 
       if (!response.ok) {
