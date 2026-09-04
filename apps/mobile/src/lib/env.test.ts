@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { resolveApiUrl } from "./env";
+import { getRevenueCatApiKey, resolveApiUrl } from "./env";
 
 describe("resolveApiUrl", () => {
   it("accepts an absolute http URL", () => {
@@ -52,4 +52,29 @@ describe("resolveApiUrl", () => {
 
     expect(result.ok).toBe(false);
   });
+});
+
+describe("getRevenueCatApiKey", () => {
+  const ORIGINAL = process.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY;
+
+  it("returns the trimmed key when present", () => {
+    process.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY = "appl_abc123";
+    expect(getRevenueCatApiKey()).toBe("appl_abc123");
+  });
+
+  it("returns null when absent", () => {
+    delete process.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY;
+    expect(getRevenueCatApiKey()).toBeNull();
+  });
+
+  it("returns null for a blank value", () => {
+    process.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY = "   ";
+    expect(getRevenueCatApiKey()).toBeNull();
+  });
+
+  if (ORIGINAL === undefined) {
+    delete process.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY;
+  } else {
+    process.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY = ORIGINAL;
+  }
 });

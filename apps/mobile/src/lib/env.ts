@@ -41,3 +41,19 @@ export function resolveApiUrl(raw: string | undefined): EnvResult {
 export function getEnv(): EnvResult {
   return resolveApiUrl(process.env.EXPO_PUBLIC_API_URL);
 }
+
+/**
+ * RevenueCat iOS SDK key（EXPO_PUBLIC_REVENUECAT_IOS_API_KEY，形如 appl_xxx）。
+ *
+ * SDK key 走构建期 env 而不是 config 表：Purchases.configure 必须在首屏前完成，
+ * 且该 key 本就是客户端公开凭据。缺失/空白返回 null —— 上层把 IAP 判为不可用
+ * （no-op 门面），而不是初始化报错。
+ */
+export function getRevenueCatApiKey(): string | null {
+  const raw = process.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY;
+  if (!raw) {
+    return null;
+  }
+  const trimmed = raw.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}

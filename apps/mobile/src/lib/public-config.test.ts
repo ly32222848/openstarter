@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { resolveEnabledProviders, resolvePasswordlessModes } from "./public-config";
+import {
+  resolveEnabledProviders,
+  resolveIapEnabled,
+  resolvePasswordlessModes,
+} from "./public-config";
 
 describe("resolveEnabledProviders", () => {
   it("treats an empty config as email-only with no social providers", () => {
@@ -61,6 +65,19 @@ describe("resolvePasswordlessModes", () => {
     for (const value of ["false", "1", "TRUE", "on", ""]) {
       expect(resolvePasswordlessModes({ magic_link_enabled: value }).magicLink).toBe(false);
       expect(resolvePasswordlessModes({ email_otp_enabled: value }).emailOtp).toBe(false);
+    }
+  });
+});
+
+describe("resolveIapEnabled", () => {
+  it("is off for an empty config", () => {
+    expect(resolveIapEnabled({})).toBe(false);
+  });
+
+  it('is on only for the exact "true" value', () => {
+    expect(resolveIapEnabled({ revenuecat_enabled: "true" })).toBe(true);
+    for (const value of ["false", "1", "TRUE", ""]) {
+      expect(resolveIapEnabled({ revenuecat_enabled: value })).toBe(false);
     }
   });
 });

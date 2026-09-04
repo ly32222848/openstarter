@@ -18,10 +18,10 @@ const config: ExpoConfig = {
   orientation: "portrait",
   // expo-secure-store 的 config plugin 是 requireAuthentication 等原生能力的前提；
   // expo-router 插件启用文件式路由。
-  // expo-iap 插件为 IAP 调整 Android Kotlin 版本等构建配置；react-native-purchases
-  // 无需 plugin，仅要求 dev client/prebuild（StoreKit 能力在 Xcode 侧启用）。
+  // RevenueCat（react-native-purchases）无需 config plugin，仅要求 dev client/prebuild
+  // （StoreKit / In-App Purchase 能力在 Xcode 侧启用）。
   // with-firebase-config 在两个 Firebase 配置文件都缺失时 no-op。
-  plugins: ["expo-router", "expo-secure-store", "expo-iap", "./plugins/with-firebase-config"],
+  plugins: ["expo-router", "expo-secure-store", "./plugins/with-firebase-config"],
   scheme: "openstarter",
   slug: "openstarter",
   userInterfaceStyle: "automatic",
