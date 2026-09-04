@@ -14,9 +14,15 @@
   "dependencies": {
     "@openstarter/api": "workspace:*",
     "@openstarter/auth": "workspace:*",
-    "@openstarter/i18n-web": "workspace:*",
+    "@openstarter/i18n-extension": "workspace:*",
     "@openstarter/ui-web": "workspace:*",
     "@tanstack/react-query": "^5.99.0",
+    "@webext-core/job-scheduler": "^2.0.0",
+    "@webext-core/match-patterns": "^2.0.0",
+    "@webext-core/messaging": "^4.0.0",
+    "@webext-core/proxy-service": "^3.0.2",
+    "@webext-core/storage": "^2.0.0",
+    "@wxt-dev/i18n": "^0.2.7",
     "better-auth": "catalog:",
     "hono": "catalog:",
     "react": "catalog:",
@@ -24,7 +30,6 @@
     "sonner": "^2.0.7"
   },
   "devDependencies": {
-    "@inlang/paraglide-js": "catalog:",
     "@tanstack/react-query-devtools": "^5.91.1",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/react": "^16.3.2",
@@ -32,6 +37,7 @@
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "^6.0.1",
+    "@webext-core/fake-browser": "^2.0.1",
     "@wxt-dev/module-react": "1.2.2",
     "jsdom": "29.1.1",
     "typescript": "catalog:",
