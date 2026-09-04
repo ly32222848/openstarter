@@ -27,7 +27,9 @@ const config: ExpoConfig = {
   // RevenueCat（react-native-purchases）无需 config plugin，仅要求 dev client/prebuild
   // （StoreKit / In-App Purchase 能力在 Xcode 侧启用）。
   // with-firebase-config 在两个 Firebase 配置文件都缺失时 no-op。
-  plugins: ["expo-router", "expo-secure-store", "./plugins/with-firebase-config"],
+  // expo-image 的 plugin 由 expo install 提示补入（Android 端图片能力接线）。
+  // expo-haptics 自动注入 Android VIBRATE 权限，无需 plugin。
+  plugins: ["expo-router", "expo-secure-store", "expo-image", "./plugins/with-firebase-config"],
   scheme: "openstarter",
   slug: "openstarter",
   userInterfaceStyle: "automatic",
