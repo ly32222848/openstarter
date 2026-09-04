@@ -1,7 +1,7 @@
-import { defineExtensionMessaging } from "webext-bridge";
+import { defineExtensionMessaging } from "@webext-core/messaging";
 
 interface ProtocolMap {
-  hello: { name: string };
+  hello(data: { name: string }): string;
 }
 
-export const { onMessage } = defineExtensionMessaging<ProtocolMap>();
+export const { sendMessage, onMessage } = defineExtensionMessaging<ProtocolMap>();

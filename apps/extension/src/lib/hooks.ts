@@ -9,6 +9,7 @@ export function useCreditsQuery() {
       const res = await api.api.user.credits.$get({ query: {} });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
+      if (!json.data) throw new Error("Missing credits data in response");
       return json.data.balance;
     },
   });
@@ -22,6 +23,7 @@ export function usePlanQuery() {
       const res = await api.api.user.plan.$get();
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
+      if (!json.data) throw new Error("Missing plan data in response");
       return json.data.plan;
     },
   });
