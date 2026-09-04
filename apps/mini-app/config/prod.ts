@@ -1,6 +1,6 @@
-import type { UserConfig } from "@tarojs/taro";
+import type { IProjectConfig } from "@tarojs/taro/types/compile";
 
-const config: UserConfig = {
+const config: IProjectConfig = {
   mini: {
     postcss: {
       autoprefixer: { enable: true },

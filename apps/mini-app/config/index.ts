@@ -1,7 +1,7 @@
 import path from "path";
-import type { UserConfig } from "@tarojs/taro";
+import type { IProjectConfig } from "@tarojs/taro/types/compile";
 
-const config: UserConfig = {
+const config: IProjectConfig = {
   framework: "react",
   projectName: "openstarter",
   date: "2026-8-4",
@@ -29,7 +29,10 @@ const config: UserConfig = {
       autoprefixer: { enable: true },
       pxtransform: { enable: true, config: {} },
       url: { enable: true, config: { limit: 1024 } },
-      cssModules: { enable: false, config: { namingPattern: "module" } },
+      cssModules: {
+        enable: false,
+        config: { namingPattern: "module", generateScopedName: "module_[name]__[local]" },
+      },
     },
   },
   h5: {
