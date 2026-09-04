@@ -12,18 +12,22 @@
   "scripts": {
     "check-types": "tsc --noEmit"
   },
-  "dependencies": {
-    "expo-iap": "^5.5.0",
-    "expo-superwall": "^1.3.0",
-    "react-native-purchases": "^10.8.1",
-    "react-native-purchases-ui": "^10.8.1"
-  },
   "devDependencies": {
     "typescript": "catalog:"
   },
   "peerDependencies": {
     "expo": "*",
     "react": "*",
-    "react-native": "*"
+    "react-native": "*",
+    "react-native-purchases": "*",
+    "react-native-purchases-ui": "*"
+  },
+  "peerDependenciesMeta": {
+    "react-native-purchases": {
+      "optional": true
+    },
+    "react-native-purchases-ui": {
+      "optional": true
+    }
   }
 }

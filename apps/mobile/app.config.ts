@@ -29,7 +29,17 @@ const config: ExpoConfig = {
   // with-firebase-config 在两个 Firebase 配置文件都缺失时 no-op。
   // expo-image 的 plugin 由 expo install 提示补入（Android 端图片能力接线）。
   // expo-haptics 自动注入 Android VIBRATE 权限，无需 plugin。
-  plugins: ["expo-router", "expo-secure-store", "expo-image", "./plugins/with-firebase-config"],
+  // expo-video / expo-sharing 的 plugin 同样由 expo install 提示补入。
+  // expo-web-browser / expo-screen-orientation 无 config plugin；expo-auth-session
+  // 使用时须与 expo-crypto 同装（PKCE），项目已在 auth 链路引入。
+  plugins: [
+    "expo-router",
+    "expo-secure-store",
+    "expo-image",
+    "expo-video",
+    "expo-sharing",
+    "./plugins/with-firebase-config",
+  ],
   scheme: "openstarter",
   slug: "openstarter",
   userInterfaceStyle: "automatic",
