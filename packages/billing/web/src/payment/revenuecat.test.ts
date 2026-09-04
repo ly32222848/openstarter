@@ -274,9 +274,8 @@ describe("mapRevenueCatEvent", () => {
       { eventType: string; paymentSession?: Record<string, unknown> },
     ];
     expect(event.eventType).toBe("subscribe.updated");
-    expect((event.paymentSession?.subscriptionInfo as Record<string, unknown>).status).toBe(
-      "active",
-    );
+    const uncanceledInfo = event.paymentSession?.subscriptionInfo as Record<string, unknown>;
+    expect(uncanceledInfo.status).toBe("active");
   });
 
   it("EXPIRATION emits subscribe.canceled", async () => {
@@ -292,9 +291,8 @@ describe("mapRevenueCatEvent", () => {
     const [event] = handlePaymentEventMock.mock.calls[0] as [
       { eventType: string; paymentSession?: Record<string, unknown> },
     ];
-    expect((event.paymentSession?.subscriptionInfo as Record<string, unknown>).status).toBe(
-      "paused",
-    );
+    const pausedInfo = event.paymentSession?.subscriptionInfo as Record<string, unknown>;
+    expect(pausedInfo.status).toBe("paused");
   });
 
   it("TRIAL period maps the initial purchase to trialing status", async () => {

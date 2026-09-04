@@ -23,6 +23,8 @@ const PUBLIC_AUTH_KEYS = [
   "magic_link_enabled",
   "email_otp_enabled",
   "invite_code_required",
+  // 移动端 IAP kill-switch：与 RC SDK key（env）同时满足才展示付费墙入口。
+  "revenuecat_enabled",
 ] as const;
 
 /** 邮件发送渠道是否已配置（决定密码重置/邮箱验证在前端是否可用）。 */
