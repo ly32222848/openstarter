@@ -12,6 +12,7 @@ import { getEnv } from "@/lib/env";
 import { initAnalyticsFromApi } from "@/lib/analytics";
 import { useAppLocale } from "@/lib/i18n";
 import { useThemePreference } from "@/lib/theme";
+import { useRevenueCatLifecycle } from "@/lib/use-revenuecat";
 
 export default function RootLayout() {
   // QueryClient 必须在渲染之间保持同一实例，否则每次重渲染都会丢掉全部缓存。
@@ -21,6 +22,9 @@ export default function RootLayout() {
   // 两个钩子必须无条件调用（React hooks 规则），因此放在 env 分支之前。
   useThemePreference();
   useAppLocale();
+  // RevenueCat 生命周期（configure/identify/customerInfo 监听）。
+  // 钩子内部全部降级安全：IAP 不可用时为 no-op，env 错误分支下也无副作用。
+  useRevenueCatLifecycle();
 
   // 分析初始化：配置拉取失败等价于未配置，静默跳过（fire-and-forget）。
   useEffect(() => {
