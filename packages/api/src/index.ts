@@ -24,6 +24,7 @@ import { billingRouter } from "./modules/billing/router";
 import { configRouter } from "./modules/config/router";
 import { contentRouter } from "./modules/content/router";
 import { demoRouter } from "./modules/demo/router";
+import { mcpRouter } from "./modules/mcp";
 import { statusRouter } from "./modules/status/router";
 import { storageRouter } from "./modules/storage/router";
 import { supportRouter } from "./modules/support/router";
@@ -73,6 +74,7 @@ const routes = api
   .route("/", llmRouter) // POST/GET /api/llm/chats, /api/llm/chats/:id/messages
   .route("/", supportRouter) // /api/tickets*, /api/apikeys
   .route("/", contentRouter) // /api/posts*, /api/blog*, /api/taxonomy*, /api/seo*
+  .route("/mcp", mcpRouter) // ALL /api/mcp — MCP streamable HTTP 端点（API Key 鉴权）
   .route("/admin", adminRouter); // /api/admin/*
 
 export { api as app };

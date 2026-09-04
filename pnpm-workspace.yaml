@@ -17,6 +17,8 @@ catalog:
   "@better-auth/expo": 1.6.11
   "@better-auth/passkey": 1.6.11
   "@inlang/paraglide-js": 2.18.2
+  "@modelcontextprotocol/client": 2.0.0
+  "@modelcontextprotocol/server": 2.0.0
   i18next: 26.4.0
   react-i18next: 17.0.12
   "@mdx-js/react": 3.1.1

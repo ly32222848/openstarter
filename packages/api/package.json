@@ -19,6 +19,8 @@
     "@ai-sdk/google": "catalog:",
     "@ai-sdk/openai": "catalog:",
     "@hono/zod-validator": "^0.8.0",
+    "@modelcontextprotocol/client": "catalog:",
+    "@modelcontextprotocol/server": "catalog:",
     "@openstarter/auth": "workspace:*",
     "@openstarter/billing-web": "workspace:*",
     "@openstarter/db": "workspace:*",
