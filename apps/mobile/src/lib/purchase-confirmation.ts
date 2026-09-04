@@ -14,8 +14,11 @@ export type PurchaseConfirmationResult =
   | { status: "timeout" };
 
 export interface PurchaseConfirmationOptions {
-  /** 时钟（注入以便测试）。 */
-  clock: { now: () => number };
+  /**
+   * 时钟（注入以便测试）。生产调用方可省略 —— 默认 Date.now；
+   * 收敛由探测次数预算保证，时钟只用于跨过截止时间的提前退出。
+   */
+  clock?: { now: () => number };
   /** 单次探测：返回 true 表示服务端已反映购买。抛错按"本次未确认"处理。 */
   poll: () => Promise<boolean>;
   /** 轮询间隔，默认 2s。 */
@@ -35,11 +38,12 @@ export async function runPurchaseConfirmation(
   const intervalMs = options.intervalMs ?? DEFAULT_INTERVAL_MS;
   const maxWaitMs = options.maxWaitMs ?? DEFAULT_MAX_WAIT_MS;
   const sleep = options.sleep ?? (async () => undefined);
+  const clock = options.clock ?? { now: () => Date.now() };
 
   // 至少探测一次：即使 maxWaitMs=0，也给服务端一次即时确认的机会。
   // 绝不依赖真实时钟推进：以"探测次数"为硬上限（deadline = maxWaitMs/intervalMs + 1），
   // 时钟只用于已流逝时间的展示语义。这样假时钟（now 恒定）也不会死循环。
-  const startedAt = options.clock.now();
+  const startedAt = clock.now();
   const maxAttempts = Math.max(1, Math.ceil(maxWaitMs / intervalMs) + 1);
   for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
     let confirmed = false;
@@ -52,7 +56,7 @@ export async function runPurchaseConfirmation(
     if (confirmed) {
       return { status: "confirmed" };
     }
-    const elapsed = options.clock.now() - startedAt;
+    const elapsed = clock.now() - startedAt;
     if (elapsed >= maxWaitMs) {
       return { status: "timeout" };
     }

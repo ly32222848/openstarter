@@ -1,19 +1,23 @@
 // billing 屏：plan 徽章 + 订阅三格（状态/方案/下一计费日）+ 升级入口 + 管理订阅。
 //
 // 401 = 未登录（清会话交门禁）；unreachable/server-error = 错误 + 重试按钮。
-// 升级入口：Phase B 接入 paywall；Android（及 IAP 未启用的 Android 市场）走
-// Linking.openURL(`${apiUrl}/pricing`) 兜底。iOS 的入口渲染由 Phase B 按
-// App Store 审核规则（3.1.1：不得引导外跳购买）控制 —— 此处保留占位。
+// 升级入口的分流（App Store 审核 3.1.1：iOS 不得引导外跳购买）：
+//   - IAP 可用（config 开关 + RC SDK key + configure 成功）→ push 内置 paywall；
+//   - iOS 且 IAP 不可用 → 不渲染任何购买入口（只在已订阅时给管理订阅）；
+//   - Android 且 IAP 不可用 → Linking.openURL(`${apiUrl}/pricing`) 网页兜底。
 import { Button, Card, CardContent, CardTitle, Text } from "@openstarter/ui-mobile";
 import { useTranslation } from "@openstarter/i18n-mobile";
 import { useEffect, useState } from "react";
-import { View } from "react-native";
+import { Platform, View } from "react-native";
 
 import { Screen } from "@/components/ui/screen";
 import { Spinner } from "@/components/ui/spinner";
+import { useRouter } from "expo-router";
 import { authClient } from "@/lib/auth-client";
 import { getEnv } from "@/lib/env";
-import { useBillingPortalMutation, useUserPlan, useUserSubscription } from "@/lib/queries";
+import { useBillingPortalMutation, usePublicConfig, useUserPlan, useUserSubscription } from "@/lib/queries";
+import { resolveIapEnabled } from "@/lib/public-config";
+import { isPurchasesAvailable } from "@/lib/purchases";
 import { formatIsoDate } from "@/lib/billing-format";
 
 /** 计费状态 → 展示标签。pending_cancel 视作会员（权益未到期），无订阅看 trialEndsAt。 */
@@ -51,10 +55,18 @@ function InfoRow(props: { label: string; value: string }) {
 
 export default function BillingScreen() {
   const { t } = useTranslation();
+  const router = useRouter();
+  const configQuery = usePublicConfig();
   const planQuery = useUserPlan();
   const subscriptionQuery = useUserSubscription();
   const portalMutation = useBillingPortalMutation();
   const [portalError, setPortalError] = useState<string | null>(null);
+
+  // IAP 可用 = 公开开关 + RC SDK key + configure 成功，三者缺一即视为不可用。
+  const iapAvailable =
+    resolveIapEnabled(configQuery.data ?? {}) && isPurchasesAvailable();
+  // 升级入口可见性：IAP 可用 → 内置 paywall；否则仅 Android 兜底网页定价页。
+  const showUpgradeEntry = iapAvailable || Platform.OS !== "ios";
 
   // 401 = 未登录而不是错误：清掉会话，门禁随即送回登录页。
   useEffect(() => {
@@ -170,23 +182,43 @@ export default function BillingScreen() {
                   />
                 </View>
                 <View className="gap-2">
-                  <Button
-                    onPress={() => {
-                      // Phase B（Task B4）在此接入 paywall；Android 端跳转网页定价页。
-                      void import("react-native").then(({ Linking }) => {
-                        const env = getEnv();
-                        if (env.ok) {
-                          Linking.openURL(`${env.apiUrl}/pricing`).catch(() => undefined);
+                  {showUpgradeEntry ? (
+                    <Button
+                      onPress={() => {
+                        if (iapAvailable) {
+                          // 内置付费墙（RevenueCat 托管 UI + StoreKit 结算）。
+                          router.push("/settings/paywall");
+                          return;
                         }
-                      });
-                    }}
-                    variant="outline"
-                  >
-                    <Text>{t("settings.billing.upgrade")}</Text>
-                  </Button>
-                  {subscription?.hasSubscription ? (
+                        // Android 网页兜底：跳站外定价页（web 端自有支付）。
+                        void import("react-native").then(({ Linking }) => {
+                          const env = getEnv();
+                          if (env.ok) {
+                            Linking.openURL(`${env.apiUrl}/pricing`).catch(() => undefined);
+                          }
+                        });
+                      }}
+                      variant="outline"
+                    >
+                      <Text>{t("settings.billing.upgrade")}</Text>
+                    </Button>
+                  ) : null}
+                  {subscription?.hasSubscription && !iapAvailable ? (
                     <Button onPress={openPortal} variant="ghost">
                       <Text>{t("settings.billing.manage_portal")}</Text>
+                    </Button>
+                  ) : null}
+                  {subscription?.hasSubscription && iapAvailable ? (
+                    <Button
+                      onPress={() => {
+                        // 恢复购买走 RC SDK（门面静默处理失败，返回 false 不打断）。
+                        void import("@/lib/purchases").then(({ restorePurchases }) => {
+                          void restorePurchases();
+                        });
+                      }}
+                      variant="ghost"
+                    >
+                      <Text>{t("settings.billing.restore")}</Text>
                     </Button>
                   ) : null}
                   {portalError ? (

@@ -21,6 +21,10 @@ export default function SettingsLayout() {
         name="orders"
         options={{ headerShown: true, title: t("settings.payments.title") }}
       />
+      <Stack.Screen
+        name="paywall"
+        options={{ headerShown: false, title: t("settings.billing.upgrade") }}
+      />
     </Stack>
   );
 }
