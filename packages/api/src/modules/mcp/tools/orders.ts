@@ -5,7 +5,13 @@ import { z } from "zod";
 
 import { getTasks } from "../../ai-tasks/service";
 import { listUserOrders } from "../../user/service";
-import { jsonContent, paginationSchema, resolveUserId, toIsoString, withToolError } from "../shared";
+import {
+  jsonContent,
+  paginationSchema,
+  resolveUserId,
+  toIsoString,
+  withToolError,
+} from "../shared";
 
 const READ_ONLY = {
   destructiveHint: false,
@@ -17,7 +23,12 @@ const READ_ONLY = {
 const AI_TASK_STATUSES = ["pending", "processing", "success", "failed", "canceled"] as const;
 
 const listAiTasksSchema = paginationSchema.extend({
-  mediaType: z.string().min(1).max(50).optional().describe("Filter by media type, e.g. 'image' or 'music'."),
+  mediaType: z
+    .string()
+    .min(1)
+    .max(50)
+    .optional()
+    .describe("Filter by media type, e.g. 'image' or 'music'."),
   status: z.enum(AI_TASK_STATUSES).optional().describe("Filter by task status."),
 });
 
@@ -33,7 +44,11 @@ export function registerCommerceTools(server: McpServer): void {
     (args, extra) =>
       withToolError(async () => {
         const userId = resolveUserId(extra);
-        const { items, total } = await listUserOrders({ userId, page: args.page, pageSize: args.pageSize });
+        const { items, total } = await listUserOrders({
+          userId,
+          page: args.page,
+          pageSize: args.pageSize,
+        });
         return jsonContent({
           items: items.map((item) => ({
             amount: item.amount,

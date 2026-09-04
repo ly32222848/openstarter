@@ -25,7 +25,11 @@ const SEGMENT_PATTERN = /^[a-z][a-z0-9]*$/;
 
 /** boundaries 标签全集（与根 turbo.json 的 boundaries.tags 对齐；app 仅用于 apps/）。 */
 const TAGS = new Set(["core", "platform:web", "platform:mobile", "platform:extension"]);
-const VARIANT_TAGS = { web: "platform:web", mobile: "platform:mobile", extension: "platform:extension" };
+const VARIANT_TAGS = {
+  web: "platform:web",
+  mobile: "platform:mobile",
+  extension: "platform:extension",
+};
 
 /**
  * 解析 <name>[/<variant>] 并推断目录、包名与标签。
@@ -253,7 +257,7 @@ if (isDirectRun) {
   try {
     main();
   } catch (err) {
-    console.error(`gen-package: ${(err).message}`);
+    console.error(`gen-package: ${err.message}`);
     if (err instanceof UsageError) {
       console.error("\n运行 pnpm gen:package --help 查看用法。");
     }

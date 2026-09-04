@@ -15,11 +15,7 @@ vi.mock("expo-router", () => ({
   usePathname: vi.fn(() => "/"),
 }));
 
-import {
-  initAnalyticsFromApi,
-  resolveMobileAnalyticsConfig,
-  useScreenTracking,
-} from "./analytics";
+import { initAnalyticsFromApi, resolveMobileAnalyticsConfig, useScreenTracking } from "./analytics";
 
 describe("module exports", () => {
   it("exposes the app-side analytics surface", () => {

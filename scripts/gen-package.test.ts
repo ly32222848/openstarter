@@ -115,7 +115,9 @@ describe("findExistingNames", () => {
       join(root, "packages/ui/web/package.json"),
       JSON.stringify({ name: "@openstarter/ui-web" }),
     );
-    expect(findExistingNames(root)).toEqual(new Set(["@openstarter/shared", "@openstarter/ui-web"]));
+    expect(findExistingNames(root)).toEqual(
+      new Set(["@openstarter/shared", "@openstarter/ui-web"]),
+    );
   });
 });
 

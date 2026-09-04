@@ -111,12 +111,14 @@ describe("mcp module", () => {
 
   beforeAll(async () => {
     const { mcpHandler } = await import("./server");
-    harness = await createMcpTestHarness("mcp-server", () => (request) =>
-      // Mirror the router's authInfo injection: the API-key owner's userId
-      // travels as authInfo.clientId (see index.ts).
-      mcpHandler.fetch(request, {
-        authInfo: { clientId: getCurrentUserId(), scopes: ["mcp"], token: "" },
-      }),
+    harness = await createMcpTestHarness(
+      "mcp-server",
+      () => (request) =>
+        // Mirror the router's authInfo injection: the API-key owner's userId
+        // travels as authInfo.clientId (see index.ts).
+        mcpHandler.fetch(request, {
+          authInfo: { clientId: getCurrentUserId(), scopes: ["mcp"], token: "" },
+        }),
     );
   });
 
@@ -133,7 +135,10 @@ describe("mcp module", () => {
     const tools = await harness.listTools();
     expect(tools.map((tool) => tool.name).sort()).toEqual([...TOOL_NAMES].sort());
 
-    const reads = tools.filter((tool) => tool.name !== "openstarter_create_ticket" && tool.name !== "openstarter_reply_ticket");
+    const reads = tools.filter(
+      (tool) =>
+        tool.name !== "openstarter_create_ticket" && tool.name !== "openstarter_reply_ticket",
+    );
     expect(reads.length).toBe(9);
     const write = tools.find((tool) => tool.name === "openstarter_create_ticket");
     expect(write?.description).toContain("support ticket");
@@ -153,7 +158,12 @@ describe("mcp module", () => {
 
     const result = await harness.callTool("openstarter_get_profile");
     expect(result.isError).toBeFalsy();
-    const profile = parseStructured(result) as { id: string; email: string; name: string; credits: number };
+    const profile = parseStructured(result) as {
+      id: string;
+      email: string;
+      name: string;
+      credits: number;
+    };
     expect(profile.id).toBe("user-1");
     expect(profile.email).toBe("u1@test.dev");
     expect(profile.name).toBe("User One");
@@ -164,12 +174,20 @@ describe("mcp module", () => {
     const database = getDatabase();
     await insertUser(database, { id: "user-1" });
     await insertUser(database, { id: "user-2" });
-    await insertOrder(database, { id: "o1", orderNo: "no-1", userId: "user-1", productName: "Pro Yearly" });
+    await insertOrder(database, {
+      id: "o1",
+      orderNo: "no-1",
+      userId: "user-1",
+      productName: "Pro Yearly",
+    });
     await insertOrder(database, { id: "o2", orderNo: "no-2", userId: "user-2" });
 
     const result = await harness.callTool("openstarter_list_orders", { page: 1, pageSize: 20 });
     expect(result.isError).toBeFalsy();
-    const payload = parseStructured(result) as { total: number; items: Array<{ productName?: string }> };
+    const payload = parseStructured(result) as {
+      total: number;
+      items: Array<{ productName?: string }>;
+    };
     expect(payload.total).toBe(1);
     expect(payload.items[0]?.productName).toBe("Pro Yearly");
   });
@@ -195,7 +213,10 @@ describe("mcp module", () => {
       transactionType: "consume",
     });
 
-    const result = await harness.callTool("openstarter_list_credit_history", { limit: 10, offset: 0 });
+    const result = await harness.callTool("openstarter_list_credit_history", {
+      limit: 10,
+      offset: 0,
+    });
     expect(result.isError).toBeFalsy();
     const payload = parseStructured(result) as { items: Array<{ credits: number }> };
     expect(payload.items).toHaveLength(2);
@@ -204,8 +225,20 @@ describe("mcp module", () => {
   it("list_ai_tasks filters by status", async () => {
     const database = getDatabase();
     await insertUser(database, { id: "user-1" });
-    await insertAiTask(database, { id: "t1", userId: "user-1", status: "success", mediaType: "image", prompt: "a cat" });
-    await insertAiTask(database, { id: "t2", userId: "user-1", status: "failed", mediaType: "image", prompt: "a dog" });
+    await insertAiTask(database, {
+      id: "t1",
+      userId: "user-1",
+      status: "success",
+      mediaType: "image",
+      prompt: "a cat",
+    });
+    await insertAiTask(database, {
+      id: "t2",
+      userId: "user-1",
+      status: "failed",
+      mediaType: "image",
+      prompt: "a dog",
+    });
 
     const result = await harness.callTool("openstarter_list_ai_tasks", { status: "success" });
     expect(result.isError).toBeFalsy();
@@ -228,13 +261,18 @@ describe("mcp module", () => {
 
     const chats = await harness.callTool("openstarter_list_chats", {});
     expect(chats.isError).toBeFalsy();
-    const chatPayload = parseStructured(chats) as { total: number; items: Array<{ title: string }> };
+    const chatPayload = parseStructured(chats) as {
+      total: number;
+      items: Array<{ title: string }>;
+    };
     expect(chatPayload.total).toBe(1);
     expect(chatPayload.items[0]?.title).toBe("Hello");
 
     const messages = await harness.callTool("openstarter_get_chat_messages", { chatId: "ch1" });
     expect(messages.isError).toBeFalsy();
-    const messagePayload = parseStructured(messages) as { items: Array<{ role: string; content: string }> };
+    const messagePayload = parseStructured(messages) as {
+      items: Array<{ role: string; content: string }>;
+    };
     expect(messagePayload.items[0]?.content).toBe("hi there");
   });
 
@@ -267,10 +305,14 @@ describe("mcp module", () => {
     expect(reply.isError).toBeFalsy();
 
     const database2 = getDatabase();
-    const roles = await database2.all<{ role: string }>(sql`SELECT role FROM ticket_message WHERE ticket_id = ${ticketPayload.id}`);
+    const roles = await database2.all<{ role: string }>(
+      sql`SELECT role FROM ticket_message WHERE ticket_id = ${ticketPayload.id}`,
+    );
     expect(roles.every((row) => row.role === "user")).toBe(true);
 
-    const thread = await harness.callTool("openstarter_get_ticket_messages", { ticketId: ticketPayload.id });
+    const thread = await harness.callTool("openstarter_get_ticket_messages", {
+      ticketId: ticketPayload.id,
+    });
     expect(thread.isError).toBeFalsy();
     const threadPayload = parseStructured(thread) as { items: Array<{ content: string }> };
     expect(threadPayload.items.map((item) => item.content)).toContain("Also the fan is broken");
@@ -285,7 +327,9 @@ describe("mcp module", () => {
       VALUES ('tk-other', 'user-2', 'foreign ticket', 'open', 1700000000000, 1700000000000)
     `);
 
-    const result = await harness.callTool("openstarter_get_ticket_messages", { ticketId: "tk-other" });
+    const result = await harness.callTool("openstarter_get_ticket_messages", {
+      ticketId: "tk-other",
+    });
     expect(result.isError).toBe(true);
   });
 
@@ -298,9 +342,14 @@ describe("mcp module", () => {
       VALUES ('tk-other', 'user-2', 'foreign ticket', 'open', 1700000000000, 1700000000000)
     `);
 
-    const result = await harness.callTool("openstarter_reply_ticket", { ticketId: "tk-other", content: "hijack" });
+    const result = await harness.callTool("openstarter_reply_ticket", {
+      ticketId: "tk-other",
+      content: "hijack",
+    });
     expect(result.isError).toBe(true);
-    const rows = await getDatabase().all<{ id: string }>(sql`SELECT id FROM ticket_message WHERE ticket_id = 'tk-other'`);
+    const rows = await getDatabase().all<{ id: string }>(
+      sql`SELECT id FROM ticket_message WHERE ticket_id = 'tk-other'`,
+    );
     expect(rows).toHaveLength(0);
   });
 

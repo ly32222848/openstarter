@@ -16,7 +16,14 @@ import {
   listUserTickets,
   TICKET_ROLE,
   TICKET_STATUS_VALUES,
-} from "../../support/tickets/service";import { jsonContent, paginationSchema, resolveUserId, toIsoString, withToolError } from "../shared";
+} from "../../support/tickets/service";
+import {
+  jsonContent,
+  paginationSchema,
+  resolveUserId,
+  toIsoString,
+  withToolError,
+} from "../shared";
 
 const READ_ONLY = {
   destructiveHint: false,
@@ -38,7 +45,11 @@ const listTicketsSchema = paginationSchema.extend({
 
 const createTicketSchema = z.object({
   title: z.string().min(1).max(MAX_TITLE_LENGTH).describe("Short summary of the issue."),
-  content: z.string().min(1).max(MAX_CONTENT_LENGTH).describe("Full description of the issue; posted as the first message."),
+  content: z
+    .string()
+    .min(1)
+    .max(MAX_CONTENT_LENGTH)
+    .describe("Full description of the issue; posted as the first message."),
 });
 
 const ticketIdSchema = z.object({
@@ -46,7 +57,11 @@ const ticketIdSchema = z.object({
 });
 
 const replyTicketSchema = ticketIdSchema.extend({
-  content: z.string().min(1).max(MAX_CONTENT_LENGTH).describe("Reply content; appended to the ticket thread."),
+  content: z
+    .string()
+    .min(1)
+    .max(MAX_CONTENT_LENGTH)
+    .describe("Reply content; appended to the ticket thread."),
 });
 
 export function registerTicketTools(server: McpServer): void {
@@ -97,7 +112,10 @@ export function registerTicketTools(server: McpServer): void {
         const userId = resolveUserId(extra);
         const ticket = await getTicketById(args.ticketId);
         if (!ticket || ticket.userId !== userId) {
-          return { isError: true as const, content: [{ type: "text" as const, text: NOT_FOUND_MESSAGE }] };
+          return {
+            isError: true as const,
+            content: [{ type: "text" as const, text: NOT_FOUND_MESSAGE }],
+          };
         }
 
         const messages = await getTicketMessages(args.ticketId);
@@ -153,7 +171,10 @@ export function registerTicketTools(server: McpServer): void {
         const userId = resolveUserId(extra);
         const ticket = await getTicketById(args.ticketId);
         if (!ticket || ticket.userId !== userId) {
-          return { isError: true as const, content: [{ type: "text" as const, text: NOT_FOUND_MESSAGE }] };
+          return {
+            isError: true as const,
+            content: [{ type: "text" as const, text: NOT_FOUND_MESSAGE }],
+          };
         }
 
         const message = await addMessage({

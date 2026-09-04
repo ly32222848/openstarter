@@ -9,11 +9,5 @@
 // 不进公共 API，需要时走 ./* 深路径导出（如 "@openstarter/analytics-mobile/facade"）。
 export { resolveMobileAnalyticsConfig } from "./config";
 export type { MobileAnalyticsConfig } from "./config";
-export {
-  identify,
-  initAnalytics,
-  setScreenName,
-  setUserId,
-  track,
-} from "./facade";
+export { identify, initAnalytics, setScreenName, setUserId, track } from "./facade";
 export type { AnalyticsProvider, EventProperties, UserTraits } from "./providers/types";

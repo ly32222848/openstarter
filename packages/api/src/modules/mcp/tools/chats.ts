@@ -4,7 +4,13 @@ import type { McpServer } from "@modelcontextprotocol/server";
 import { z } from "zod";
 
 import { getChat, getChatMessages, getUserChats } from "../../llm/service";
-import { jsonContent, paginationSchema, resolveUserId, toIsoString, withToolError } from "../shared";
+import {
+  jsonContent,
+  paginationSchema,
+  resolveUserId,
+  toIsoString,
+  withToolError,
+} from "../shared";
 
 const READ_ONLY = {
   destructiveHint: false,
@@ -14,7 +20,10 @@ const READ_ONLY = {
 } as const;
 
 const getChatMessagesSchema = paginationSchema.extend({
-  chatId: z.string().min(1).describe("Id of the chat whose messages to read (from openstarter_list_chats)."),
+  chatId: z
+    .string()
+    .min(1)
+    .describe("Id of the chat whose messages to read (from openstarter_list_chats)."),
 });
 
 export function registerChatTools(server: McpServer): void {
@@ -29,7 +38,11 @@ export function registerChatTools(server: McpServer): void {
     (args, extra) =>
       withToolError(async () => {
         const userId = resolveUserId(extra);
-        const { items, total } = await getUserChats({ page: args.page, pageSize: args.pageSize, userId });
+        const { items, total } = await getUserChats({
+          page: args.page,
+          pageSize: args.pageSize,
+          userId,
+        });
         return jsonContent({
           items: items.map((item) => ({
             createdAt: toIsoString(item.createdAt),

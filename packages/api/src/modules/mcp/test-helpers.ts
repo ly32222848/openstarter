@@ -35,18 +35,21 @@ vi.mock("@openstarter/auth", () => ({
   getUserPlan: vi.fn(async (userId: string) => ({ plan: "none" as const, userId })),
 }));
 
-vi.mock("@openstarter/db/server", async (importOriginal: () => Promise<typeof import("@openstarter/db/server")>) => {
-  const actual = await importOriginal();
-  return {
-    ...actual,
-    db: () => {
-      if (!state.database) {
-        throw new Error("mcp test database not initialized");
-      }
-      return state.database;
-    },
-  };
-});
+vi.mock(
+  "@openstarter/db/server",
+  async (importOriginal: () => Promise<typeof import("@openstarter/db/server")>) => {
+    const actual = await importOriginal();
+    return {
+      ...actual,
+      db: () => {
+        if (!state.database) {
+          throw new Error("mcp test database not initialized");
+        }
+        return state.database;
+      },
+    };
+  },
+);
 
 // The shared harness predates the active order/chat/ticket schemas (legacy
 // `transaction_id`/`sender` columns etc.). Drop & recreate the tables the MCP
@@ -167,7 +170,10 @@ const RESHAPE_TABLES = [
 ];
 
 export interface McpTestHarness {
-  callTool: (name: string, args?: Record<string, unknown>) => Promise<{
+  callTool: (
+    name: string,
+    args?: Record<string, unknown>,
+  ) => Promise<{
     isError?: boolean;
     content: Array<{ type: string; text?: string }>;
     structuredContent?: unknown;

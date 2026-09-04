@@ -52,7 +52,10 @@ export function registerProfileTools(server: McpServer): void {
           return {
             isError: true as const,
             content: [
-              { type: "text" as const, text: `No profile exists for the authenticated user (${userId}). The API key may reference a deleted account.` },
+              {
+                type: "text" as const,
+                text: `No profile exists for the authenticated user (${userId}). The API key may reference a deleted account.`,
+              },
             ],
           };
         }

@@ -32,21 +32,19 @@ openstarter/
 ├── packages/              # Shared libraries (published as @openstarter/*)
 │   ├── api/               # Hono RPC backend (see API Architecture below)
 │   ├── auth/              # Better-Auth server + clients (web.ts, mobile.ts)
-│   ├── billing/           # Billing logic (shared, web, mobile providers)
+│   ├── billing/           # Billing; split by platform into billing/{web,mobile}
 │   ├── db/                # Drizzle schema, migrations, seed scripts
 │   ├── email/             # React Email templates + providers (Resend, Cloudflare)
 │   ├── i18n/              # Per-platform i18n
 │   │   ├── web/           # @openstarter/i18n-web (web/auth/email, inlang/Paraglide)
 │   │   ├── extension/     # @openstarter/i18n-extension (extension, @wxt-dev/i18n)
 │   │   └── mobile/        # @openstarter/i18n-mobile (mobile-specific, i18next)
-│   ├── shared/            # Constants, validators, utilities, logger
-│   ├── storage/           # S3/R2 storage abstractions
-│   ├── analytics/         # Event tracking (web + mobile variants; mobile is a single package with dual adapters: OpenPanel + GA4 Firebase)
-│   ├── monitoring/        # Error tracking (web, mobile, extension variants)
-│   ├── notifications/     # Notification providers
-│   └── ui/                # shadcn components, Tailwind (web, mobile variants)
+│   ├── shared/            # Constants, validators, utilities, logger, config
+│   ├── ai/                # AI providers; split by platform into ai/{web,mobile}
+│   ├── analytics/         # Event tracking; split by platform into analytics/{web,mobile} (mobile has dual adapters: OpenPanel + GA4 Firebase)
+│   └── ui/                # shadcn components + Tailwind; split by platform into ui/{web,mobile}
 │
-└── tooling/               # ESLint, Prettier, TypeScript, Vitest configs
+└── scripts/               # gen-package scaffolder, desktop runner, shared vitest config
 ```
 
 ## API Architecture (`packages/api/`)
@@ -65,6 +63,9 @@ src/
     ├── billing/           # Checkout, payment webhooks
     ├── config/            # Public config endpoint
     ├── storage/           # Image upload (S3/R2)
+    ├── llm/               # LLM chat (conversations + SSE streaming; providers in packages/ai)
+    ├── mcp/               # MCP server mounted at /api/mcp (read-only + ticket writes)
+    ├── status/            # Health/status endpoint
     ├── user/              # Profile, subscriptions, credits, orders
     ├── admin/             # Admin-only routes
     │   ├── rbac/          # Role/permission management
@@ -206,7 +207,8 @@ const { data } = await client.user.orders.$get({ query: { page: 1 } });
 
 - **Unit tests** — colocated as `.test.ts` next to source
 - **Property tests** — use fast-check for complex logic; see `ai-tasks/service.property.test.ts`
-- **Coverage target** — 80%+ for critical paths (auth, billing, api)
+- **Coverage** — CI runs `turbo run test:coverage` (single pass, no separate test job). Repo-level thresholds live in the root `vitest.config.ts` and are intentionally low today (they gate against gross regressions, not a quality bar); the long-term goal is 80%+ for critical paths (auth, billing, api). UI-component packages (e.g. `packages/ui/web`) are included in the aggregate but largely untested — exclude or test before raising thresholds.
+- **docs/** is git-ignored (local-only notes; operations plans included). Do not expect it in CI or a fresh clone.
 
 Run specific test:
 

@@ -29,9 +29,7 @@ describe("with-firebase-config", () => {
     expect(result.android?.googleServicesFile).toBeUndefined();
     expect(result.ios?.googleServicesFile).toBeUndefined();
     expect(warn).toHaveBeenCalledTimes(1);
-    expect(warn).toHaveBeenCalledWith(
-      expect.stringContaining("google-services.json"),
-    );
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining("google-services.json"));
     expect(warn).toHaveBeenCalledWith(expect.stringContaining("*.example"));
   });
 
