@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   getSettingGroups,
+  getSettings,
   isMaskedConfigValue,
   isSecretConfigKey,
   maskConfigValue,
@@ -98,5 +99,31 @@ describe("getSettingGroups — RevenueCat group", () => {
     const revenuecat = groups.find((g) => g.name === "revenuecat");
     expect(revenuecat?.tab).toBe("payment");
     expect(revenuecat?.title).toBe("RevenueCat");
+  });
+});
+
+describe("getSettingGroups — AI provider groups", () => {
+  it("exposes the AI provider groups on the ai tab", () => {
+    const groups = getSettingGroups().filter((g) => g.tab === "ai").map((g) => g.name);
+    for (const name of ["openai", "anthropic", "google", "openrouter", "deepseek", "ollama", "replicate", "fal"]) {
+      expect(groups).toContain(name);
+    }
+  });
+});
+
+describe("getSettings — LLM provider config keys", () => {
+  it("registers the six LLM provider config keys", () => {
+    const names = getSettings().map((s) => s.name);
+    for (const key of [
+      "google_api_key",
+      "openrouter_api_key",
+      "openrouter_base_url",
+      "deepseek_api_key",
+      "deepseek_base_url",
+      "ollama_base_url",
+      "default_llm_provider",
+    ]) {
+      expect(names).toContain(key);
+    }
   });
 });

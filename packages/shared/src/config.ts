@@ -210,6 +210,30 @@ export function getSettingGroups(): SettingGroup[] {
     },
     { description: "Fal AI API", name: "fal", tab: "ai", title: "Fal" },
     {
+      description: "Google Gemini API",
+      name: "google",
+      tab: "ai",
+      title: "Google",
+    },
+    {
+      description: "OpenRouter aggregated LLM API",
+      name: "openrouter",
+      tab: "ai",
+      title: "OpenRouter",
+    },
+    {
+      description: "DeepSeek API",
+      name: "deepseek",
+      tab: "ai",
+      title: "DeepSeek",
+    },
+    {
+      description: "Local Ollama server",
+      name: "ollama",
+      tab: "ai",
+      title: "Ollama",
+    },
+    {
       description: "Inject gtag.js with the configured Measurement ID",
       name: "google_analytics",
       tab: "analytics",
@@ -923,6 +947,80 @@ export function getSettings(): Setting[] {
       type: "password",
     },
 
+    // AI / Google
+    {
+      group: "google",
+      name: "google_api_key",
+      placeholder: "AIza...",
+      tab: "ai",
+      title: "API Key",
+      type: "password",
+    },
+
+    // AI / OpenRouter
+    {
+      group: "openrouter",
+      name: "openrouter_base_url",
+      placeholder: "https://openrouter.ai/api/v1",
+      tab: "ai",
+      title: "Base URL",
+      type: "text",
+    },
+    {
+      group: "openrouter",
+      name: "openrouter_api_key",
+      placeholder: "sk-or-xxx",
+      tab: "ai",
+      title: "API Key",
+      type: "password",
+    },
+
+    // AI / DeepSeek
+    {
+      group: "deepseek",
+      name: "deepseek_base_url",
+      placeholder: "https://api.deepseek.com/v1",
+      tab: "ai",
+      title: "Base URL",
+      type: "text",
+    },
+    {
+      group: "deepseek",
+      name: "deepseek_api_key",
+      placeholder: "sk-xxx",
+      tab: "ai",
+      title: "API Key",
+      type: "password",
+    },
+
+    // AI / Ollama（本地，无 key）
+    {
+      group: "ollama",
+      name: "ollama_base_url",
+      placeholder: "http://localhost:11434/v1",
+      tab: "ai",
+      title: "Base URL",
+      type: "text",
+    },
+
+    // AI / 默认 LLM 供应商
+    {
+      defaultValue: "openai",
+      group: "openai",
+      name: "default_llm_provider",
+      options: [
+        { label: "OpenAI", value: "openai" },
+        { label: "Anthropic", value: "anthropic" },
+        { label: "Google", value: "google" },
+        { label: "OpenRouter", value: "openrouter" },
+        { label: "DeepSeek", value: "deepseek" },
+        { label: "Ollama", value: "ollama" },
+      ],
+      tab: "ai",
+      title: "Default LLM Provider",
+      type: "select",
+    },
+
     // Analytics / Google Analytics
     {
       group: "google_analytics",
@@ -1106,6 +1204,14 @@ export const envConfigs: ConfigMap = {
 
   // AI（Replicate 提供 env 兜底；OpenAI/Anthropic 仅后台配置以避免误用机器环境变量）
   replicate_api_token: readEnv("REPLICATE_API_TOKEN") ?? "",
+
+  // AI - OpenRouter / DeepSeek / Ollama（OpenAI 兼容渠道，env 兜底；
+  // google/anthropic 沿用「仅后台配置」原则，不读 env）
+  openrouter_api_key: readEnv("OPENROUTER_API_KEY") ?? "",
+  openrouter_base_url: readEnv("OPENROUTER_BASE_URL") ?? "",
+  deepseek_api_key: readEnv("DEEPSEEK_API_KEY") ?? "",
+  deepseek_base_url: readEnv("DEEPSEEK_BASE_URL") ?? "",
+  ollama_base_url: readEnv("OLLAMA_BASE_URL") ?? "",
 
   // 邮件 - Resend
   resend_api_key: readEnv("RESEND_API_KEY") ?? "",
