@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { getRevenueCatApiKey, resolveApiUrl } from "./env";
+import { BUILD_FLAGS, getBuildTimeFlag, getRevenueCatApiKey, resolveApiUrl } from "./env";
 
 describe("resolveApiUrl", () => {
   it("accepts an absolute http URL", () => {
@@ -76,5 +76,37 @@ describe("getRevenueCatApiKey", () => {
     delete process.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY;
   } else {
     process.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY = ORIGINAL;
+  }
+});
+
+describe("getBuildTimeFlag", () => {
+  const NAME = "EXPO_PUBLIC_TEST_FLAG";
+  const ORIGINAL_FLAG = process.env[NAME];
+
+  it('is on only for the exact "true" value', () => {
+    process.env[NAME] = "true";
+    expect(getBuildTimeFlag(NAME)).toBe(true);
+  });
+
+  it("rejects loose truthy values", () => {
+    for (const value of ["false", "1", "TRUE", "on", ""]) {
+      process.env[NAME] = value;
+      expect(getBuildTimeFlag(NAME)).toBe(false);
+    }
+  });
+
+  it("is off when the variable is missing", () => {
+    delete process.env[NAME];
+    expect(getBuildTimeFlag(NAME)).toBe(false);
+  });
+
+  it("exposes the canonical IAP flag name", () => {
+    expect(BUILD_FLAGS.iapEnabled).toBe("EXPO_PUBLIC_IAP_ENABLED");
+  });
+
+  if (ORIGINAL_FLAG === undefined) {
+    delete process.env[NAME];
+  } else {
+    process.env[NAME] = ORIGINAL_FLAG;
   }
 });

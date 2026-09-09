@@ -42,6 +42,12 @@ export function getEnv(): EnvResult {
   return resolveApiUrl(process.env.EXPO_PUBLIC_API_URL);
 }
 
+// 构建期功能开关（与 web 管理端开关取 AND 的附加门；语义见各处注释）。
+export const BUILD_FLAGS = {
+  /** IAP 构建期总开关：与 revenuecat_enabled（服务端）及 RC key 同时满足才展示付费墙。 */
+  iapEnabled: "EXPO_PUBLIC_IAP_ENABLED",
+} as const;
+
 /**
  * RevenueCat iOS SDK key（EXPO_PUBLIC_REVENUECAT_IOS_API_KEY，形如 appl_xxx）。
  *
@@ -56,4 +62,12 @@ export function getRevenueCatApiKey(): string | null {
   }
   const trimmed = raw.trim();
   return trimmed.length > 0 ? trimmed : null;
+}
+
+/**
+ * 读取构建期布尔开关（EXPO_PUBLIC_*）：严格 "true" 才算开，缺失/空白/其它值
+ * 一律关。语义与 public-config 的开关解析一致（对齐服务端 isEnabled）。
+ */
+export function getBuildTimeFlag(name: string): boolean {
+  return process.env[name] === "true";
 }

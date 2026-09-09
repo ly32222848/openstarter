@@ -35,9 +35,7 @@ export default function SignInScreen() {
       if (result.error) {
         // 邮箱未验证：先发验证邮件，再进 verify-email 屏（对齐 web sign-in-form 行为）。
         if (result.error.code === "EMAIL_NOT_VERIFIED") {
-          authClient
-            .sendVerificationEmail({ email: value.email })
-            .catch(() => undefined);
+          authClient.sendVerificationEmail({ email: value.email }).catch(() => undefined);
           router.replace({
             pathname: "/verify-email",
             params: { email: value.email },

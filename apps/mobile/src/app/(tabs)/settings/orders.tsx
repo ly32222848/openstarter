@@ -109,7 +109,13 @@ export default function OrdersScreen() {
             style={{ minHeight: MIN_TOUCH_TARGET, minWidth: MIN_TOUCH_TARGET }}
             className="items-center justify-center rounded-md active:opacity-60"
           >
-            <Text className={page <= 1 ? "text-muted-foreground dark:text-dark-muted-foreground" : "text-foreground dark:text-dark-foreground"}>
+            <Text
+              className={
+                page <= 1
+                  ? "text-muted-foreground dark:text-dark-muted-foreground"
+                  : "text-foreground dark:text-dark-foreground"
+              }
+            >
               {t("common.table.previous")}
             </Text>
           </Pressable>

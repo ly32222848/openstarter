@@ -53,6 +53,8 @@ function warnFactoryOnce(key: string, error: unknown): void {
  * 按配置初始化并返回生效 provider（幂等）。
  * OP：clientId 与 clientSecret 都非空才启用（半配置视为未配置）。
  * GA：gaMobileEnabled 才实例化（firebase 构建文件缺失由 provider 内部降级）。
+ * 配置来源为构建期 env（见 config.ts）—— 供应商开关随构建固化，不再由
+ * web 管理端经 /api/analytics/config 控制。
  */
 export async function initAnalytics(config: MobileAnalyticsConfig): Promise<AnalyticsProvider> {
   if (activeProvider) {

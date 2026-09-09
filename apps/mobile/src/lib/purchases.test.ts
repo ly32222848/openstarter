@@ -55,10 +55,7 @@ describe("initPurchases", () => {
     env.getRevenueCatApiKey.mockReturnValue("appl_test_key");
     const facade = await importFacade();
 
-    const [first, second] = await Promise.all([
-      facade.initPurchases(),
-      facade.initPurchases(),
-    ]);
+    const [first, second] = await Promise.all([facade.initPurchases(), facade.initPurchases()]);
 
     expect(first).toBe(true);
     expect(second).toBe(true);

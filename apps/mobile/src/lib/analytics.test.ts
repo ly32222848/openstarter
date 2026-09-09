@@ -1,57 +1,73 @@
-// apps/mobile 分析薄壳测试：resolve 转发语义 + useScreenTracking 纯路径。
+// apps/mobile 分析薄壳测试：env → 配置解析转发 + useScreenTracking 纯路径。
 // mobile 无 @testing-library/react，hook 不渲染组件 —— useScreenTracking
-// 的 6 行转发语义已由包内门面测试覆盖，此处验证模块导出完整性 + resolve
-// 对不信任响应的归一（mobile 侧真正新增的逻辑）。
+// 的转发语义已由包内门面测试覆盖，此处验证模块导出完整性 + env 解析
+// 转发语义（app 侧真正的接线点）。
 
-import { describe, expect, it, vi } from "vitest";
-
-vi.mock("./api", () => ({
-  apiClient: {
-    api: { analytics: { config: { $get: vi.fn(async () => ({ ok: false })) } } },
-  },
-}));
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("expo-router", () => ({
   usePathname: vi.fn(() => "/"),
 }));
 
-import { initAnalyticsFromApi, resolveMobileAnalyticsConfig, useScreenTracking } from "./analytics";
+vi.mock("@openstarter/analytics-mobile", () => ({
+  initAnalytics: vi.fn(async () => ({
+    identify: async () => undefined,
+    init: async () => undefined,
+    name: "noop",
+    setScreenName: async () => undefined,
+    setUserId: async () => undefined,
+    track: async () => undefined,
+  })),
+  resolveMobileAnalyticsConfig: vi.fn(() => ({
+    gaMobileEnabled: false,
+    openpanelClientId: "",
+    openpanelClientSecret: "",
+  })),
+  setScreenName: vi.fn(async () => undefined),
+}));
+
+import { initAnalyticsFromEnv, useScreenTracking } from "./analytics";
+import {
+  initAnalytics,
+  resolveMobileAnalyticsConfig as resolveConfig,
+} from "@openstarter/analytics-mobile";
+
+const mockedInitAnalytics = vi.mocked(initAnalytics);
+const mockedResolveConfig = vi.mocked(resolveConfig);
+
+afterEach(() => {
+  vi.clearAllMocks();
+});
 
 describe("module exports", () => {
   it("exposes the app-side analytics surface", () => {
-    expect(typeof resolveMobileAnalyticsConfig).toBe("function");
-    expect(typeof initAnalyticsFromApi).toBe("function");
+    expect(typeof initAnalyticsFromEnv).toBe("function");
     expect(typeof useScreenTracking).toBe("function");
   });
 });
 
-describe("resolveMobileAnalyticsConfig re-export", () => {
-  it("normalizes an RPC response into MobileAnalyticsConfig", () => {
-    expect(
-      resolveMobileAnalyticsConfig({
-        gaMobileEnabled: "true",
-        openpanelClientId: "op-client",
-        openpanelClientSecret: "op-secret",
-      }),
-    ).toEqual({
-      gaMobileEnabled: true,
-      openpanelClientId: "op-client",
-      openpanelClientSecret: "op-secret",
-    });
-  });
+describe("initAnalyticsFromEnv", () => {
+  it("resolves config from process.env and initializes the facade with it", async () => {
+    process.env.EXPO_PUBLIC_ANALYTICS_GA_ENABLED = "true";
+    process.env.EXPO_PUBLIC_ANALYTICS_OPENPANEL_CLIENT_ID = "op-client";
+    process.env.EXPO_PUBLIC_ANALYTICS_OPENPANEL_CLIENT_SECRET = "op-secret";
 
-  it("treats garbage responses as unconfigured", () => {
-    expect(resolveMobileAnalyticsConfig(undefined)).toEqual({
-      gaMobileEnabled: false,
+    await initAnalyticsFromEnv();
+
+    expect(mockedResolveConfig).toHaveBeenCalledWith(process.env);
+    expect(mockedInitAnalytics).toHaveBeenCalledWith({
+      gaMobileEnabled: false, // mocked resolver's canned return
       openpanelClientId: "",
       openpanelClientSecret: "",
     });
   });
-});
 
-describe("initAnalyticsFromApi", () => {
-  it("is a no-op (does not throw) when the config endpoint fails", async () => {
-    // mock 的 $get 返回 { ok: false }：等价于未配置
-    await expect(initAnalyticsFromApi()).resolves.toBeUndefined();
+  it("still initializes (facade decides noop) when env is empty", async () => {
+    delete process.env.EXPO_PUBLIC_ANALYTICS_GA_ENABLED;
+    delete process.env.EXPO_PUBLIC_ANALYTICS_OPENPANEL_CLIENT_ID;
+    delete process.env.EXPO_PUBLIC_ANALYTICS_OPENPANEL_CLIENT_SECRET;
+
+    await expect(initAnalyticsFromEnv()).resolves.toBeUndefined();
+    expect(mockedInitAnalytics).toHaveBeenCalledTimes(1);
   });
 });

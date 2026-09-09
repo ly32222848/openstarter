@@ -9,7 +9,7 @@ import "../../global.css";
 
 import { ConfigError } from "@/components/config-error";
 import { getEnv } from "@/lib/env";
-import { initAnalyticsFromApi } from "@/lib/analytics";
+import { initAnalyticsFromEnv } from "@/lib/analytics";
 import { useAppLocale } from "@/lib/i18n";
 import { useThemePreference } from "@/lib/theme";
 import { useRevenueCatLifecycle } from "@/lib/use-revenuecat";
@@ -26,9 +26,10 @@ export default function RootLayout() {
   // 钩子内部全部降级安全：IAP 不可用时为 no-op，env 错误分支下也无副作用。
   useRevenueCatLifecycle();
 
-  // 分析初始化：配置拉取失败等价于未配置，静默跳过（fire-and-forget）。
+  // 分析初始化：供应商由构建期 env（EXPO_PUBLIC_ANALYTICS_*）决定，随包固化；
+  // 解析层永不抛错，未配置等价于 noop（fire-and-forget）。
   useEffect(() => {
-    void initAnalyticsFromApi();
+    void initAnalyticsFromEnv();
   }, []);
 
   if (!env.ok) {

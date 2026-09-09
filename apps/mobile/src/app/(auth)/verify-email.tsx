@@ -49,23 +49,26 @@ export default function VerifyEmailScreen() {
   }, [countdown]);
 
   /** 有界轮询：验证完成后服务端自动登录（autoSignInAfterVerification），捕捉到会话即返回。 */
-  const pollForSession = useCallback(function pollForSession() {
-    if (pollStartRef.current === null) {
-      pollStartRef.current = Date.now();
-    }
-    if (Date.now() - pollStartRef.current > POLL_MAX_MS) {
-      setNotice(t("common.sign.verify_email_not_verified_yet"));
-      pollStartRef.current = null;
-      return;
-    }
-    void authClient.getSession().then(({ data }) => {
-      if (data?.user) {
-        // 会话已建立：门禁（(auth)/_layout）会因会话变化把人送回主界面。
+  const pollForSession = useCallback(
+    function pollForSession() {
+      if (pollStartRef.current === null) {
+        pollStartRef.current = Date.now();
+      }
+      if (Date.now() - pollStartRef.current > POLL_MAX_MS) {
+        setNotice(t("common.sign.verify_email_not_verified_yet"));
+        pollStartRef.current = null;
         return;
       }
-      setTimeout(pollForSession, POLL_INTERVAL_MS);
-    });
-  }, [t]);
+      void authClient.getSession().then(({ data }) => {
+        if (data?.user) {
+          // 会话已建立：门禁（(auth)/_layout）会因会话变化把人送回主界面。
+          return;
+        }
+        setTimeout(pollForSession, POLL_INTERVAL_MS);
+      });
+    },
+    [t],
+  );
 
   const handleResend = async () => {
     setNotice("");

@@ -9,9 +9,7 @@
 // 纯函数设计：时钟与探测函数都由调用方注入，测试无需 mock timers。
 
 /** 轮询结果：确认 / 窗口耗尽。pending 不是终态，不对外暴露。 */
-export type PurchaseConfirmationResult =
-  | { status: "confirmed" }
-  | { status: "timeout" };
+export type PurchaseConfirmationResult = { status: "confirmed" } | { status: "timeout" };
 
 export interface PurchaseConfirmationOptions {
   /**

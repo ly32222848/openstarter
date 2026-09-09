@@ -56,7 +56,10 @@ function EntryRow(props: {
           {props.description}
         </Text>
       </View>
-      <View className="items-center justify-center" style={{ width: MIN_TOUCH_TARGET, height: MIN_TOUCH_TARGET }}>
+      <View
+        className="items-center justify-center"
+        style={{ width: MIN_TOUCH_TARGET, height: MIN_TOUCH_TARGET }}
+      >
         {props.children}
       </View>
     </Pressable>
@@ -99,11 +102,7 @@ export default function SettingsScreen() {
                 key={entry.href}
                 title={entry.title}
               >
-                <Ionicons
-                  color="#9ca3af"
-                  name="chevron-forward"
-                  size={20}
-                />
+                <Ionicons color="#9ca3af" name="chevron-forward" size={20} />
               </EntryRow>
             ))}
           </CardContent>

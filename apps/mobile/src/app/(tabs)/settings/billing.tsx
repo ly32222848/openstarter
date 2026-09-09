@@ -14,8 +14,13 @@ import { Screen } from "@/components/ui/screen";
 import { Spinner } from "@/components/ui/spinner";
 import { useRouter } from "expo-router";
 import { authClient } from "@/lib/auth-client";
-import { getEnv } from "@/lib/env";
-import { useBillingPortalMutation, usePublicConfig, useUserPlan, useUserSubscription } from "@/lib/queries";
+import { BUILD_FLAGS, getBuildTimeFlag, getEnv } from "@/lib/env";
+import {
+  useBillingPortalMutation,
+  usePublicConfig,
+  useUserPlan,
+  useUserSubscription,
+} from "@/lib/queries";
 import { resolveIapEnabled } from "@/lib/public-config";
 import { isPurchasesAvailable } from "@/lib/purchases";
 import { formatIsoDate } from "@/lib/billing-format";
@@ -62,9 +67,12 @@ export default function BillingScreen() {
   const portalMutation = useBillingPortalMutation();
   const [portalError, setPortalError] = useState<string | null>(null);
 
-  // IAP 可用 = 公开开关 + RC SDK key + configure 成功，三者缺一即视为不可用。
+  // IAP 可用 = 构建期开关 + 服务端公开开关 + RC SDK key + configure 成功，
+  // 四者缺一即视为不可用（构建期开关随渠道固化，服务端开关保留远程 kill-switch）。
   const iapAvailable =
-    resolveIapEnabled(configQuery.data ?? {}) && isPurchasesAvailable();
+    getBuildTimeFlag(BUILD_FLAGS.iapEnabled) &&
+    resolveIapEnabled(configQuery.data ?? {}) &&
+    isPurchasesAvailable();
   // 升级入口可见性：IAP 可用 → 内置 paywall；否则仅 Android 兜底网页定价页。
   const showUpgradeEntry = iapAvailable || Platform.OS !== "ios";
 
@@ -90,8 +98,7 @@ export default function BillingScreen() {
     return <Spinner />;
   }
 
-  const failed =
-    planResult.status !== "success" || subscriptionResult.status !== "success";
+  const failed = planResult.status !== "success" || subscriptionResult.status !== "success";
   const failureMessage =
     planResult.status === "unreachable" || subscriptionResult.status === "unreachable"
       ? t("common.error.unreachable")
@@ -109,8 +116,7 @@ export default function BillingScreen() {
         planResult.status === "success" ? planResult.data.trialEndsAt : null,
       );
 
-  const subscription =
-    subscriptionResult.status === "success" ? subscriptionResult.data : null;
+  const subscription = subscriptionResult.status === "success" ? subscriptionResult.data : null;
 
   const nextBillingDate = formatIsoDate(subscription?.nextBillingDate ?? null);
   const renewing = subscription?.status === "active" || subscription?.status === "trialing";

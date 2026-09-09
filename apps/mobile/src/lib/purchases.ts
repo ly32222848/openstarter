@@ -89,9 +89,7 @@ export async function restorePurchases(): Promise<boolean> {
 }
 
 /** 注册 customerInfo 更新监听（购买/续费/到期推送）；返回取消函数。 */
-export function addCustomerInfoUpdateListener(
-  listener: () => void,
-): () => void {
+export function addCustomerInfoUpdateListener(listener: () => void): () => void {
   if (!available) {
     return () => undefined;
   }

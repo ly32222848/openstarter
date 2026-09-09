@@ -27,9 +27,7 @@ const BILLING_QUERY_KEYS: ReadonlySet<string> = new Set([
 ]);
 
 /** 按 queryKey 首段失效账单查询（["user-orders", page] 这类带参键一并命中）。 */
-function invalidateBillingQueries(
-  queryClient: ReturnType<typeof useQueryClient>,
-): void {
+function invalidateBillingQueries(queryClient: ReturnType<typeof useQueryClient>): void {
   for (const key of BILLING_QUERY_KEYS) {
     void queryClient.invalidateQueries({ queryKey: [key] });
   }

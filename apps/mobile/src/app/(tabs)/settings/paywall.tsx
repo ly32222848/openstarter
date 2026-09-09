@@ -40,29 +40,31 @@ export default function PaywallScreen() {
   /** 服务端是否已反映购买（plan 升级或余额增加均为成功信号）。 */
   const pollServerConfirmation = async (): Promise<boolean> => {
     const [plan, credits] = await Promise.all([
-      planQuery.refetch().then((q) => q.data).catch(() => null),
-      creditsQuery.refetch().then((q) => q.data).catch(() => null),
+      planQuery
+        .refetch()
+        .then((q) => q.data)
+        .catch(() => null),
+      creditsQuery
+        .refetch()
+        .then((q) => q.data)
+        .catch(() => null),
     ]);
-    const planUpgraded =
-      plan?.status === "success" && plan.data.plan !== "none";
-    const creditsGranted =
-      credits?.status === "success" && credits.data.balance > 0;
+    const planUpgraded = plan?.status === "success" && plan.data.plan !== "none";
+    const creditsGranted = credits?.status === "success" && credits.data.balance > 0;
     return planUpgraded || creditsGranted;
   };
 
   /** 购买/恢复成功的统一后处理：有界轮询 + 关闭付费墙。 */
   const handlePurchaseSettled = (): void => {
     setConfirming(true);
-    void runPurchaseConfirmation({ poll: pollServerConfirmation }).then(
-      (result) => {
-        setConfirming(false);
-        if (result.status === "timeout") {
-          // webhook 未落地：提示处理中，仍关闭付费墙（billing 屏会随后反映）。
-          setPendingNotice(true);
-        }
-        router.replace("/settings/billing");
-      },
-    );
+    void runPurchaseConfirmation({ poll: pollServerConfirmation }).then((result) => {
+      setConfirming(false);
+      if (result.status === "timeout") {
+        // webhook 未落地：提示处理中，仍关闭付费墙（billing 屏会随后反映）。
+        setPendingNotice(true);
+      }
+      router.replace("/settings/billing");
+    });
   };
 
   return (
@@ -80,9 +82,7 @@ export default function PaywallScreen() {
             }}
             className="items-center justify-center active:opacity-60"
           >
-            <Text className="text-muted-foreground text-xl dark:text-dark-muted-foreground">
-              ✕
-            </Text>
+            <Text className="text-muted-foreground text-xl dark:text-dark-muted-foreground">✕</Text>
           </Pressable>
         </View>
         <View className="flex-1">
@@ -100,10 +100,7 @@ export default function PaywallScreen() {
         ) : null}
         {pendingNotice && !confirming ? (
           <View className="p-4 pt-0">
-            <Button
-              onPress={() => router.replace("/settings/billing")}
-              variant="outline"
-            >
+            <Button onPress={() => router.replace("/settings/billing")} variant="outline">
               <Text>{t("settings.billing.close")}</Text>
             </Button>
           </View>
