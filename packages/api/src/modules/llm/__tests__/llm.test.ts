@@ -209,8 +209,9 @@ describe("LLM Service", () => {
         content: "First message",
       });
 
-      const history = await getMessageHistory({ chatId, userId: TEST_USER_ID });
-      expect(history).toEqual([{ role: "user", content: "First message" }]);
+      const { messages, totalChars } = await getMessageHistory({ chatId, userId: TEST_USER_ID });
+      expect(messages).toEqual([{ role: "user", content: "First message" }]);
+      expect(totalChars).toBe("First message".length);
     });
   });
 

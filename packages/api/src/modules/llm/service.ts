@@ -230,12 +230,13 @@ export async function getChatMessages(args: {
 }
 
 /**
- * Get chronological message history for AI SDK context assembly.
+ * Get chronological message history for AI SDK context assembly, plus the
+ * total character count used for credit pre-charge estimation.
  */
-export async function getMessageHistory(args: {
-  chatId: string;
-  userId: string;
-}): Promise<Array<{ role: "user" | "assistant"; content: string }>> {
+export async function getMessageHistory(args: { chatId: string; userId: string }): Promise<{
+  messages: Array<{ role: "user" | "assistant"; content: string }>;
+  totalChars: number;
+}> {
   const database = db();
   const rows = await database
     .select()
@@ -243,8 +244,12 @@ export async function getMessageHistory(args: {
     .where(and(eq(chatMessage.chatId, args.chatId), eq(chatMessage.userId, args.userId)))
     .orderBy(chatMessage.createdAt);
 
-  return rows.map((m) => ({
+  const messages = rows.map((m) => ({
     role: m.role as "user" | "assistant",
     content: fromParts(m.parts),
   }));
+
+  const totalChars = messages.reduce((n, m) => n + m.content.length, 0);
+
+  return { messages, totalChars };
 }

@@ -12,6 +12,7 @@
 
 import { zValidator } from "@hono/zod-validator";
 import { respData, respErr, respPage } from "@openstarter/shared";
+import { logger } from "@openstarter/shared/logger";
 import { streamText } from "ai";
 import { Hono } from "hono";
 import { z } from "zod";
@@ -20,6 +21,8 @@ import { requireAuth } from "../../middleware/auth";
 import { requirePlan } from "../../middleware/plan-gate";
 import { paginationSchema } from "../../schema";
 
+import { InsufficientCreditsError } from "../ai-tasks/service";
+import { preloadChatCredits, settleChatCredits } from "./credits";
 import { getModel, isLLMEnabled } from "./provider";
 import {
   createChat,
@@ -35,6 +38,7 @@ import {
 const STATUS_NOT_FOUND = 404;
 const STATUS_BAD_REQUEST = 400;
 const STATUS_PROVIDER_ERROR = 502;
+const STATUS_INSUFFICIENT_CREDITS = 402;
 
 // ─── Validation Schemas ──────────────────────────────────────────────────
 
@@ -175,6 +179,31 @@ export const llmRouter = new Hono()
         return c.json(respErr("Chat not found"), STATUS_NOT_FOUND);
       }
 
+      // Get message history for context (and total chars for pre-charge estimation)
+      const { messages: history, totalChars } = await getMessageHistory({ chatId, userId });
+
+      // Pre-charge credits before persisting the user message. Insufficient
+      // balance short-circuits with 402 — no user message, no stream.
+      let preload: {
+        consumedCreditId: string | null;
+        estimatedCost: number;
+        maxOutputTokens: number | null;
+      };
+      try {
+        preload = await preloadChatCredits({
+          userId,
+          chatId,
+          provider: foundChat.provider,
+          model: foundChat.model,
+          historyChars: totalChars,
+        });
+      } catch (error) {
+        if (error instanceof InsufficientCreditsError) {
+          return c.json(respErr("insufficient credits"), STATUS_INSUFFICIENT_CREDITS);
+        }
+        throw error;
+      }
+
       // Save user message
       await createMessage({
         chatId,
@@ -184,9 +213,6 @@ export const llmRouter = new Hono()
         model: foundChat.model,
         provider: foundChat.provider,
       });
-
-      // Get message history for context
-      const history = await getMessageHistory({ chatId, userId });
 
       // Build messages array for AI SDK
       const messages = [...history, { role: "user" as const, content }];
@@ -205,7 +231,22 @@ export const llmRouter = new Hono()
         const result = streamText({
           model,
           messages,
-          onFinish: async ({ text }) => {
+          maxOutputTokens: preload.maxOutputTokens ?? 4096,
+          onFinish: async ({ text, usage }) => {
+            // Settle credits by actual usage. A settle failure must never
+            // fail the already-completed stream — log and keep the preload.
+            try {
+              await settleChatCredits({
+                consumedCreditId: preload.consumedCreditId,
+                estimatedCost: preload.estimatedCost,
+                totalTokens: usage.totalTokens,
+                provider: foundChat.provider,
+                model: foundChat.model,
+              });
+            } catch (error) {
+              logger.warn("[llm] settleChatCredits failed after stream completion", error);
+            }
+
             // Save assistant message after streaming completes
             if (text) {
               await createMessage({

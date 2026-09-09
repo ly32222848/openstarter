@@ -70,7 +70,10 @@ export async function getModel(provider?: string, modelId?: string): Promise<Lan
       if (providerName === "ollama" && !configs.ollama_base_url && !configs[baseURLKey]) {
         throw new Error("Ollama base URL not configured (ollama_base_url)");
       }
-      const apiKey = providerName === "ollama" ? OLLAMA_PLACEHOLDER_KEY : configs[`${providerName}_api_key`] || "";
+      const apiKey =
+        providerName === "ollama"
+          ? OLLAMA_PLACEHOLDER_KEY
+          : configs[`${providerName}_api_key`] || "";
       if (providerName !== "ollama" && !apiKey) {
         throw new Error(`${providerName} API key not configured (${providerName}_api_key)`);
       }
