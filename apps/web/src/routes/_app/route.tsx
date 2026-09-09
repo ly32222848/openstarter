@@ -1,7 +1,6 @@
-import { Outlet, createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
-import { MobileTopbar } from "@/components/app/mobile-topbar";
-import { Sidebar } from "@/components/app/sidebar";
+import { AppShell } from "@/components/app/app-shell";
 import { authClient } from "@/lib/auth-client";
 
 export const Route = createFileRoute("/_app")({
@@ -17,15 +16,5 @@ export const Route = createFileRoute("/_app")({
 });
 
 function AppLayout() {
-  return (
-    <div className="flex min-h-svh">
-      <Sidebar />
-      <div className="flex min-w-0 flex-1 flex-col">
-        <MobileTopbar />
-        <main id="main" className="flex-1 overflow-y-auto p-6">
-          <Outlet />
-        </main>
-      </div>
-    </div>
-  );
+  return <AppShell />;
 }

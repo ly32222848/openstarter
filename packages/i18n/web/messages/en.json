@@ -83,6 +83,7 @@
   "common.table.next": "Next",
   "common.table.refresh": "Refresh",
   "common.nav.settings": "Settings",
+  "common.nav.dashboard": "Dashboard",
   "common.nav.billing": "Billing",
   "common.nav.apikeys": "API Keys",
   "common.nav.profile": "Profile",
