@@ -574,6 +574,31 @@ export const userRole = table(
 
 // ─── AI ──────────────────────────────────────────────────────────────────────
 
+export const aiModel = table(
+  "ai_model",
+  {
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    creditPrice: integer("credit_price").notNull().default(0),
+    displayName: text("display_name").notNull(),
+    enabled: boolean("enabled").default(true).notNull(),
+    id: text("id").primaryKey(),
+    maxOutputTokens: integer("max_output_tokens"),
+    mediaType: text("media_type").notNull(),
+    metadata: text("metadata"),
+    modelId: text("model_id").notNull(),
+    optionsSchema: text("options_schema"),
+    provider: text("provider").notNull(),
+    sortOrder: integer("sort_order").notNull().default(0),
+    updatedAt: timestamp("updated_at")
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (t) => [
+    index("idx_ai_model_enabled_media").on(t.enabled, t.mediaType, t.sortOrder),
+    uniqueIndex("uq_ai_model_provider_model").on(t.provider, t.modelId),
+  ],
+);
+
 export const aiTask = table(
   "ai_task",
   {
@@ -754,6 +779,8 @@ export type NewRole = typeof role.$inferInsert;
 export type Permission = typeof permission.$inferSelect;
 export type RolePermission = typeof rolePermission.$inferSelect;
 export type UserRole = typeof userRole.$inferSelect;
+export type AiModel = typeof aiModel.$inferSelect;
+export type NewAiModel = typeof aiModel.$inferInsert;
 export type AiTask = typeof aiTask.$inferSelect;
 export type NewAiTask = typeof aiTask.$inferInsert;
 export type Chat = typeof chat.$inferSelect;
