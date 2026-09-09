@@ -182,9 +182,21 @@ const CREATE_TABLE_STATEMENTS: readonly string[] = [
     updated_at INTEGER NOT NULL DEFAULT ${NOW_EXPR},
     deleted_at INTEGER
   )`,
+  `CREATE TABLE apikey (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    title TEXT NOT NULL,
+    key_prefix TEXT NOT NULL,
+    key_hash TEXT NOT NULL,
+    status TEXT NOT NULL,
+    created_at INTEGER NOT NULL DEFAULT ${NOW_EXPR},
+    updated_at INTEGER NOT NULL DEFAULT ${NOW_EXPR},
+    deleted_at INTEGER
+  )`,
 ];
 
 const ALL_TABLES = [
+  "apikey",
   "ticket_message",
   "ticket",
   "ai_task",
@@ -205,10 +217,10 @@ const removeDatabaseFiles = (path: string) => {
 };
 
 /**
- * Create a per-suite sqlite database with the 9 Phase 0-5 tables used by
+ * Create a per-suite sqlite database with the 10 Phase 0-5 tables used by
  * api property tests (subscription, order, credit, ai_task, ticket,
- * ticket_message, post, taxonomy, user). Tests that only need a subset may
- * seed only the rows they require.
+ * ticket_message, post, taxonomy, apikey, user). Tests that only need a subset
+ * may seed only the rows they require.
  */
 export const createApiTestDatabase = async (suiteName: string) => {
   const databasePath = join(tmpdir(), `openstarter-api-${process.pid}-${suiteName}.sqlite`);

@@ -9,7 +9,7 @@ import { z } from "zod";
 
 import { requireAuth } from "../../middleware/auth";
 import { paginationSchema } from "../../schema";
-import { listUserOrders } from "./index";
+import { listUserOrders, getDashboardStats } from "./index";
 import {
   getBalance,
   getCurrentSubscription,
@@ -85,6 +85,12 @@ export const userRouter = new Hono()
       getHistory(userId, { limit, offset }),
     ]);
     return c.json(respData({ balance, history }));
+  })
+  // 当前用户的仪表盘汇总统计（余额 + 近 30 天积分授予/消耗、订单、消费、活跃 Key、逐日趋势）
+  .get("/user/dashboard-stats", requireAuth, async (c) => {
+    const userId = c.get("userId");
+    const [balance, stats] = await Promise.all([getBalance(userId), getDashboardStats(userId)]);
+    return c.json(respData({ ...stats, balance }));
   })
   // 当前用户的支付记录分页
   .get("/user/orders", requireAuth, zValidator("query", listQuery), async (c) => {
