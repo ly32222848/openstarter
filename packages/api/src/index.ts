@@ -17,6 +17,7 @@ import { HTTPException } from "hono/http-exception";
 
 import { registerAiSaveFiles } from "./modules/ai-tasks";
 import { adminRouter } from "./modules/admin/router";
+import { aiModelsRouter } from "./modules/ai-catalog/router";
 import { aiRouter } from "./modules/ai/router";
 import { llmRouter } from "./modules/llm";
 import { authRouter } from "./modules/auth/router";
@@ -72,6 +73,7 @@ const routes = api
   .route("/", storageRouter) // POST /api/storage/upload-image
   .route("/", aiRouter) // POST/GET /api/ai-tasks, GET /api/ai-tasks/:id
   .route("/", llmRouter) // POST/GET /api/llm/chats, /api/llm/chats/:id/messages
+  .route("/", aiModelsRouter) // GET /api/ai/models
   .route("/", supportRouter) // /api/tickets*, /api/apikeys
   .route("/", contentRouter) // /api/posts*, /api/blog*, /api/taxonomy*, /api/seo*
   .route("/mcp", mcpRouter) // ALL /api/mcp — MCP streamable HTTP 端点（API Key 鉴权）
