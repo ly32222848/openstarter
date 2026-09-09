@@ -172,8 +172,14 @@ export interface SettleChatCreditsParams {
 /**
  * 流式结束后按实际用量冲账。
  *
+ * 入参保持 plan 规定的签名（不含 userId/creditPrice）：结算单价经
+ * `findModelByProviderAndId` 按目录重查；归属（userId/userEmail/scene/metadata）
+ * 在撤销前从原消费流水回读。
+ *
  * - 免费会话（`consumedCreditId === null`）直接返回。
  * - `totalTokens` 缺失（上游未回报用量）→ warn 日志并保留预扣（按封顶计价，不退款）。
+ * - 消费流水缺失、或目录条目缺失/价格归零 → 结算价或归属未知，warn 并保留预扣
+ *   （不基于未知归属/单价退款）。
  * - `estimated <= actual` → 保留预扣并 warn：输出封顶保护下的极端情况（用量越过封顶），
  *   差额由平台承担，不再向用户追扣。
  * - `estimated > actual` → **整条**撤销预扣（`revoke` 是整条撤销，无法只冲差额），

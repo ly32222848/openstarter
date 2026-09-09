@@ -28,6 +28,12 @@ describe("llm credits pricing", () => {
    * The pre-charge caps output at maxOutputTokens, and providers enforce that cap
    * (total output = input + output with output <= maxOutputTokens), so the settled
    * cost can never exceed the pre-charge.
+   *
+   * 生成 output tokens 时与 pre-charge 使用**同一个** cap（chained，output <= cap）：
+   * 若像规格初稿那样独立生成 totalTokens（可远超 cap），该性质不可满足——
+   * fast-check 反例 [totalTokens=2, price=1, cap=1, inputTokens=49999]：
+   * pre = ceil((49999+1)/1000)*1 = 50 < actual = ceil((49999+2)/1000)*1 = 51。
+   * 供应商强制 maxOutputTokens 正是「封顶预扣」成立的前提（plan 修订已确认）。
    */
   it("actual cost never exceeds the capped pre-charge", async () => {
     await fc.assert(
