@@ -18,6 +18,7 @@
     "@ai-sdk/react": "^3.0.281",
     "@better-auth/passkey": "catalog:",
     "@mdx-js/react": "catalog:",
+    "@openstarter/ai-web": "workspace:*",
     "@openstarter/analytics-web": "workspace:*",
     "@openstarter/api": "workspace:*",
     "@openstarter/auth": "workspace:*",

@@ -1,11 +1,11 @@
+import viteReact from "@vitejs/plugin-react";
 import { defineProject } from "vitest/config";
 
 export default defineProject({
+  plugins: [viteReact()],
   test: {
-    environment: "node",
-    include: ["src/**/*.test.ts"],
+    environment: "jsdom",
+    include: ["src/**/*.test.{ts,tsx}"],
     name: "ai-web",
-    // 脚手架占位包暂无测试；首个测试落地后此开关不再生效。
-    passWithNoTests: true,
   },
 });
