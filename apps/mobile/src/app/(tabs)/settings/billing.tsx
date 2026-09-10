@@ -2,7 +2,7 @@
 //
 // 401 = 未登录（清会话交门禁）；unreachable/server-error = 错误 + 重试按钮。
 // 升级入口的分流（App Store 审核 3.1.1：iOS 不得引导外跳购买）：
-//   - IAP 可用（config 开关 + RC SDK key + configure 成功）→ push 内置 paywall；
+//   - IAP 可用（供应商 SDK key 已配置 && configure 成功，构建期 env 固化）→ push 内置 paywall；
 //   - iOS 且 IAP 不可用 → 不渲染任何购买入口（只在已订阅时给管理订阅）；
 //   - Android 且 IAP 不可用 → Linking.openURL(`${apiUrl}/pricing`) 网页兜底。
 import { isAvailable, useCustomer } from "@openstarter/billing-mobile";
