@@ -17,6 +17,7 @@ type AdminPath =
   | "/admin"
   | "/admin/users"
   | "/admin/roles"
+  | "/admin/ai-models"
   | "/admin/orders"
   | "/admin/subscriptions"
   | "/admin/credits"
@@ -43,6 +44,7 @@ export const ADMIN_NAV: AdminNavGroup[] = [
     items: [
       { label: "Users", permission: "admin.*", to: "/admin/users" },
       { label: "Roles", permission: "admin.*", to: "/admin/roles" },
+      { label: "AI Models", permission: "admin.*", to: "/admin/ai-models" },
       { label: "Settings", permission: "admin.*", to: "/admin/settings" },
     ],
   },

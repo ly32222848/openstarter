@@ -7,7 +7,39 @@ import { client } from "@/lib/api";
 
 const PAGE_SIZE = 20;
 
+/** `ai_model` 目录行的媒体类型（与后端 AI_MEDIA_TYPES 一致）。 */
+export const AI_MODEL_MEDIA_TYPES = ["text", "image", "video", "music", "speech"] as const;
+
+export type AiModelMediaType = (typeof AI_MODEL_MEDIA_TYPES)[number];
+
+/** admin 模型表单的通用字段（create 与 update 共用；update 时全部可选）。 */
+export interface AiModelPayload {
+  creditPrice: number;
+  displayName: string;
+  enabled: boolean;
+  maxOutputTokens: number | null;
+  mediaType: AiModelMediaType;
+  metadata?: string | null;
+  modelId: string;
+  optionsSchema: string | null;
+  provider: string;
+  sortOrder: number;
+}
+
 const queries = {
+  aiModels: (page: number) =>
+    queryOptions({
+      queryFn: async () => {
+        const res = await client.api.admin["ai-models"].$get({
+          query: { page: String(page), pageSize: String(PAGE_SIZE) },
+        });
+        if (!res.ok) {
+          throw new Error("Failed to load AI models");
+        }
+        return (await res.json()).data;
+      },
+      queryKey: ["admin", "ai-models", page] as const,
+    }),
   config: () =>
     queryOptions({
       queryFn: async () => {
@@ -124,6 +156,15 @@ const queries = {
 };
 
 const mutations = {
+  deleteAiModel: () =>
+    mutationOptions({
+      mutationFn: async (id: string) => {
+        const res = await client.api.admin["ai-models"][":id"].$delete({ param: { id } });
+        if (!res.ok) {
+          throw new Error("Failed to delete AI model");
+        }
+      },
+    }),
   deleteRole: () =>
     mutationOptions({
       mutationFn: async (id: string) => {
@@ -132,6 +173,59 @@ const mutations = {
         });
         if (!res.ok) {
           throw new Error("Failed to delete role");
+        }
+      },
+    }),
+  saveAiModel: () =>
+    mutationOptions({
+      mutationFn: async (input: AiModelPayload & { id: string | null }) => {
+        if (input.id) {
+          // update：body 中所有字段可选（后端 updateBody 只更新提交的键）。
+          const { id, ...body } = input;
+          const res = await client.api.admin["ai-models"][":id"].$patch({
+            json: body,
+            param: { id },
+          });
+          if (!res.ok) {
+            const json = (await res.json().catch(() => null)) as { message?: string } | null;
+            throw new Error(json?.message ?? "Failed to update AI model");
+          }
+          return;
+        }
+        // create：后端 createBody 校验必填字段。
+        const res = await client.api.admin["ai-models"].$post({
+          json: {
+            provider: input.provider,
+            modelId: input.modelId,
+            displayName: input.displayName,
+            mediaType: input.mediaType,
+            creditPrice: input.creditPrice,
+            maxOutputTokens: input.maxOutputTokens,
+            optionsSchema: input.optionsSchema,
+            enabled: input.enabled,
+            sortOrder: input.sortOrder,
+          },
+        });
+        if (!res.ok) {
+          const json = (await res.json().catch(() => null)) as { message?: string } | null;
+          const message = json?.message ?? "";
+          throw new Error(
+            message.includes("already exists")
+              ? "Model already exists for this provider"
+              : "Failed to create AI model",
+          );
+        }
+      },
+    }),
+  toggleAiModel: () =>
+    mutationOptions({
+      mutationFn: async (input: { id: string; enabled: boolean }) => {
+        const res = await client.api.admin["ai-models"][":id"].$patch({
+          json: { enabled: input.enabled },
+          param: { id: input.id },
+        });
+        if (!res.ok) {
+          throw new Error("Failed to update AI model");
         }
       },
     }),
