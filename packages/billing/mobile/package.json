@@ -25,6 +25,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@types/react": "catalog:",
     "typescript": "catalog:"
   },
   "peerDependencies": {
