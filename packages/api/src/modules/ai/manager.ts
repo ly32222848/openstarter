@@ -17,6 +17,7 @@
 
 import { getAllConfigs } from "@openstarter/shared/config";
 import { FalProvider } from "./fal";
+import { OpenAIImageProvider } from "./openai-image";
 import { ReplicateProvider } from "./replicate";
 import { AIMediaType, type AIProvider, type SaveFilesFunction } from "./types";
 
@@ -128,6 +129,27 @@ function assembleReplicate(
   );
 }
 
+/** 生图渠道 openai 装配：与 LLM 引擎共用 `openai_api_key`（两引擎独立取用，见 T11 brief）。 */
+function assembleOpenAIImage(
+  manager: AIManager,
+  configs: Record<string, string>,
+  saveFiles: SaveFilesFunction | undefined,
+  defaultProvider: string,
+): void {
+  if (!isAvailable(configs, "openai", ["openai_api_key"])) {
+    return;
+  }
+  manager.addProvider(
+    new OpenAIImageProvider({
+      apiKey: configs.openai_api_key || "",
+      baseUrl: configs.openai_base_url || undefined,
+      saveFiles,
+      customStorage: Boolean(saveFiles),
+    }),
+    defaultProvider === "openai",
+  );
+}
+
 function assembleFal(
   manager: AIManager,
   configs: Record<string, string>,
@@ -157,6 +179,7 @@ export function computeConfigHash(configs: Record<string, string>): string {
     configs.fal_enabled || "",
     configs.fal_api_key || "",
     configs.openai_api_key || "",
+    configs.openai_base_url || "",
   ]);
 }
 
@@ -180,6 +203,7 @@ export async function getAIManager(): Promise<AIManager> {
   const defaultProvider = configs.default_ai_provider || "";
 
   assembleReplicate(manager, configs, registeredSaveFiles, defaultProvider);
+  assembleOpenAIImage(manager, configs, registeredSaveFiles, defaultProvider);
   assembleFal(manager, configs, registeredSaveFiles, defaultProvider);
 
   cachedManager = manager;
