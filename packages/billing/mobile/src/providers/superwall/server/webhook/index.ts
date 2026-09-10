@@ -1,10 +1,9 @@
 import dayjs from "dayjs";
 
-import { PaymentStatus } from "@workspace/billing";
-import { upsertCustomer, upsertOrder, upsertSubscription } from "@workspace/billing/server";
-import { HttpStatusCode } from "@workspace/shared/constants";
-import { logger } from "@workspace/shared/logger";
-import { HttpException } from "@workspace/shared/utils";
+import { PaymentStatus } from "../../../../server/status";
+import { upsertCustomer, upsertOrder, upsertSubscription } from "../../../../server/upserts";
+import { HttpStatusCode, HttpException } from "../../../../server/http";
+import { logger } from "@openstarter/shared/logger";
 
 import { BillingProvider } from "../../../types";
 import { toSubscriptionStatus } from "../mappers/to-billing-status";
@@ -113,12 +112,12 @@ export const webhookHandler = async (req: Request, callbacks?: WebhookCallbacks)
       customerId: customer.id,
       externalId: transactionId,
       variantId: productId,
-      status: PaymentStatus.SUCCEEDED,
+      status: PaymentStatus.SUCCESS,
       store,
     });
 
     logger.info(
-      `✅ Order ${transactionId} upserted for customer ${customer.id} with status ${PaymentStatus.SUCCEEDED}`,
+      `✅ Order ${transactionId} upserted for customer ${customer.id} with status ${PaymentStatus.SUCCESS}`,
     );
 
     if (event.type === "non_renewing_purchase") {

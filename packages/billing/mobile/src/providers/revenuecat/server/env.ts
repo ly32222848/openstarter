@@ -6,9 +6,10 @@ import { envConfig } from "@openstarter/shared/constants";
 import type { Preset } from "envin/types";
 
 export const preset = {
-  id: "superwall",
+  id: "revenuecat",
   server: {
-    SUPERWALL_WEBHOOK_SECRET: z.string(),
+    REVENUECAT_API_KEY: z.string(),
+    REVENUECAT_WEBHOOK_SECRET: z.string(),
   },
 } as const satisfies Preset;
 

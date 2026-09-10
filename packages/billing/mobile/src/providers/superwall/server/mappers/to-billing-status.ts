@@ -1,4 +1,4 @@
-import { SubscriptionStatus } from "@workspace/billing";
+import { SubscriptionStatus } from "../../../../server/status";
 
 export const toSubscriptionStatus = (
   eventType: string,

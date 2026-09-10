@@ -2,8 +2,7 @@ import { Buffer } from "node:buffer";
 import { webcrypto } from "node:crypto";
 import { TextEncoder } from "node:util";
 
-import { HttpStatusCode } from "@workspace/shared/constants";
-import { HttpException } from "@workspace/shared/utils";
+import { HttpStatusCode, HttpException } from "../../../../server/http";
 
 import { env } from "../env";
 
