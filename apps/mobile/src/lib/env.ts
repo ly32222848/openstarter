@@ -9,6 +9,9 @@
 // 非绝对 http(s) 字符串判为合法（解析出 protocol:"localhost"），而 hc(baseUrl) 拿到这种
 // 值会拼出无效请求。这里显式要求 http/https 协议的绝对 URL，与 apps/desktop/config.ts
 // 的判定同语义（见 docs/superpowers/plans/2026-08-01-mobile-app.md Task 5）。
+//
+// 支付供应商与 SDK key 由 @openstarter/billing-mobile 内部从构建期 env 解析
+// （EXPO_PUBLIC_BILLING_PROVIDER / EXPO_PUBLIC_*_API_KEY），app 层不再重复校验。
 
 export type EnvResult = { ok: true; apiUrl: string } | { ok: false; reason: string };
 
@@ -40,34 +43,4 @@ export function resolveApiUrl(raw: string | undefined): EnvResult {
 
 export function getEnv(): EnvResult {
   return resolveApiUrl(process.env.EXPO_PUBLIC_API_URL);
-}
-
-// 构建期功能开关（与 web 管理端开关取 AND 的附加门；语义见各处注释）。
-export const BUILD_FLAGS = {
-  /** IAP 构建期总开关：与 revenuecat_enabled（服务端）及 RC key 同时满足才展示付费墙。 */
-  iapEnabled: "EXPO_PUBLIC_IAP_ENABLED",
-} as const;
-
-/**
- * RevenueCat iOS SDK key（EXPO_PUBLIC_REVENUECAT_IOS_API_KEY，形如 appl_xxx）。
- *
- * SDK key 走构建期 env 而不是 config 表：Purchases.configure 必须在首屏前完成，
- * 且该 key 本就是客户端公开凭据。缺失/空白返回 null —— 上层把 IAP 判为不可用
- * （no-op 门面），而不是初始化报错。
- */
-export function getRevenueCatApiKey(): string | null {
-  const raw = process.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY;
-  if (!raw) {
-    return null;
-  }
-  const trimmed = raw.trim();
-  return trimmed.length > 0 ? trimmed : null;
-}
-
-/**
- * 读取构建期布尔开关（EXPO_PUBLIC_*）：严格 "true" 才算开，缺失/空白/其它值
- * 一律关。语义与 public-config 的开关解析一致（对齐服务端 isEnabled）。
- */
-export function getBuildTimeFlag(name: string): boolean {
-  return process.env[name] === "true";
 }

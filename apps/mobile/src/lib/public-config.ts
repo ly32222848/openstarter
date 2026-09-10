@@ -66,16 +66,3 @@ export function resolvePasswordlessModes(config: PublicConfig): EnabledPasswordl
     magicLink: config.magic_link_enabled === "true",
   };
 }
-
-/**
- * IAP 付费墙开关（revenuecat_enabled，由 /api/config/public 白名单下发）。
- *
- * 严格 === "true" 对齐服务端 isEnabled。注意这只是三个必要条件之一：
- * 构建期 EXPO_PUBLIC_IAP_ENABLED、RC SDK key（env）与本服务端开关同时满足
- * 才展示付费墙 —— 构建期开关缺失时 SDK 无法 configure，服务端开关关闭时
- * webhook 会拒收订单（App Store 结算不落地），任一不满足都只显示购买按钮
- * 收不到事件或收了无法归属。
- */
-export function resolveIapEnabled(config: PublicConfig): boolean {
-  return config.revenuecat_enabled === "true";
-}
