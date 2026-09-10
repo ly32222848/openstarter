@@ -19,3 +19,9 @@ export type PaginationParams = {
   page: number;
   pageSize: number;
 };
+
+/**
+ * 用 U 的字段覆盖 T 中的同名字段（其余保持 T）。
+ * 供各包对「基础回调集 + provider 特化回调」做类型合成（如 billing/mobile 的 usePaywall）。
+ */
+export type Override<T, U> = Omit<T, keyof U> & U;
