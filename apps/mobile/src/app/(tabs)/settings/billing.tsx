@@ -5,6 +5,7 @@
 //   - IAP 可用（config 开关 + RC SDK key + configure 成功）→ push 内置 paywall；
 //   - iOS 且 IAP 不可用 → 不渲染任何购买入口（只在已订阅时给管理订阅）；
 //   - Android 且 IAP 不可用 → Linking.openURL(`${apiUrl}/pricing`) 网页兜底。
+import { isAvailable, useCustomer } from "@openstarter/billing-mobile";
 import { Button, Card, CardContent, CardTitle, Text } from "@openstarter/ui-mobile";
 import { useTranslation } from "@openstarter/i18n-mobile";
 import { useEffect, useState } from "react";
@@ -14,15 +15,8 @@ import { Screen } from "@/components/ui/screen";
 import { Spinner } from "@/components/ui/spinner";
 import { useRouter } from "expo-router";
 import { authClient } from "@/lib/auth-client";
-import { BUILD_FLAGS, getBuildTimeFlag, getEnv } from "@/lib/env";
-import {
-  useBillingPortalMutation,
-  usePublicConfig,
-  useUserPlan,
-  useUserSubscription,
-} from "@/lib/queries";
-import { resolveIapEnabled } from "@/lib/public-config";
-import { isPurchasesAvailable } from "@/lib/purchases";
+import { getEnv } from "@/lib/env";
+import { useBillingPortalMutation, useUserPlan, useUserSubscription } from "@/lib/queries";
 import { formatIsoDate } from "@/lib/billing-format";
 
 /** 计费状态 → 展示标签。pending_cancel 视作会员（权益未到期），无订阅看 trialEndsAt。 */
@@ -61,18 +55,15 @@ function InfoRow(props: { label: string; value: string }) {
 export default function BillingScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const configQuery = usePublicConfig();
   const planQuery = useUserPlan();
   const subscriptionQuery = useUserSubscription();
   const portalMutation = useBillingPortalMutation();
+  const { restore } = useCustomer();
   const [portalError, setPortalError] = useState<string | null>(null);
 
-  // IAP 可用 = 构建期开关 + 服务端公开开关 + RC SDK key + configure 成功，
-  // 四者缺一即视为不可用（构建期开关随渠道固化，服务端开关保留远程 kill-switch）。
-  const iapAvailable =
-    getBuildTimeFlag(BUILD_FLAGS.iapEnabled) &&
-    resolveIapEnabled(configQuery.data ?? {}) &&
-    isPurchasesAvailable();
+  // IAP 可用 = 供应商平台 key 已配置（构建期 env）&& configure 成功。
+  // 支付供应商随构建固化（spec 决策 #6），不再读 web 管理端 revenuecat_enabled。
+  const iapAvailable = isAvailable();
   // 升级入口可见性：IAP 可用 → 内置 paywall；否则仅 Android 兜底网页定价页。
   const showUpgradeEntry = iapAvailable || Platform.OS !== "ios";
 
@@ -217,10 +208,8 @@ export default function BillingScreen() {
                   {subscription?.hasSubscription && iapAvailable ? (
                     <Button
                       onPress={() => {
-                        // 恢复购买走 RC SDK（门面静默处理失败，返回 false 不打断）。
-                        void import("@/lib/purchases").then(({ restorePurchases }) => {
-                          void restorePurchases();
-                        });
+                        // 恢复购买走策略层（失败静默返回 false，不打断）。
+                        void restore();
                       }}
                       variant="ghost"
                     >

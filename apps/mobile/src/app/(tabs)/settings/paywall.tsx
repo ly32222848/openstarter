@@ -1,27 +1,20 @@
-// paywall 屏（Task B4）：RevenueCatUI.Paywall 全屏承载 + 自绘关闭。
+// paywall 屏：策略层托管付费墙（imperative present）+ 服务端确认轮询。
 //
-// 只在 IAP 可用时被 push 到（billing 屏 gate：resolveIapEnabled(config) &&
-// RC SDK key 存在 && Purchases.configure 成功）；直接以深链进入本屏时若
-// 不可用则退回 billing。
-//
-// 购买/恢复成功后：customerInfo 监听（use-revenuecat）会失效账单缓存，
-// 这里再做有界轮询（runPurchaseConfirmation）等 webhook 落地 —— webhook
-// 是唯一事实来源，轮询只是 5-60s 窗口内的展示收敛，超时走 purchase_processing
-// 兜底文案，绝不谎报成功。
-import { RevenueCatUI } from "@openstarter/billing-mobile";
+// 进屏即 present({ trigger })（供应商由构建期 env 决定，当前=revenuecat 托管
+// 付费墙）。购买/恢复成功后：customerInfo 监听（use-billing）会失效账单缓存，
+// 这里再做有界轮询（runPurchaseConfirmation）等 webhook 落地 —— webhook 是
+// 唯一事实来源，轮询只是 5-60s 窗口内的展示收敛，超时走 purchase_processing
+// 兜底文案，绝不谎报成功。present 失败（onError）→ 退回 billing 屏。
+import { usePaywall } from "@openstarter/billing-mobile";
 import { useTranslation } from "@openstarter/i18n-mobile";
 import { Button, Text } from "@openstarter/ui-mobile";
 import { useRouter } from "expo-router";
-import { useState } from "react";
-import { Pressable, View } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { View } from "react-native";
 
 import { Screen } from "@/components/ui/screen";
 import { useUserPlan, useUserCredits } from "@/lib/queries";
 import { runPurchaseConfirmation } from "@/lib/purchase-confirmation";
-import { isPurchasesAvailable } from "@/lib/purchases";
-
-/** MIN 触控热区（与 settings/index.tsx 的 EntryRow 同标准）。 */
-const MIN_TOUCH_TARGET = 44;
 
 export default function PaywallScreen() {
   const { t } = useTranslation();
@@ -30,12 +23,8 @@ export default function PaywallScreen() {
   const creditsQuery = useUserCredits();
   const [confirming, setConfirming] = useState(false);
   const [pendingNotice, setPendingNotice] = useState(false);
-
-  // 深链直入而 IAP 不可用：退回上一屏（billing 的入口本身就带 gate）。
-  if (!isPurchasesAvailable()) {
-    router.replace("/settings/billing");
-    return null;
-  }
+  const settled = useRef(false);
+  const presented = useRef(false);
 
   /** 服务端是否已反映购买（plan 升级或余额增加均为成功信号）。 */
   const pollServerConfirmation = async (): Promise<boolean> => {
@@ -49,13 +38,18 @@ export default function PaywallScreen() {
         .then((q) => q.data)
         .catch(() => null),
     ]);
+    // ApiResult 判别联合：status === "success" 时 data 才有值。
     const planUpgraded = plan?.status === "success" && plan.data.plan !== "none";
     const creditsGranted = credits?.status === "success" && credits.data.balance > 0;
     return planUpgraded || creditsGranted;
   };
 
-  /** 购买/恢复成功的统一后处理：有界轮询 + 关闭付费墙。 */
+  /** 购买/恢复成功的统一后处理：有界轮询 + 关闭付费墙（幂等）。 */
   const handlePurchaseSettled = (): void => {
+    if (settled.current) {
+      return;
+    }
+    settled.current = true;
     setConfirming(true);
     void runPurchaseConfirmation({ poll: pollServerConfirmation }).then((result) => {
       setConfirming(false);
@@ -67,43 +61,38 @@ export default function PaywallScreen() {
     });
   };
 
+  const { present } = usePaywall({
+    onPurchase: () => handlePurchaseSettled(),
+    onRestore: () => handlePurchaseSettled(),
+    onError: () => {
+      // 弹墙失败（如未 configure）：退回 billing 屏，由其可用性门禁分流。
+      if (!settled.current) {
+        router.replace("/settings/billing");
+      }
+    },
+  });
+
+  // 进屏即弹墙一次（present 引用每渲染变化，用 ref 防重复触发）。
+  useEffect(() => {
+    if (presented.current) {
+      return;
+    }
+    presented.current = true;
+    void present({ trigger: "billing" });
+  }, [present]);
+
   return (
     <Screen>
-      <View className="flex-1">
-        <View className="flex-row justify-end p-2">
-          <Pressable
-            accessibilityLabel={t("settings.billing.close")}
-            accessibilityRole="button"
-            disabled={confirming}
-            onPress={() => router.back()}
-            style={{
-              minHeight: MIN_TOUCH_TARGET,
-              minWidth: MIN_TOUCH_TARGET,
-            }}
-            className="items-center justify-center active:opacity-60"
-          >
-            <Text className="text-muted-foreground text-xl dark:text-dark-muted-foreground">✕</Text>
-          </Pressable>
-        </View>
-        <View className="flex-1">
-          <RevenueCatUI.Paywall
-            onPurchaseCompleted={() => handlePurchaseSettled()}
-            onRestoreCompleted={() => handlePurchaseSettled()}
-          />
-        </View>
+      <View className="flex-1 items-center justify-center gap-4 p-6">
         {confirming || pendingNotice ? (
-          <View className="p-4">
-            <Text className="text-muted-foreground text-center text-sm dark:text-dark-muted-foreground">
-              {t("settings.billing.purchase_processing")}
-            </Text>
-          </View>
+          <Text className="text-muted-foreground text-center text-sm dark:text-dark-muted-foreground">
+            {t("settings.billing.purchase_processing")}
+          </Text>
         ) : null}
         {pendingNotice && !confirming ? (
-          <View className="p-4 pt-0">
-            <Button onPress={() => router.replace("/settings/billing")} variant="outline">
-              <Text>{t("settings.billing.close")}</Text>
-            </Button>
-          </View>
+          <Button onPress={() => router.replace("/settings/billing")} variant="outline">
+            <Text>{t("settings.billing.close")}</Text>
+          </Button>
         ) : null}
       </View>
     </Screen>
