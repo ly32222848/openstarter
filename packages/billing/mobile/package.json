@@ -10,7 +10,19 @@
     }
   },
   "scripts": {
+    "test": "vitest --run",
     "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@better-fetch/fetch": "1.1.21",
+    "@openstarter/shared": "workspace:*",
+    "@tanstack/react-query": "^5.99.0",
+    "dayjs": "^1.11.13",
+    "envin": "catalog:",
+    "expo-iap": "4.2.3",
+    "expo-linking": "~57.0.9",
+    "expo-superwall": "1.0.11",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "typescript": "catalog:"
