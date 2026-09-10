@@ -59,6 +59,7 @@ interface ModelForm {
   creditPrice: string;
   maxOutputTokens: string;
   optionsSchema: string;
+  metadata: string;
   enabled: boolean;
   sortOrder: string;
 }
@@ -72,6 +73,7 @@ const EMPTY_FORM: ModelForm = {
   creditPrice: "0",
   maxOutputTokens: "",
   optionsSchema: "",
+  metadata: "",
   enabled: true,
   sortOrder: "0",
 };
@@ -83,6 +85,7 @@ interface ModelRow {
   id: string;
   maxOutputTokens: number | null;
   mediaType: string;
+  metadata: string | null;
   modelId: string;
   optionsSchema: string | null;
   provider: string;
@@ -163,6 +166,7 @@ function AdminAiModelsPage() {
       creditPrice,
       maxOutputTokens,
       optionsSchema: form.optionsSchema.trim() === "" ? null : form.optionsSchema.trim(),
+      metadata: form.metadata.trim() === "" ? null : form.metadata.trim(),
       enabled: form.enabled,
       sortOrder: Number.parseInt(form.sortOrder, 10) || 0,
     });
@@ -235,6 +239,7 @@ function AdminAiModelsPage() {
                           maxOutputTokens:
                             model.maxOutputTokens === null ? "" : String(model.maxOutputTokens),
                           optionsSchema: model.optionsSchema ?? "",
+                          metadata: model.metadata ?? "",
                           enabled: model.enabled,
                           sortOrder: String(model.sortOrder),
                         })
@@ -367,6 +372,16 @@ function AdminAiModelsPage() {
                   placeholder='{"properties":{"aspect_ratio":{"type":"string","enum":["1:1","16:9"]}}}'
                   rows={4}
                   value={form.optionsSchema}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="ai-model-metadata">Metadata (JSON)</Label>
+                <Textarea
+                  id="ai-model-metadata"
+                  onChange={(e) => setForm({ ...form, metadata: e.target.value })}
+                  placeholder='{"note":"internal remarks"}'
+                  rows={2}
+                  value={form.metadata}
                 />
               </div>
               <div className="flex items-center gap-2">

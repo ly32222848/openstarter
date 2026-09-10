@@ -202,17 +202,18 @@ const mutations = {
             creditPrice: input.creditPrice,
             maxOutputTokens: input.maxOutputTokens,
             optionsSchema: input.optionsSchema,
+            metadata: input.metadata ?? null,
             enabled: input.enabled,
             sortOrder: input.sortOrder,
           },
         });
         if (!res.ok) {
           const json = (await res.json().catch(() => null)) as { message?: string } | null;
-          const message = json?.message ?? "";
+          // 重复 (provider, modelId) 由后端返回 409 信封（DuplicateModelError）；按状态码分流。
           throw new Error(
-            message.includes("already exists")
+            res.status === 409
               ? "Model already exists for this provider"
-              : "Failed to create AI model",
+              : (json?.message ?? "Failed to create AI model"),
           );
         }
       },
