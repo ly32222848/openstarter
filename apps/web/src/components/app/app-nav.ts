@@ -1,10 +1,10 @@
-import { LayoutDashboard, Settings } from "lucide-react";
+import { Image as ImageIcon, LayoutDashboard, MessageSquare, Settings } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 import { m } from "@/paraglide/messages.js";
 
 type NavItem = {
-  to: "/dashboard" | "/settings";
+  to: "/dashboard" | "/settings" | "/chat" | "/studio";
   label: string;
   icon: LucideIcon;
 };
@@ -15,6 +15,8 @@ type NavItem = {
 // vitest environment only the bracketed name resolves.
 export const APP_NAV_ITEMS: NavItem[] = [
   { to: "/dashboard", label: m["common.nav.dashboard"](), icon: LayoutDashboard },
+  { to: "/chat", label: m["common.nav.chat"](), icon: MessageSquare },
+  { to: "/studio", label: m["common.nav.studio"](), icon: ImageIcon },
   { to: "/settings", label: m["common.nav.settings"](), icon: Settings },
 ];
 

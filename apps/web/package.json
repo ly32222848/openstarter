@@ -15,6 +15,7 @@
     "check-types": "tsr generate && tsc --noEmit"
   },
   "dependencies": {
+    "@ai-sdk/react": "^3.0.281",
     "@better-auth/passkey": "catalog:",
     "@mdx-js/react": "catalog:",
     "@openstarter/analytics-web": "workspace:*",
@@ -28,6 +29,7 @@
     "@tanstack/react-router": "^1.168.22",
     "@tanstack/react-router-ssr-query": "^1.166.11",
     "@tanstack/react-start": "^1.167.41",
+    "ai": "catalog:",
     "better-auth": "catalog:",
     "dotenv": "catalog:",
     "hono": "catalog:",
