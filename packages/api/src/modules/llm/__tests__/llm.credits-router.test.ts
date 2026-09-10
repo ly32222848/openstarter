@@ -20,6 +20,7 @@ const state = vi.hoisted(() => ({
   settleChatCredits: vi.fn(),
   getModel: vi.fn(),
   streamText: vi.fn(),
+  revoke: vi.fn(),
 }));
 
 // streamText mock：返回带 text/event-stream 头的 Response，并同步触发 onFinish
@@ -44,6 +45,12 @@ vi.mock("@openstarter/db/server", async (importOriginal) => {
     },
   };
 });
+
+// @openstarter/billing-web：revoke mock（路由的预扣撤销路径直接消费该原语；
+// consume/revoke 语义由 billing 包自身测试覆盖）。
+vi.mock("@openstarter/billing-web", () => ({
+  revoke: state.revoke,
+}));
 
 vi.mock("@openstarter/auth", () => ({
   getUserPlan: vi.fn(),
@@ -204,6 +211,7 @@ describe("POST /llm/chats/:id/messages — credit wiring", () => {
     state.streamText.mockClear();
     state.settleChatCredits.mockReset();
     state.preloadChatCredits.mockReset();
+    state.revoke.mockReset();
   });
 
   it("returns 402 and persists no user message when preload throws InsufficientCreditsError", async () => {
@@ -312,5 +320,49 @@ describe("POST /llm/chats/:id/messages — credit wiring", () => {
       jsonInit({ content: "hi" }),
     );
     expect(response2.status).toBe(200);
+  });
+
+  it("returns 502 and revokes the preload when getModel fails after pre-charging", async () => {
+    const chatId = await seedChatWithHistory();
+    state.getModel.mockRejectedValue(new Error("OpenAI API key not configured (openai_api_key)"));
+    state.preloadChatCredits.mockResolvedValue({
+      consumedCreditId: "c-late-fail",
+      estimatedCost: 7,
+      maxOutputTokens: 4096,
+    });
+
+    const response = await sendMessage(
+      `/llm/chats/${chatId}/messages`,
+      jsonInit({ content: "hi" }),
+    );
+
+    expect(response.status).toBe(502);
+    const body = (await response.json()) as { code: number; message: string };
+    expect(body.code).toBe(-1);
+    expect(body.message).toBe("OpenAI API key not configured (openai_api_key)");
+
+    // 预扣已撤销（资金不悬空）；流未装配、结算未发生。
+    expect(state.revoke).toHaveBeenCalledTimes(1);
+    expect(state.revoke).toHaveBeenCalledWith({ consumeCreditId: "c-late-fail" });
+    expect(state.settleChatCredits).not.toHaveBeenCalled();
+    expect(state.streamText).not.toHaveBeenCalled();
+  });
+
+  it("returns 502 without revoking when no preload was charged (free model) and getModel fails", async () => {
+    const chatId = await seedChatWithHistory();
+    state.getModel.mockRejectedValue(new Error("Unknown LLM provider: nope"));
+    state.preloadChatCredits.mockResolvedValue({
+      consumedCreditId: null,
+      estimatedCost: 0,
+      maxOutputTokens: null,
+    });
+
+    const response = await sendMessage(
+      `/llm/chats/${chatId}/messages`,
+      jsonInit({ content: "hi" }),
+    );
+
+    expect(response.status).toBe(502);
+    expect(state.revoke).not.toHaveBeenCalled();
   });
 });

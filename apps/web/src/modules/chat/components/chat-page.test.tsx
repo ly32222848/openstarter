@@ -35,6 +35,7 @@ const useChatState = vi.hoisted(() => ({
     setMessages: vi.fn(),
     stop: vi.fn(),
     clearError: vi.fn(),
+    onFinish: undefined as ((event: unknown) => void) | undefined,
   },
 }));
 
@@ -57,7 +58,11 @@ const messagesGetMock = vi.hoisted(() => vi.fn());
 const toastMocks = vi.hoisted(() => ({ error: vi.fn(), success: vi.fn() }));
 
 vi.mock("@ai-sdk/react", () => ({
-  useChat: () => useChatState.current,
+  // 捕获组件传入的 onFinish（useChat options），供流结束失效缓存的断言使用。
+  useChat: (options?: { onFinish?: (event: unknown) => void }) => {
+    useChatState.current.onFinish = options?.onFinish;
+    return useChatState.current;
+  },
 }));
 
 // DefaultChatTransport 由 `ai` 包导出（@ai-sdk/react 3.x 不转发该导出）。
@@ -168,6 +173,7 @@ beforeEach(() => {
     setMessages: vi.fn(),
     stop: vi.fn(),
     clearError: vi.fn(),
+    onFinish: undefined,
   };
   chatsState.items = [
     chatRow({ id: "chat-1", title: "Trip planning" }),
@@ -246,6 +252,35 @@ describe("ChatPage", () => {
           role: "assistant",
         },
       ]);
+    });
+  });
+
+  it("invalidates the chat history query when the stream finishes", async () => {
+    renderChatPage();
+
+    fireEvent.click(await screen.findByRole("button", { name: "Trip planning" }));
+
+    // 等历史查询与 onFinish 接线就绪。
+    await waitFor(() => {
+      expect(messagesGetMock).toHaveBeenCalledWith({
+        param: { id: "chat-1" },
+        query: { page: "1", pageSize: "100" },
+      });
+    });
+    const onFinish = useChatState.current.onFinish;
+    if (!onFinish) {
+      throw new Error("useChat onFinish not wired");
+    }
+
+    messagesGetMock.mockClear();
+    // 流结束 → 历史缓存失效 → 查询重新拉取（staleTime 60s 不再遮蔽新消息）。
+    onFinish({ message: {}, messages: [], isAbort: false, isDisconnect: false, isError: false });
+
+    await waitFor(() => {
+      expect(messagesGetMock).toHaveBeenCalledWith({
+        param: { id: "chat-1" },
+        query: { page: "1", pageSize: "100" },
+      });
     });
   });
 

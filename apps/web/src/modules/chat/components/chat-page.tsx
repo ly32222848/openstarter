@@ -4,7 +4,7 @@
 // GET /api/llm/chats/:id/messages 拉取后映射为 UIMessage[] 注入 setMessages。
 
 import { Button } from "@openstarter/ui-web/components/button";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useChat } from "@ai-sdk/react";
 // DefaultChatTransport 仅由 `ai` 包导出（@ai-sdk/react 3.x 内部自 `ai` 引入但不转发）。
 import { DefaultChatTransport } from "ai";
@@ -69,11 +69,21 @@ export function ChatPage() {
     setSelectedModelKey(key);
   };
 
+  // 模型键解析：modelId 本身可能含 ":"（openrouter 风格），只在首个 ":" 处
+  // 切分 provider 与 modelId（final-review MINOR-6）。
+  const parseModelKey = (key: string): { modelId: string; provider: string } | null => {
+    const index = key.indexOf(":");
+    if (index <= 0 || index === key.length - 1) {
+      return null;
+    }
+    return { provider: key.slice(0, index), modelId: key.slice(index + 1) };
+  };
+
   const handleNewChat = async () => {
-    const [provider, modelId] = activeModelKey.split(":");
+    const parsed = parseModelKey(activeModelKey);
     try {
       const created = await createChat.mutateAsync(
-        provider && modelId ? { provider, model: modelId } : {},
+        parsed ? { provider: parsed.provider, model: parsed.modelId } : {},
       );
       // RPC 信封 data 未携带精确类型，边界处校验后再使用。
       const newChatId = created?.id;
@@ -167,6 +177,9 @@ export function ChatPage() {
   );
 }
 
+/** 历史查询 key（与下方 historyQuery 一致）：流式结束后据此失效缓存。 */
+const historyKey = (chatId: string) => ["ai", "chats", chatId, "messages"] as const;
+
 function ChatSurface({
   chatId,
   draft,
@@ -176,10 +189,16 @@ function ChatSurface({
   draft: string;
   onDraftChange: (value: string) => void;
 }) {
+  const queryClient = useQueryClient();
   const { messages, sendMessage, status, error, setMessages, stop, clearError } = useChat({
     id: chatId,
     onError: (streamError: Error) => toast.error(streamError.message),
     transport: new DefaultChatTransport({ api: `/api/llm/chats/${chatId}/messages` }),
+    // 流式结束（含 abort）即失效历史缓存：全局 staleTime 60s 会让刚落库的
+    // 消息在切换会话/重挂载时被旧缓存遮蔽（final-review MEDIUM-2）。
+    onFinish: () => {
+      void queryClient.invalidateQueries({ queryKey: historyKey(chatId) });
+    },
   });
 
   const historyQuery = useQuery({
@@ -197,7 +216,7 @@ function ChatSurface({
       }
       return json.data.items as Array<{ id: string; role: string; content: string }>;
     },
-    queryKey: ["ai", "chats", chatId, "messages"] as const,
+    queryKey: historyKey(chatId),
   });
 
   useEffect(() => {

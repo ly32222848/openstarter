@@ -21,6 +21,7 @@ import { requireAuth } from "../../middleware/auth";
 import { requirePlan } from "../../middleware/plan-gate";
 import { paginationSchema } from "../../schema";
 
+import { revoke } from "@openstarter/billing-web";
 import { InsufficientCreditsError } from "../ai-tasks/service";
 import { preloadChatCredits, settleChatCredits } from "./credits";
 import { getModel, isLLMEnabled } from "./provider";
@@ -217,11 +218,14 @@ export const llmRouter = new Hono()
       // Build messages array for AI SDK
       const messages = [...history, { role: "user" as const, content }];
 
-      // Load the model
+      // Load the model. 预扣发生在 getModel 之前 —— 若此处失败（如管理员事后
+      // 撤掉了 provider key），必须先撤销预扣再返回 502，否则用户为从未开始的
+      // 流式对话买单。
       let model;
       try {
         model = await getModel(foundChat.provider, foundChat.model);
       } catch (error) {
+        await revokePreloadSafely(preload.consumedCreditId);
         const message = error instanceof Error ? error.message : "Unknown error";
         return c.json(respErr(message), STATUS_PROVIDER_ERROR);
       }
@@ -274,8 +278,26 @@ export const llmRouter = new Hono()
         // Return the AI SDK's built-in stream response (SSE)
         return result.toUIMessageStreamResponse();
       } catch (error) {
+        // streamText 装配失败（未产生流）：同样先撤销预扣再报 502。
+        await revokePreloadSafely(preload.consumedCreditId);
         const message = error instanceof Error ? error.message : "LLM error";
         return c.json(respErr(message), STATUS_PROVIDER_ERROR);
       }
     },
   );
+
+/**
+ * 撤销预扣（尽力而为）：仅在预扣真实发生（consumedCreditId 非空）时调用
+ * `revoke`；撤销失败不影响原有错误响应 —— 记 warn 日志后继续（资金一致性
+ * 由人工对账兜底，路由仍须返回真实失败原因）。
+ */
+async function revokePreloadSafely(consumedCreditId: string | null): Promise<void> {
+  if (consumedCreditId === null) {
+    return;
+  }
+  try {
+    await revoke({ consumeCreditId: consumedCreditId });
+  } catch (error) {
+    logger.warn("[llm] failed to revoke preload after stream setup failure", error);
+  }
+}
