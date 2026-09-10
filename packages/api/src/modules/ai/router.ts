@@ -17,6 +17,7 @@ import {
   getAIManager,
 } from "./index";
 import { createTask, findTask, getTasks, InsufficientCreditsError, updateTask } from "../ai-tasks";
+import { findModelByProviderAndId } from "../ai-catalog/service";
 import { requireAuth } from "../../middleware/auth";
 import { requirePlan } from "../../middleware/plan-gate";
 import { paginationSchema } from "../../schema";
@@ -72,7 +73,24 @@ async function resolveProviderName(requested?: string): Promise<string | null> {
   return manager.getProvider(name) ? name : null;
 }
 
-async function resolveCostCredits(mediaType: string): Promise<number> {
+async function resolveCostCredits(
+  mediaType: string,
+  provider?: string,
+  model?: string,
+): Promise<number> {
+  // 目录优先（Task 7）：已定价条目（creditPrice > 0）覆盖 mediaType 配置价。
+  // 目录键为解析后的 provider；未命中 / 0 价 / 查询失败一律回退配置逻辑。
+  if (provider && model) {
+    try {
+      const catalogModel = await findModelByProviderAndId(provider, model);
+      if (catalogModel && catalogModel.creditPrice > 0) {
+        return catalogModel.creditPrice;
+      }
+    } catch {
+      // 目录不可用时按未定价处理，走配置回退。
+    }
+  }
+
   const configs = await getAllConfigs();
   const raw = configs[`ai_credits_cost_${mediaType}`] ?? configs.ai_credits_cost;
   const parsed = Number.parseInt(raw ?? "", 10);
@@ -178,7 +196,7 @@ export const aiRouter = new Hono()
         return c.json(respErr(PROVIDER_UNAVAILABLE_MESSAGE), STATUS_PROVIDER_UNAVAILABLE);
       }
 
-      const costCredits = await resolveCostCredits(body.mediaType);
+      const costCredits = await resolveCostCredits(body.mediaType, providerName, body.model);
 
       let task: AiTask;
       try {

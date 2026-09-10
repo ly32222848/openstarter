@@ -147,8 +147,8 @@ function assembleFal(
   );
 }
 
-/** 相关 Config 的指纹：任一 AI 相关键变化即触发管理器重建。 */
-function computeConfigHash(configs: Record<string, string>): string {
+/** 相关 Config 的指纹：任一 AI 相关键变化即触发管理器重建（含 LLM 共用的 openai_api_key）。 */
+export function computeConfigHash(configs: Record<string, string>): string {
   return JSON.stringify([
     configs.default_ai_provider || "",
     configs.replicate_enabled || "",
@@ -156,6 +156,7 @@ function computeConfigHash(configs: Record<string, string>): string {
     configs.replicate_base_url || "",
     configs.fal_enabled || "",
     configs.fal_api_key || "",
+    configs.openai_api_key || "",
   ]);
 }
 
