@@ -25,6 +25,20 @@ function invalidateBillingQueries(queryClient: ReturnType<typeof useQueryClient>
   }
 }
 
+/**
+ * 会话联动决策（spec §4.1）：isPending 期间不动（避免把读会话中间态当成登出），
+ * 有 userId → identify，否则 → reset。纯函数便于单测；BillingLifecycle 内消费。
+ */
+export function resolveLifecycleAction(input: {
+  isPending: boolean;
+  userId?: string | null;
+}): "identify" | "reset" | null {
+  if (input.isPending) {
+    return null;
+  }
+  return input.userId ? "identify" : "reset";
+}
+
 function BillingLifecycle() {
   const { identify, reset, addCustomerInfoListener } = useCustomer();
   const queryClient = useQueryClient();
@@ -32,14 +46,14 @@ function BillingLifecycle() {
   const userId = session?.user?.id;
 
   // 会话变化：登录 → identify(userId)；登出 → reset()。
-  // isPending 期间不动，避免把读会话中间态当成登出。
   useEffect(() => {
-    if (isPending) {
-      return;
-    }
-    if (userId) {
-      identify(userId);
-    } else {
+    const action = resolveLifecycleAction({ isPending, userId });
+    if (action === "identify") {
+      // resolveLifecycleAction 已判定 userId 存在；TS 需显式收窄。
+      if (userId) {
+        identify(userId);
+      }
+    } else if (action === "reset") {
       reset();
     }
   }, [isPending, userId, identify, reset]);
