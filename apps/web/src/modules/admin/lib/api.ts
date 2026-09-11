@@ -2,6 +2,7 @@
 // 数据面经类型化 RPC（`client.api.admin.*`）→ packages/api（requirePermission admin.*）。
 
 import { mutationOptions, queryOptions } from "@tanstack/react-query";
+import type { InferRequestType, InferResponseType } from "hono/client";
 
 import { client } from "@/lib/api";
 
@@ -12,19 +13,16 @@ export const AI_MODEL_MEDIA_TYPES = ["text", "image", "video", "music", "speech"
 
 export type AiModelMediaType = (typeof AI_MODEL_MEDIA_TYPES)[number];
 
-/** admin 模型表单的通用字段（create 与 update 共用；update 时全部可选）。 */
-export interface AiModelPayload {
-  creditPrice: number;
-  displayName: string;
-  enabled: boolean;
-  maxOutputTokens: number | null;
-  mediaType: AiModelMediaType;
-  metadata?: string | null;
-  modelId: string;
-  optionsSchema: string | null;
-  provider: string;
-  sortOrder: number;
-}
+const getAiModels = client.api.admin["ai-models"].$get;
+const createAiModel = client.api.admin["ai-models"].$post;
+
+type AiModelListData = NonNullable<InferResponseType<typeof getAiModels, 200>["data"]>;
+
+/** admin 模型列表行，直接从 RPC 响应推导。 */
+export type AiModelRow = AiModelListData["items"][number];
+
+/** admin 模型创建请求体，直接从后端 zod schema 推导。 */
+export type AiModelPayload = InferRequestType<typeof createAiModel>["json"];
 
 const queries = {
   aiModels: (page: number) =>

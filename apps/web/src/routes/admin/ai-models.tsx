@@ -38,7 +38,12 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { AdminHeader, Pagination, StatusText } from "@/components/admin/list";
-import { admin, type AiModelMediaType, AI_MODEL_MEDIA_TYPES } from "@/modules/admin/lib/api";
+import {
+  admin,
+  type AiModelMediaType,
+  type AiModelRow,
+  AI_MODEL_MEDIA_TYPES,
+} from "@/modules/admin/lib/api";
 
 export const Route = createFileRoute("/admin/ai-models")({
   component: AdminAiModelsPage,
@@ -77,20 +82,6 @@ const EMPTY_FORM: ModelForm = {
   enabled: true,
   sortOrder: "0",
 };
-
-interface ModelRow {
-  creditPrice: number;
-  displayName: string;
-  enabled: boolean;
-  id: string;
-  maxOutputTokens: number | null;
-  mediaType: string;
-  metadata: string | null;
-  modelId: string;
-  optionsSchema: string | null;
-  provider: string;
-  sortOrder: number;
-}
 
 /** 整数输入解析：空串 → null（后端 nullable 语义），非法输入返回 undefined（提交前拦截）。 */
 const parseIntOrNull = (value: string): number | null | undefined => {
@@ -143,8 +134,8 @@ function AdminAiModelsPage() {
     },
   });
 
-  const items = (modelsQuery.data?.items ?? []) as ModelRow[];
-  const total = (modelsQuery.data?.total as number | undefined) ?? 0;
+  const items: AiModelRow[] = modelsQuery.data?.items ?? [];
+  const total = modelsQuery.data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   const handleSave = () => {

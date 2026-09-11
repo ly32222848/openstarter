@@ -40,7 +40,7 @@ export function BillingPage() {
     onError: (err) => {
       toast.error(err instanceof Error ? err.message : "Failed to open billing portal");
     },
-    onSuccess: (data: { billingUrl?: string } | undefined) => {
+    onSuccess: (data) => {
       if (data?.billingUrl) {
         window.location.href = data.billingUrl;
       }

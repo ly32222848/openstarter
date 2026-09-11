@@ -79,12 +79,13 @@ const mutations = {
         const res = await client.api.user["billing-portal"].$post();
         if (!res.ok) {
           const json = await res.json();
-          throw new Error(
-            (json as { message?: string }).message ?? "Failed to create billing portal session",
-          );
+          throw new Error(json.message ?? "Failed to create billing portal session");
         }
         const json = await res.json();
-        return json.data as { billingUrl?: string } | undefined;
+        if (!json.data) {
+          throw new Error("Failed to create billing portal session");
+        }
+        return json.data;
       },
     }),
   createApiKey: () =>

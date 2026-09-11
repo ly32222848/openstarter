@@ -56,6 +56,7 @@ temp
 .codebuddy/
 .kiro/
 .claude/
+.codex/
 .superpowers/
 semantic-review/
 .workbuddy/

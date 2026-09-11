@@ -17,12 +17,8 @@ const mutations = {
           json: { productId: input.productId },
         });
         const json = await res.json();
-        if ("code" in json && json.code === 0 && json.data) {
-          return json.data as {
-            checkoutUrl?: string;
-            orderNo?: string;
-            qrData?: { amount: number; codeUrl: string };
-          };
+        if (res.ok && json.data) {
+          return json.data;
         }
         const message =
           "message" in json && typeof json.message === "string" ? json.message : "Checkout failed";

@@ -96,11 +96,7 @@ export function PricingSection() {
     onError: (err) => {
       toast.error(err.message);
     },
-    onSuccess: (data: {
-      checkoutUrl?: string;
-      orderNo?: string;
-      qrData?: { amount: number; codeUrl: string };
-    }) => {
+    onSuccess: (data) => {
       // 微信 Native 渠道：渲染二维码扫码支付；其余渠道：跳转结账链接（R10.3）。
       if (data.qrData?.codeUrl) {
         if (!data.orderNo) {
