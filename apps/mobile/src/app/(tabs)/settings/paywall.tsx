@@ -70,6 +70,18 @@ export default function PaywallScreen() {
         router.replace("/settings/billing");
       }
     },
+    onDismiss: () => {
+      // 用户主动关闭付费墙（未购买/未恢复）：退回 billing 屏，避免空白死屏。
+      if (!settled.current) {
+        router.replace("/settings/billing");
+      }
+    },
+    onSkip: () => {
+      // 付费墙未弹出（如不可用/命中 holdout）：同 onError 退回。
+      if (!settled.current) {
+        router.replace("/settings/billing");
+      }
+    },
   });
 
   // 进屏即弹墙一次（present 引用每渲染变化，用 ref 防重复触发）。
