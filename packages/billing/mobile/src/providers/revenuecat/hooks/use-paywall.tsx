@@ -4,25 +4,12 @@ import RevenueCatUI, { PAYWALL_RESULT } from "react-native-purchases-ui";
 
 import { PaywallResult } from "../../../types";
 
+import { toPaywallResult } from "./to-paywall-result";
+
 import type { PaywallCallbacks } from "../../../types";
 import type { Override } from "@openstarter/shared/types";
 import type { CustomerInfo } from "react-native-purchases";
 import type { PresentPaywallParams } from "react-native-purchases-ui";
-
-const toPaywallResult = (result: PAYWALL_RESULT): PaywallResult => {
-  switch (result) {
-    case PAYWALL_RESULT.PURCHASED:
-      return PaywallResult.PURCHASED;
-    case PAYWALL_RESULT.RESTORED:
-      return PaywallResult.RESTORED;
-    case PAYWALL_RESULT.CANCELLED:
-      return PaywallResult.DISMISSED;
-    case PAYWALL_RESULT.NOT_PRESENTED:
-      return PaywallResult.SKIPPED;
-    case PAYWALL_RESULT.ERROR:
-      return PaywallResult.ERROR;
-  }
-};
 
 type UsePaywallArgs = Override<
   PaywallCallbacks,

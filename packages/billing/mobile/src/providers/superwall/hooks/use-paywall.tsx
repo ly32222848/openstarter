@@ -1,27 +1,10 @@
 import { usePlacement } from "expo-superwall";
 
-import { PaywallResult } from "../../../types";
+import { toPaywallResult } from "./to-paywall-result";
 
 import type { PaywallCallbacks } from "../../../types";
 import type { Override } from "@openstarter/shared/types";
-import type { PaywallState, RegisterPlacementArgs, usePlacementCallbacks } from "expo-superwall";
-
-const toPaywallResult = (state: PaywallState): PaywallResult => {
-  switch (state.status) {
-    case "idle":
-      return PaywallResult.IDLE;
-    case "presented":
-      return PaywallResult.IDLE;
-    case "dismissed":
-      if (state.result.type === "purchased") return PaywallResult.PURCHASED;
-      if (state.result.type === "restored") return PaywallResult.RESTORED;
-      return PaywallResult.DISMISSED;
-    case "skipped":
-      return PaywallResult.SKIPPED;
-    case "error":
-      return PaywallResult.ERROR;
-  }
-};
+import type { RegisterPlacementArgs, usePlacementCallbacks } from "expo-superwall";
 
 type UsePaywallArgs = Override<PaywallCallbacks, usePlacementCallbacks>;
 
