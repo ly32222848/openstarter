@@ -14,14 +14,19 @@ import { toast } from "sonner";
 
 import { authClient } from "@/lib/auth-client";
 
-type PasswordlessMode = "magic-link" | "email-otp";
+export type PasswordlessMode = "magic-link" | "email-otp";
 
 interface PasswordlessFormProps {
   emailOtpEnabled: boolean;
   magicLinkEnabled: boolean;
+  mode?: PasswordlessMode;
 }
 
-export function PasswordlessForm({ magicLinkEnabled, emailOtpEnabled }: PasswordlessFormProps) {
+export function PasswordlessForm({
+  magicLinkEnabled,
+  emailOtpEnabled,
+  mode: selectedMode,
+}: PasswordlessFormProps) {
   const modes: PasswordlessMode[] = [];
   if (magicLinkEnabled) {
     modes.push("magic-link");
@@ -30,11 +35,13 @@ export function PasswordlessForm({ magicLinkEnabled, emailOtpEnabled }: Password
     modes.push("email-otp");
   }
 
-  const [mode, setMode] = useState<PasswordlessMode | null>(modes.at(0) ?? null);
+  const [internalMode, setInternalMode] = useState<PasswordlessMode | null>(modes.at(0) ?? null);
   const [email, setEmail] = useState("");
   const [otpInputMode, setOtpInputMode] = useState(false);
   const [otp, setOtp] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  const mode = selectedMode ?? internalMode;
 
   if (modes.length === 0 || mode === null) {
     return null;
@@ -105,13 +112,13 @@ export function PasswordlessForm({ magicLinkEnabled, emailOtpEnabled }: Password
 
   return (
     <div className="space-y-4">
-      {modes.length > 1 && !otpInputMode ? (
+      {selectedMode === undefined && modes.length > 1 && !otpInputMode ? (
         <div className="flex gap-2">
           {modes.map((modeItem) => (
             <Button
               className="flex-1"
               key={modeItem}
-              onClick={() => setMode(modeItem)}
+              onClick={() => setInternalMode(modeItem)}
               size="sm"
               type="button"
               variant={mode === modeItem ? "default" : "outline"}

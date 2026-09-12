@@ -1,8 +1,10 @@
 import { Button } from "@openstarter/ui-web/components/button";
 import { Input } from "@openstarter/ui-web/components/input";
 import { Label } from "@openstarter/ui-web/components/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@openstarter/ui-web/components/tabs";
 import { useForm } from "@tanstack/react-form";
 import { Link, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
 import { toast } from "sonner";
 import z from "zod";
 
@@ -14,7 +16,9 @@ import { AnonymousButton } from "./anonymous-button";
 import { OAuthButtons } from "./oauth-buttons";
 import { getEnabledOAuthProviders } from "./oauth-provider-selection";
 import { PasskeyButton } from "./passkey-button";
-import { PasswordlessForm } from "./passwordless-form";
+import { PasswordlessForm, type PasswordlessMode } from "./passwordless-form";
+
+type SignInMode = "password" | PasswordlessMode;
 
 export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () => void }) {
   const navigate = useNavigate({ from: "/" });
@@ -32,7 +36,13 @@ export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () 
   const passwordResetEnabled = configs.password_reset_enabled === "true";
   const anonymousEnabled = configs.anonymous_auth_enabled === "true";
   const hasSocial = enabledOAuthProviders.length > 0;
-  const hasPasswordless = magicLinkEnabled || emailOtpEnabled;
+  const signInModes: SignInMode[] = [
+    ...(emailEnabled ? (["password"] as const) : []),
+    ...(magicLinkEnabled ? (["magic-link"] as const) : []),
+    ...(emailOtpEnabled ? (["email-otp"] as const) : []),
+  ];
+  const [selectedMode, setSelectedMode] = useState<SignInMode>("password");
+  const activeMode = signInModes.includes(selectedMode) ? selectedMode : signInModes[0];
 
   const form = useForm({
     defaultValues: {
@@ -87,13 +97,11 @@ export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () 
         </div>
       )}
 
-      {/* Passkey 与匿名登录：passkey 服务端无条件可用；匿名登录按 Config 开关渲染。 */}
-      <div className="mb-4 space-y-2">
+      <div className="mb-4">
         <PasskeyButton />
-        {anonymousEnabled ? <AnonymousButton /> : null}
       </div>
 
-      {hasSocial && (emailEnabled || hasPasswordless) ? (
+      {hasSocial && signInModes.length > 0 ? (
         <div className="my-4 flex items-center gap-3 text-muted-foreground text-xs">
           <span className="h-px flex-1 bg-border" />
           or
@@ -101,99 +109,118 @@ export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () 
         </div>
       ) : null}
 
-      {hasPasswordless ? (
-        <div className="mb-4">
-          <PasswordlessForm emailOtpEnabled={emailOtpEnabled} magicLinkEnabled={magicLinkEnabled} />
-        </div>
-      ) : null}
-
-      {hasPasswordless && emailEnabled ? (
-        <div className="my-4 flex items-center gap-3 text-muted-foreground text-xs">
-          <span className="h-px flex-1 bg-border" />
-          or
-          <span className="h-px flex-1 bg-border" />
-        </div>
-      ) : null}
-
-      {emailEnabled && (
-        <form
-          className="space-y-4"
-          onSubmit={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            form.handleSubmit();
-          }}
+      {signInModes.length > 0 ? (
+        <Tabs
+          className="w-full"
+          onValueChange={(value) => setSelectedMode(value as SignInMode)}
+          value={activeMode}
         >
-          <div>
-            <form.Field name="email">
-              {(field) => (
-                <div className="space-y-2">
-                  <Label htmlFor={field.name}>Email</Label>
-                  <Input
-                    id={field.name}
-                    name={field.name}
-                    onBlur={field.handleBlur}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    type="email"
-                    value={field.state.value}
-                  />
-                  {field.state.meta.errors.map((error) => (
-                    <p className="text-red-500" key={error?.message}>
-                      {error?.message}
-                    </p>
-                  ))}
-                </div>
-              )}
-            </form.Field>
-          </div>
+          <TabsList className="w-full">
+            {emailEnabled ? <TabsTrigger value="password">Password</TabsTrigger> : null}
+            {magicLinkEnabled ? <TabsTrigger value="magic-link">Magic link</TabsTrigger> : null}
+            {emailOtpEnabled ? <TabsTrigger value="email-otp">OTP</TabsTrigger> : null}
+          </TabsList>
 
-          <div>
-            <form.Field name="password">
-              {(field) => (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor={field.name}>Password</Label>
-                    {passwordResetEnabled && (
-                      <Link
-                        className="text-muted-foreground text-sm underline underline-offset-4 hover:text-foreground"
-                        to="/forgot-password"
-                      >
-                        Forgot password?
-                      </Link>
-                    )}
-                  </div>
-                  <Input
-                    id={field.name}
-                    name={field.name}
-                    onBlur={field.handleBlur}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    type="password"
-                    value={field.state.value}
-                  />
-                  {field.state.meta.errors.map((error) => (
-                    <p className="text-red-500" key={error?.message}>
-                      {error?.message}
-                    </p>
-                  ))}
-                </div>
-              )}
-            </form.Field>
-          </div>
+          <TabsContent className="mt-4" value="password">
+            <form
+              className="space-y-4"
+              onSubmit={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                form.handleSubmit();
+              }}
+            >
+              <div>
+                <form.Field name="email">
+                  {(field) => (
+                    <div className="space-y-2">
+                      <Label htmlFor={field.name}>Email</Label>
+                      <Input
+                        id={field.name}
+                        name={field.name}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        type="email"
+                        value={field.state.value}
+                      />
+                      {field.state.meta.errors.map((error) => (
+                        <p className="text-red-500" key={error?.message}>
+                          {error?.message}
+                        </p>
+                      ))}
+                    </div>
+                  )}
+                </form.Field>
+              </div>
 
-          <form.Subscribe
-            selector={(state) => ({
-              canSubmit: state.canSubmit,
-              isSubmitting: state.isSubmitting,
-            })}
-          >
-            {({ canSubmit, isSubmitting }) => (
-              <Button className="w-full" disabled={!canSubmit || isSubmitting} type="submit">
-                {isSubmitting ? "Submitting..." : "Sign In"}
-              </Button>
-            )}
-          </form.Subscribe>
-        </form>
-      )}
+              <div>
+                <form.Field name="password">
+                  {(field) => (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor={field.name}>Password</Label>
+                        {passwordResetEnabled && (
+                          <Link
+                            className="text-muted-foreground text-sm underline underline-offset-4 hover:text-foreground"
+                            to="/forgot-password"
+                          >
+                            Forgot password?
+                          </Link>
+                        )}
+                      </div>
+                      <Input
+                        id={field.name}
+                        name={field.name}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        type="password"
+                        value={field.state.value}
+                      />
+                      {field.state.meta.errors.map((error) => (
+                        <p className="text-red-500" key={error?.message}>
+                          {error?.message}
+                        </p>
+                      ))}
+                    </div>
+                  )}
+                </form.Field>
+              </div>
+
+              <form.Subscribe
+                selector={(state) => ({
+                  canSubmit: state.canSubmit,
+                  isSubmitting: state.isSubmitting,
+                })}
+              >
+                {({ canSubmit, isSubmitting }) => (
+                  <>
+                    <Button className="w-full" disabled={!canSubmit || isSubmitting} type="submit">
+                      {isSubmitting ? "Submitting..." : "Sign In"}
+                    </Button>
+                    {anonymousEnabled ? <AnonymousButton /> : null}
+                  </>
+                )}
+              </form.Subscribe>
+            </form>
+          </TabsContent>
+
+          <TabsContent className="mt-4" value="magic-link">
+            <PasswordlessForm
+              emailOtpEnabled={emailOtpEnabled}
+              magicLinkEnabled={magicLinkEnabled}
+              mode="magic-link"
+            />
+          </TabsContent>
+
+          <TabsContent className="mt-4" value="email-otp">
+            <PasswordlessForm
+              emailOtpEnabled={emailOtpEnabled}
+              magicLinkEnabled={magicLinkEnabled}
+              mode="email-otp"
+            />
+          </TabsContent>
+        </Tabs>
+      ) : null}
 
       <div className="mt-4 text-center">
         <Button

@@ -35,10 +35,11 @@ export function OAuthButtons({
   };
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex gap-2">
       {googleEnabled ? (
         <Button
-          className="w-full"
+          aria-label="Continue with Google"
+          className="order-2 min-w-0 flex-1 px-2 text-xs"
           onClick={() => handleSocial("google")}
           type="button"
           variant="outline"
@@ -50,12 +51,13 @@ export function OAuthButtons({
               fill="currentColor"
             />
           </svg>
-          Continue with Google
+          Google
         </Button>
       ) : null}
       {githubEnabled ? (
         <Button
-          className="w-full"
+          aria-label="Continue with GitHub"
+          className="order-3 min-w-0 flex-1 px-2 text-xs"
           onClick={() => handleSocial("github")}
           type="button"
           variant="outline"
@@ -67,12 +69,13 @@ export function OAuthButtons({
               fill="currentColor"
             />
           </svg>
-          Continue with GitHub
+          GitHub
         </Button>
       ) : null}
       {appleEnabled ? (
         <Button
-          className="w-full"
+          aria-label="Continue with Apple"
+          className="order-1 min-w-0 flex-1 px-2 text-xs"
           onClick={() => handleSocial("apple")}
           type="button"
           variant="outline"
@@ -84,7 +87,7 @@ export function OAuthButtons({
               fill="currentColor"
             />
           </svg>
-          Continue with Apple
+          Apple
         </Button>
       ) : null}
     </div>
