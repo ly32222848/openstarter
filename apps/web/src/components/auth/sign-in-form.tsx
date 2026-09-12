@@ -10,8 +10,10 @@ import { authClient } from "@/lib/auth-client";
 import { usePublicConfig } from "@/lib/use-public-config";
 
 import Loader from "../loader";
+import { AnonymousButton } from "./anonymous-button";
 import { OAuthButtons } from "./oauth-buttons";
 import { getEnabledOAuthProviders } from "./oauth-provider-selection";
+import { PasskeyButton } from "./passkey-button";
 import { PasswordlessForm } from "./passwordless-form";
 
 export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () => void }) {
@@ -28,6 +30,7 @@ export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () 
   const magicLinkEnabled = configs.magic_link_enabled === "true";
   const emailOtpEnabled = configs.email_otp_enabled === "true";
   const passwordResetEnabled = configs.password_reset_enabled === "true";
+  const anonymousEnabled = configs.anonymous_auth_enabled === "true";
   const hasSocial = enabledOAuthProviders.length > 0;
   const hasPasswordless = magicLinkEnabled || emailOtpEnabled;
 
@@ -83,6 +86,12 @@ export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () 
           />
         </div>
       )}
+
+      {/* Passkey 与匿名登录：passkey 服务端无条件可用；匿名登录按 Config 开关渲染。 */}
+      <div className="mb-4 space-y-2">
+        <PasskeyButton />
+        {anonymousEnabled ? <AnonymousButton /> : null}
+      </div>
 
       {hasSocial && (emailEnabled || hasPasswordless) ? (
         <div className="my-4 flex items-center gap-3 text-muted-foreground text-xs">

@@ -4,6 +4,7 @@ import { toast } from "sonner";
 
 import SignInForm from "@/components/auth/sign-in-form";
 import SignUpForm from "@/components/auth/sign-up-form";
+import { OneTapPrompt } from "@/components/auth/one-tap-prompt";
 import { buildPageHead } from "@/lib/page-head";
 import { m } from "@/paraglide/messages.js";
 
@@ -31,9 +32,15 @@ function LoginPage() {
     }
   }, [error]);
 
-  return showSignIn ? (
-    <SignInForm onSwitchToSignUp={() => setShowSignIn(false)} />
-  ) : (
-    <SignUpForm onSwitchToSignIn={() => setShowSignIn(true)} />
+  return (
+    <>
+      {/* Google One Tap：依公开配置渲染（未开启时为 no-op）。 */}
+      <OneTapPrompt callbackURL="/dashboard" />
+      {showSignIn ? (
+        <SignInForm onSwitchToSignUp={() => setShowSignIn(false)} />
+      ) : (
+        <SignUpForm onSwitchToSignIn={() => setShowSignIn(true)} />
+      )}
+    </>
   );
 }
