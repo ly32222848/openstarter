@@ -102,10 +102,14 @@ export function buildPageHead(input: PageHeadInput): PageHead {
     { rel: "canonical", href: url },
     ...SUPPORTED_LOCALES.map((loc) => ({
       rel: "alternate",
-      hreflang: loc,
+      hrefLang: loc,
       href: urlForLocale(input.path, loc),
     })),
-    { rel: "alternate", hreflang: "x-default", href: urlForLocale(input.path, DEFAULT_LOCALE) },
+    {
+      rel: "alternate",
+      hrefLang: "x-default",
+      href: urlForLocale(input.path, DEFAULT_LOCALE),
+    },
   ];
 
   return { meta, links };

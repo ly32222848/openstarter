@@ -28,9 +28,9 @@ export function AppShell({ children }: { children?: ReactNode }) {
       <AppSidebar />
       <SidebarInset>
         <AppHeader>{children}</AppHeader>
-        <main className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        <div className="flex min-w-0 flex-1 flex-col overflow-hidden p-6">
           <Outlet />
-        </main>
+        </div>
       </SidebarInset>
     </SidebarProvider>
   );

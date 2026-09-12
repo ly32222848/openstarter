@@ -248,7 +248,7 @@ export function LineChart({
                 />
                 <text
                   className="fill-muted-foreground font-mono"
-                  font-size="10"
+                  fontSize="10"
                   textAnchor="end"
                   x={PADDING.left - 8}
                   y={plot.yAt(tick) + 3}
@@ -260,7 +260,7 @@ export function LineChart({
             {plot.tickIndexes.map((index) => (
               <text
                 className="fill-muted-foreground font-mono"
-                font-size="10"
+                fontSize="10"
                 key={index}
                 textAnchor={index === 0 ? "start" : index === data.length - 1 ? "end" : "middle"}
                 x={plot.xAt(index)}

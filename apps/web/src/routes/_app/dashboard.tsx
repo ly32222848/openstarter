@@ -8,7 +8,6 @@ import { useQuery } from "@tanstack/react-query";
 import { AlertCircle } from "lucide-react";
 
 import { CreditActivityChart } from "@/modules/dashboard/components/credit-activity-chart";
-import { QuickStartCard } from "@/modules/dashboard/components/quick-start-card";
 import { RecentOrdersCard } from "@/modules/dashboard/components/recent-orders-card";
 import { StatsCards } from "@/modules/dashboard/components/stats-cards";
 import { dashboard } from "@/modules/dashboard/lib/api";
@@ -33,7 +32,7 @@ function DashboardPage() {
   const statsQuery = useQuery({ ...dashboard.queries.stats() });
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
+    <div className="flex w-full flex-col gap-6">
       <div>
         <h1 className="font-bold text-2xl">{m["dashboard.title"]()}</h1>
         <p className="text-muted-foreground">{m["dashboard.welcome"]({ name })}</p>
@@ -51,12 +50,7 @@ function DashboardPage() {
 
       <CreditActivityChart isPending={statsQuery.isPending} stats={statsQuery.data} />
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <RecentOrdersCard />
-        </div>
-        <QuickStartCard />
-      </div>
+      <RecentOrdersCard />
     </div>
   );
 }

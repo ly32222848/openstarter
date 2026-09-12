@@ -108,17 +108,17 @@ describe("buildPageHead", () => {
       const result = buildPageHead({ title: "About", path: "/about", locale: "en" });
       expect(result.links).toContainEqual({
         rel: "alternate",
-        hreflang: "en",
+        hrefLang: "en",
         href: "https://example.com/about",
       });
       expect(result.links).toContainEqual({
         rel: "alternate",
-        hreflang: "zh",
+        hrefLang: "zh",
         href: "https://example.com/zh/about",
       });
       expect(result.links).toContainEqual({
         rel: "alternate",
-        hreflang: "x-default",
+        hrefLang: "x-default",
         href: "https://example.com/about",
       });
     });

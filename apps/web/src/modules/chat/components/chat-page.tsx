@@ -115,7 +115,7 @@ export function ChatPage() {
   const chats = (chatsQuery.data?.items ?? []) as ChatRow[];
 
   return (
-    <div className="mx-auto flex h-[calc(100vh-8rem)] w-full max-w-6xl gap-6">
+    <div className="flex h-[calc(100vh-8rem)] w-full gap-6">
       <aside className="flex w-64 shrink-0 flex-col gap-3">
         <Select onValueChange={handleModelChange} value={activeModelKey}>
           <SelectTrigger className="w-full">
