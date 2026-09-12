@@ -3,7 +3,10 @@
 // 数据面经类型化 RPC（`client.api.user.credits`）→ packages/api（requireAuth）→ Credit_Service。
 import { createFileRoute } from "@tanstack/react-router";
 import { CreditsPage } from "@/components/app/settings/credits";
+import { user } from "@/modules/user/lib/api";
 
 export const Route = createFileRoute("/_app/settings/credits")({
+  // hover 预取积分余额 + 流水。
+  loader: ({ context: { queryClient } }) => queryClient.prefetchQuery(user.queries.credits()),
   component: CreditsPage,
 });

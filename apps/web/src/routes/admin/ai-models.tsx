@@ -32,12 +32,14 @@ import {
 } from "@openstarter/ui-web/components/table";
 import { Textarea } from "@openstarter/ui-web/components/textarea";
 import { cn } from "@openstarter/ui-web/lib/utils";
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 
 import { AdminHeader, Pagination, StatusText } from "@/components/admin/list";
+import { countTotalPages, listSearchParams, LIST_PAGE_SIZE } from "@/lib/list-search";
+import { preloadQueries } from "@/lib/preload";
 import {
   admin,
   type AiModelMediaType,
@@ -46,10 +48,12 @@ import {
 } from "@/modules/admin/lib/api";
 
 export const Route = createFileRoute("/admin/ai-models")({
+  validateSearch: listSearchParams,
+  // URL 分页参数透传给 loader（loaderDeps 变化 → loader 重跑，预取对应页）。
+  loaderDeps: ({ search }) => search,
+  loader: preloadQueries((deps) => [admin.queries.aiModels(Number(deps.page) || 1)]),
   component: AdminAiModelsPage,
 });
-
-const PAGE_SIZE = 20;
 
 type MediaType = AiModelMediaType;
 
@@ -94,14 +98,17 @@ const parseIntOrNull = (value: string): number | null | undefined => {
 
 function AdminAiModelsPage() {
   const queryClient = useQueryClient();
-  const [page, setPage] = useState(1);
+  const { page } = Route.useSearch();
+  const navigate = Route.useNavigate();
   const [form, setForm] = useState<ModelForm | null>(null);
 
-  const modelsQuery = useQuery({
-    ...admin.queries.aiModels(page),
-    placeholderData: keepPreviousData,
-  });
+  const modelsQuery = useQuery(admin.queries.aiModels(page));
 
+  const handlePageChange = (next: number) => {
+    void navigate({ search: (prev) => ({ ...prev, page: next }), replace: true });
+  };
+
+  // 前缀失效：["admin","ai-models"] 覆盖所有分页。
   const invalidate = () => {
     void queryClient.invalidateQueries({ queryKey: ["admin", "ai-models"] });
   };
@@ -136,7 +143,7 @@ function AdminAiModelsPage() {
 
   const items: AiModelRow[] = modelsQuery.data?.items ?? [];
   const total = modelsQuery.data?.total ?? 0;
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const totalPages = countTotalPages(total, LIST_PAGE_SIZE);
 
   const handleSave = () => {
     if (!form) {
@@ -257,7 +264,7 @@ function AdminAiModelsPage() {
         </div>
       ) : null}
 
-      <Pagination onPageChange={setPage} page={page} totalPages={totalPages} />
+      <Pagination onPageChange={handlePageChange} page={page} totalPages={totalPages} />
 
       <Dialog
         onOpenChange={(open) => {

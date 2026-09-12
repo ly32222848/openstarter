@@ -12,9 +12,17 @@ import { QuickStartCard } from "@/modules/dashboard/components/quick-start-card"
 import { RecentOrdersCard } from "@/modules/dashboard/components/recent-orders-card";
 import { StatsCards } from "@/modules/dashboard/components/stats-cards";
 import { dashboard } from "@/modules/dashboard/lib/api";
+import { user } from "@/modules/user/lib/api";
 import { m } from "@/paraglide/messages.js";
 
 export const Route = createFileRoute("/_app/dashboard")({
+  // intent 预加载：hover 时先跑 loader，把 stats + 最近订单预取进 Query 缓存，
+  // 点击后组件的 useQuery 直接命中缓存 → 无等待渲染。
+  loader: ({ context: { queryClient } }) =>
+    Promise.all([
+      queryClient.prefetchQuery(dashboard.queries.stats()),
+      queryClient.prefetchQuery(user.queries.orders(1)),
+    ]),
   component: DashboardPage,
 });
 

@@ -1,12 +1,16 @@
 // Query 工厂：studio 模块（生成任务）。布局与交互在 components/。
 // 数据面经类型化 RPC（`client.api["ai-tasks"]`）→ packages/api（requireAuth + requirePlan）。
+// 缓存键走 @openstarter/ai-web 的 aiKeys 工厂（key 属主）：studio 与 ai 模块共享同一份
+// 任务数据，两侧都必须引用 aiKeys.tasks——手写数组会让 invalidate 前缀与工厂 key 静默漂移。
 
-import { mutationOptions, queryOptions } from "@tanstack/react-query";
+import { keepPreviousData, mutationOptions, queryOptions } from "@tanstack/react-query";
 import type { InferRequestType, InferResponseType } from "hono/client";
 
 import { client } from "@/lib/api";
+import { aiKeys } from "@/modules/ai/lib/api";
+import { LIST_PAGE_SIZE } from "@/lib/list-search";
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = LIST_PAGE_SIZE;
 
 /** studio 工作台支持的媒体类型（brief 约定：不含 text/speech）。 */
 export const STUDIO_MEDIA_TYPES = ["image", "video", "music"] as const;
@@ -66,8 +70,8 @@ const queries = {
         }
         return json.data;
       },
-      // 复用 ai.queries.tasks 的缓存键：studio 与 ai 模块共享同一份任务数据。
-      queryKey: ["ai", "tasks", input.mediaType ?? "all", input.page] as const,
+      queryKey: aiKeys.tasks.list(input),
+      placeholderData: keepPreviousData,
     }),
 };
 
@@ -86,7 +90,9 @@ const mutations = {
         return json.data;
       },
       onSuccess: (_data, _variables, _onMutateResult, context) => {
-        void context.client.invalidateQueries({ queryKey: ["ai", "tasks"] });
+        // 前缀失效所有 mediaType/页码的任务查询（新任务可能不出现在当前 tab，
+        // 但积分余额等侧翼数据共享同一查询面，按属主工厂前缀失效最稳）。
+        void context.client.invalidateQueries({ queryKey: aiKeys.tasks.all });
       },
     }),
 };

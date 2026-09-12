@@ -1,9 +1,12 @@
 // Query 工厂：tickets 模块（R21）
 // 数据面经类型化 RPC（`client.api.tickets`）→ packages/api（requireAuth）。
+// tickets 属 user 域资源，key 走 userKeys 工厂（tickets 嵌套在 ["user","tickets"] 前缀下，
+// 组件按前缀失效列表/详情均可命中，手写 key 漂移在此根除）。
 
 import { mutationOptions, queryOptions } from "@tanstack/react-query";
 
 import { client } from "@/lib/api";
+import { userKeys } from "@/modules/user/lib/api";
 
 const queries = {
   detail: (id: string | null) =>
@@ -18,7 +21,7 @@ const queries = {
         const json = await res.json();
         return json.data;
       },
-      queryKey: ["user", "tickets", id] as const,
+      queryKey: userKeys.tickets.detail(id),
     }),
   list: () =>
     queryOptions({
@@ -30,7 +33,7 @@ const queries = {
         const json = await res.json();
         return json.data;
       },
-      queryKey: ["user", "tickets"] as const,
+      queryKey: userKeys.tickets.all,
     }),
 };
 

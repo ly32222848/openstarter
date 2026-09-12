@@ -1,12 +1,20 @@
 // Query 工厂：admin 模块（R25/R26 管理后台）
 // 数据面经类型化 RPC（`client.api.admin.*`）→ packages/api（requirePermission admin.*）。
+//
+// queryKey 约定（qk-hierarchical-organization）：分页列表的 key 与路由 URL search 参数
+// 一一对应（users → page + q；orders/subscriptions/credits/ai-models → page），
+// 页面侧经 validateSearch 把「第几页」提升为 URL 状态；刷新、前进/后退、分享链接
+// 均可恢复视图。新增筛选维度时同时扩展 lib/list-search 的 schema 与对应工厂签名。
+//
+// 分页查询统一 placeholderData: keepPreviousData（翻页保留上一页数据，避免空态闪烁）。
 
-import { mutationOptions, queryOptions } from "@tanstack/react-query";
+import { keepPreviousData, mutationOptions, queryOptions } from "@tanstack/react-query";
 import type { InferRequestType, InferResponseType } from "hono/client";
 
 import { client } from "@/lib/api";
+import { LIST_PAGE_SIZE } from "@/lib/list-search";
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = LIST_PAGE_SIZE;
 
 /** `ai_model` 目录行的媒体类型（与后端 AI_MEDIA_TYPES 一致）。 */
 export const AI_MODEL_MEDIA_TYPES = ["text", "image", "video", "music", "speech"] as const;
@@ -37,6 +45,7 @@ const queries = {
         return (await res.json()).data;
       },
       queryKey: ["admin", "ai-models", page] as const,
+      placeholderData: keepPreviousData,
     }),
   config: () =>
     queryOptions({
@@ -61,6 +70,7 @@ const queries = {
         return (await res.json()).data;
       },
       queryKey: ["admin", "credits", page] as const,
+      placeholderData: keepPreviousData,
     }),
   metrics: () =>
     queryOptions({
@@ -85,7 +95,10 @@ const queries = {
         return (await res.json()).data;
       },
       queryKey: ["admin", "orders", page] as const,
+      placeholderData: keepPreviousData,
     }),
+  // 权限码集合：admin 布局守卫（beforeLoad）与各页共用。staleTime 放宽，
+  // 会话内重复进入 /admin 直接命中缓存（cache-stale-time + pf-ensure-query-data）。
   permissions: () =>
     queryOptions({
       queryFn: async () => {
@@ -96,6 +109,7 @@ const queries = {
         return (await res.json()).data ?? [];
       },
       queryKey: ["admin", "permissions"] as const,
+      staleTime: 5 * 60 * 1000,
     }),
   rolePermissions: (roleId: string | null) =>
     queryOptions({
@@ -133,6 +147,7 @@ const queries = {
         return (await res.json()).data;
       },
       queryKey: ["admin", "subscriptions", page] as const,
+      placeholderData: keepPreviousData,
     }),
   users: (page: number, search: string) =>
     queryOptions({
@@ -150,6 +165,7 @@ const queries = {
         return (await res.json()).data;
       },
       queryKey: ["admin", "users", page, search] as const,
+      placeholderData: keepPreviousData,
     }),
 };
 

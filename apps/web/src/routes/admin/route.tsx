@@ -1,17 +1,18 @@
 // apps/web/src/routes/admin/route.tsx
 // 管理后台外壳（Admin_Console，R26）：登录 + 平台级 RBAC 守卫、分组侧边导航（按权限过滤）。
 //
-// 守卫（R26.1）：beforeLoad 先校验登录（无会话跳 /login），再拉取当前用户权限码集合
-// （GET /api/user/permissions），若不具备任何后台入口对应权限则拒绝访问并重定向。
+// 守卫（R26.1）：beforeLoad 并发校验登录与当前用户权限码集合（GET /api/user/permissions）——
+// 无会话跳 /login，不具备任何后台入口权限跳 /dashboard。权限经 queryClient 缓存
+// （staleTime 5min），会话内重复进入 /admin 不再重发请求（load-ensure-query-data）。
 // 菜单过滤（R26.4）：仅展示当前权限码（含通配符）可访问的入口，权限码经 matchPermission 判定。
 // 平台级授权仅依通配符 RBAC，与 organization 解耦。ssr:false 对齐 _app（认证态在客户端解析）。
 
 import { cn } from "@openstarter/ui-web/lib/utils";
 import { createFileRoute, Link, Outlet, redirect } from "@tanstack/react-router";
 
-import { client } from "@/lib/api";
 import { authClient } from "@/lib/auth-client";
 import { matchAnyPermission, matchPermission } from "@/lib/permissions";
+import { user } from "@/modules/user/lib/api";
 
 type AdminPath =
   | "/admin"
@@ -65,20 +66,21 @@ export const ADMIN_NAV: AdminNavGroup[] = [
 const ALL_ADMIN_PERMISSIONS = ADMIN_NAV.flatMap((g) => g.items.map((item) => item.permission));
 
 export const Route = createFileRoute("/admin")({
-  beforeLoad: async () => {
-    const session = await authClient.getSession();
+  beforeLoad: async ({ context: { queryClient } }) => {
+    // 并发发起：会话 + 权限码（load-ensure-query-data + pf-route-prefetch）。
+    // 已登录时省一次串行往返；未登录时权限请求注定 401，落 catch 降级为空数组，
+    // 下方先判会话、跳 /login，行为与旧的串行版本一致。
+    const [session, permissions] = await Promise.all([
+      authClient.getSession(),
+      queryClient
+        .ensureQueryData(user.queries.permissions())
+        // 权限接口网络失败时抛异常会落到通用错误页；按「无权限」降级重定向更合理
+        // （真正的数据边界由 API 侧每个 admin 路由的 requirePermission 保证，此处只是 UX 门面）。
+        .catch(() => [] as string[]),
+    ]);
+
     if (!session.data) {
       throw redirect({ to: "/login" });
-    }
-
-    // 权限接口网络失败时抛异常会落到通用错误页；按「无权限」降级重定向更合理
-    // （真正的数据边界由 API 侧每个 admin 路由的 requirePermission 保证，此处只是 UX 门面）。
-    let permissions: string[] = [];
-    try {
-      const res = await client.api.user.permissions.$get();
-      permissions = res.ok ? ((await res.json()).data ?? []) : [];
-    } catch {
-      permissions = [];
     }
 
     // 无任何后台入口权限 → 拒绝访问并重定向（R26.1）。
@@ -86,6 +88,7 @@ export const Route = createFileRoute("/admin")({
       throw redirect({ to: "/dashboard" });
     }
 
+    // 返回 merge 进路由 context：AdminLayout 与各子页复用，不再各自拉取。
     return { permissions };
   },
   component: AdminLayout,

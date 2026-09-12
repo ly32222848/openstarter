@@ -19,6 +19,11 @@ function createQueryClient() {
         if (query.state.data !== undefined) {
           return;
         }
+        // 路由 loader 的 prefetchQuery 没有活跃 observer，失败只在真正挂载的组件里
+        // 以 error 态呈现；hover 预取失败若仍弹窗，用户会收到指向未曾打开页面的报错。
+        if (query.getObserversCount() === 0) {
+          return;
+        }
         // 不透传原始 error.message（可能泄漏内部实现/网络细节）；
         // 仅 DEV 环境保留原始信息便于排查。
         const message = import.meta.env.DEV ? error.message : m["common.error.message"]();

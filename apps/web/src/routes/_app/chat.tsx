@@ -3,8 +3,15 @@
 
 import { createFileRoute } from "@tanstack/react-router";
 
+import { ai } from "@/modules/ai/lib/api";
 import { ChatPage } from "@/modules/chat/components/chat-page";
 
 export const Route = createFileRoute("/_app/chat")({
+  // hover 预取模型目录 + 首页会话，点击后聊天页 useQuery 直接命中缓存。
+  loader: ({ context: { queryClient } }) =>
+    Promise.all([
+      queryClient.prefetchQuery(ai.queries.models()),
+      queryClient.prefetchQuery(ai.queries.chats(1)),
+    ]),
   component: ChatPage,
 });

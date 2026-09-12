@@ -15,6 +15,8 @@ import { AdminHeader } from "@/components/admin/list";
 import { admin } from "@/modules/admin/lib/api";
 
 export const Route = createFileRoute("/admin/")({
+  // hover 预取汇总指标，点击后组件 useQuery 命中缓存。
+  loader: ({ context: { queryClient } }) => queryClient.prefetchQuery(admin.queries.metrics()),
   component: AdminDashboard,
 });
 

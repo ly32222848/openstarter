@@ -31,6 +31,8 @@ import { AdminHeader, StatusText } from "@/components/admin/list";
 import { admin } from "@/modules/admin/lib/api";
 
 export const Route = createFileRoute("/admin/settings")({
+  // hover 预取平台配置。
+  loader: ({ context: { queryClient } }) => queryClient.prefetchQuery(admin.queries.config()),
   component: AdminSettingsPage,
 });
 

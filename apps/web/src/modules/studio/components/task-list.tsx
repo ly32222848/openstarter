@@ -2,7 +2,7 @@
 // 轮询节奏由 studio.lib.api 的 taskRefetchInterval（refetchInterval 回调）控制。
 
 import { Badge } from "@openstarter/ui-web/components/badge";
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 
 import { Pagination, StatusText } from "@/components/admin/list";
@@ -28,9 +28,9 @@ const formatTime = (value: string | null | undefined): string =>
 export function TaskList({ mediaType }: { mediaType: StudioMediaTypeId }) {
   const [page, setPage] = useState(1);
 
+  // keepPreviousData 由 studio.queries.tasks 工厂统一携带（分页列表一致行为）。
   const tasksQuery = useQuery({
     ...studio.queries.tasks({ mediaType, page }),
-    placeholderData: keepPreviousData,
     refetchInterval: taskRefetchInterval,
   });
 

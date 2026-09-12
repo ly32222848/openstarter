@@ -4,7 +4,7 @@
 // 经 `setAIBaseUrl(baseUrl)` 初始化（默认 "/"），hooks 内部走该实例。web 端调用点保持不变
 // （apps/web 侧 re-export 本包）。
 
-import { mutationOptions, queryOptions } from "@tanstack/react-query";
+import { keepPreviousData, mutationOptions, queryOptions } from "@tanstack/react-query";
 
 import { createAIClient } from "./client";
 
@@ -47,6 +47,28 @@ type AiMediaType = (typeof AI_MEDIA_TYPES)[number];
 const isAiMediaType = (value: string): value is AiMediaType =>
   (AI_MEDIA_TYPES as readonly string[]).includes(value);
 
+/**
+ * ai 域 query key 工厂（qk-factory-pattern）。
+ * key 归属本包：apps/web 的 studio 等消费方复用 `["ai","tasks"]` 缓存时，
+ * 必须经 `aiKeys.tasks(...)` 取 key，禁止手写数组——否则 invalidate 前缀
+ * 与工厂 key 会静默漂移。
+ */
+export const aiKeys = {
+  all: ["ai"] as const,
+  models: () => ["ai", "models"] as const,
+  chats: {
+    all: ["ai", "chats"] as const,
+    list: (page: number) => ["ai", "chats", page] as const,
+  },
+  chatMessages: (chatId: string, page: number) => ["ai", "chat-messages", chatId, page] as const,
+  tasks: {
+    /** 失效前缀：任意 mediaType/页码的任务查询都被命中。 */
+    all: ["ai", "tasks"] as const,
+    list: (input: { mediaType?: string; page: number }) =>
+      ["ai", "tasks", input.mediaType ?? "all", input.page] as const,
+  },
+};
+
 export const queries = {
   models: () =>
     queryOptions({
@@ -58,7 +80,7 @@ export const queries = {
         const json = await res.json();
         return json.data as ModelCatalog;
       },
-      queryKey: ["ai", "models"] as const,
+      queryKey: aiKeys.models(),
     }),
   chats: (page: number) =>
     queryOptions({
@@ -72,7 +94,7 @@ export const queries = {
         const json = await res.json();
         return json.data;
       },
-      queryKey: ["ai", "chats", page] as const,
+      queryKey: aiKeys.chats.list(page),
     }),
   chatMessages: (chatId: string, page: number) =>
     queryOptions({
@@ -87,7 +109,7 @@ export const queries = {
         const json = await res.json();
         return json.data;
       },
-      queryKey: ["ai", "chat-messages", chatId, page] as const,
+      queryKey: aiKeys.chatMessages(chatId, page),
     }),
   tasks: (input: { mediaType?: string; page: number }) =>
     queryOptions({
@@ -109,7 +131,9 @@ export const queries = {
         const json = await res.json();
         return json.data;
       },
-      queryKey: ["ai", "tasks", input.mediaType ?? "all", input.page] as const,
+      queryKey: aiKeys.tasks.list(input),
+      // 翻页保留上一页数据（分页列表统一行为）。
+      placeholderData: keepPreviousData,
     }),
 };
 
@@ -128,7 +152,7 @@ export const mutations = {
         return json.data;
       },
       onSuccess: (_data, _variables, _onMutateResult, context) => {
-        void context.client.invalidateQueries({ queryKey: ["ai", "chats"] });
+        void context.client.invalidateQueries({ queryKey: aiKeys.chats.all });
       },
     }),
   deleteChat: () =>
@@ -141,7 +165,7 @@ export const mutations = {
         return input.id;
       },
       onSuccess: (_data, _variables, _onMutateResult, context) => {
-        void context.client.invalidateQueries({ queryKey: ["ai", "chats"] });
+        void context.client.invalidateQueries({ queryKey: aiKeys.chats.all });
       },
     }),
 };

@@ -1,5 +1,6 @@
 // apps/web/src/routes/admin/users.tsx
 // 用户管理（R26.2）：分页列表 + 邮箱搜索。数据经 GET /api/admin/users（requirePermission admin.*）。
+// 分页/搜索状态经 validateSearch 进 URL（刷新、后退/前进、分享链接可恢复视图）。
 
 import { Badge } from "@openstarter/ui-web/components/badge";
 import { Input } from "@openstarter/ui-web/components/input";
@@ -11,35 +12,69 @@ import {
   TableHeader,
   TableRow,
 } from "@openstarter/ui-web/components/table";
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { AdminHeader, Pagination, StatusText } from "@/components/admin/list";
-import { useDebouncedValue } from "@/lib/use-debounced-value";
+import { countTotalPages, listUsersSearchParams, LIST_PAGE_SIZE } from "@/lib/list-search";
+import { preloadQueries } from "@/lib/preload";
 import { admin } from "@/modules/admin/lib/api";
 
 export const Route = createFileRoute("/admin/users")({
+  validateSearch: listUsersSearchParams,
+  // URL 的分页/搜索参数透传给 loader（loaderDeps 变化 → loader 重跑，预取对应页）。
+  loaderDeps: ({ search }) => search,
+  // hover 预取：按当前 URL 的分页/搜索预取，组件挂载即命中缓存。
+  loader: preloadQueries((deps) => [
+    admin.queries.users(Number(deps.page) || 1, String(deps.q ?? "")),
+  ]),
   component: AdminUsersPage,
 });
 
-const PAGE_SIZE = 20;
 const SEARCH_DEBOUNCE_MS = 300;
 
 function AdminUsersPage() {
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState("");
-  // 防抖后进 queryKey：避免每敲一个键就发一次 /api/admin/users 请求。
-  const debouncedSearch = useDebouncedValue(search, SEARCH_DEBOUNCE_MS);
+  const { page, q } = Route.useSearch();
+  const navigate = Route.useNavigate();
+  // 输入框本地态即时回显；防抖后才写进 URL（避免每敲一键一条请求/历史）。
+  // pushedRef 记录「最近一次由本页推入 URL 的值」，据此区分自身回写与外部导航
+  // （后退/前进、手改地址栏），防止防抖尾巴覆盖外部变更。
+  const [searchInput, setSearchInput] = useState(q);
+  const pushedRef = useRef(q);
 
-  const usersQuery = useQuery({
-    ...admin.queries.users(page, debouncedSearch),
-    placeholderData: keepPreviousData,
-  });
+  useEffect(() => {
+    // URL 是真相：外部导致的 q 变化 → 同步进输入框。
+    if (q !== pushedRef.current) {
+      pushedRef.current = q;
+      setSearchInput(q);
+    }
+  }, [q]);
+
+  useEffect(() => {
+    // 本地编辑 → 防抖推入 URL（搜索变更回到第 1 页）。
+    if (searchInput === pushedRef.current) {
+      return;
+    }
+    const timer = setTimeout(() => {
+      pushedRef.current = searchInput;
+      void navigate({
+        search: (prev) => ({ ...prev, page: 1, q: searchInput || undefined }),
+        replace: true,
+      });
+    }, SEARCH_DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+  }, [navigate, searchInput]);
+
+  const usersQuery = useQuery(admin.queries.users(page, q));
 
   const items = usersQuery.data?.items ?? [];
   const total = usersQuery.data?.total ?? 0;
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const totalPages = countTotalPages(total, LIST_PAGE_SIZE);
+
+  const handlePageChange = (next: number) => {
+    void navigate({ search: (prev) => ({ ...prev, page: next }), replace: true });
+  };
 
   return (
     <div>
@@ -47,13 +82,10 @@ function AdminUsersPage() {
       <div className="mb-4 max-w-xs">
         <Input
           aria-label="Search users by email"
-          onChange={(e) => {
-            setPage(1);
-            setSearch(e.target.value);
-          }}
+          onChange={(e) => setSearchInput(e.target.value)}
           placeholder="Search by email..."
           type="search"
-          value={search}
+          value={searchInput}
         />
       </div>
 
@@ -97,7 +129,7 @@ function AdminUsersPage() {
         </div>
       ) : null}
 
-      <Pagination onPageChange={setPage} page={page} totalPages={totalPages} />
+      <Pagination onPageChange={handlePageChange} page={page} totalPages={totalPages} />
     </div>
   );
 }

@@ -31,6 +31,12 @@ import { AdminHeader, StatusText } from "@/components/admin/list";
 import { admin } from "@/modules/admin/lib/api";
 
 export const Route = createFileRoute("/admin/roles")({
+  // hover 预取角色 + 权限码（角色权限抽屉按选中态惰性加载，不预取）。
+  loader: ({ context: { queryClient } }) =>
+    Promise.all([
+      queryClient.prefetchQuery(admin.queries.roles()),
+      queryClient.prefetchQuery(admin.queries.permissions()),
+    ]),
   component: AdminRolesPage,
 });
 

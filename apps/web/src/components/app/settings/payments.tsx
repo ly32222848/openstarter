@@ -15,11 +15,10 @@ import {
   TableHeader,
   TableRow,
 } from "@openstarter/ui-web/components/table";
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { countTotalPages, LIST_PAGE_SIZE } from "@/lib/list-search";
 import { user } from "@/modules/user/lib/api";
-
-const PAGE_SIZE = 20;
 
 function formatDate(value: string | null | undefined): string {
   if (!value) {
@@ -37,17 +36,26 @@ function statusVariant(status: string): "secondary" | "outline" {
   return status === "paid" ? "secondary" : "outline";
 }
 
-export function PaymentsPage() {
-  const [page, setPage] = useState(1);
+/**
+ * 支付记录列表。分页状态可注入（路由页把 page 提升进 URL）；
+ * 未注入时退化为本地 useState（ManageAccountDialog 弹窗内复用，无独立 URL）。
+ */
+export function PaymentsPage({
+  onPageChange,
+  page: pageProp,
+}: {
+  onPageChange?: (page: number) => void;
+  page?: number;
+} = {}) {
+  const [localPage, setLocalPage] = useState(1);
+  const page = pageProp ?? localPage;
+  const goToPage = onPageChange ?? setLocalPage;
 
-  const ordersQuery = useQuery({
-    ...user.queries.orders(page),
-    placeholderData: keepPreviousData,
-  });
+  const ordersQuery = useQuery(user.queries.orders(page));
 
   const items = ordersQuery.data?.items ?? [];
   const total = ordersQuery.data?.total ?? 0;
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const totalPages = countTotalPages(total, LIST_PAGE_SIZE);
 
   return (
     <Card>
@@ -111,7 +119,7 @@ export function PaymentsPage() {
             <div className="flex gap-2">
               <Button
                 disabled={page <= 1}
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                onClick={() => goToPage(Math.max(1, page - 1))}
                 size="sm"
                 type="button"
                 variant="outline"
@@ -120,7 +128,7 @@ export function PaymentsPage() {
               </Button>
               <Button
                 disabled={page >= totalPages}
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                onClick={() => goToPage(Math.min(totalPages, page + 1))}
                 size="sm"
                 type="button"
                 variant="outline"

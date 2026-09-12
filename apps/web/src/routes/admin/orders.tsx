@@ -1,5 +1,6 @@
 // apps/web/src/routes/admin/orders.tsx
 // 订单管理（R26.2）：分页列表。数据经 GET /api/admin/orders（requirePermission admin.*）。
+// 分页状态经 validateSearch 进 URL（刷新/后退/分享可恢复视图）。
 
 import { Badge } from "@openstarter/ui-web/components/badge";
 import {
@@ -10,34 +11,40 @@ import {
   TableHeader,
   TableRow,
 } from "@openstarter/ui-web/components/table";
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
 
 import { AdminHeader, Pagination, StatusText } from "@/components/admin/list";
+import { countTotalPages, listSearchParams, LIST_PAGE_SIZE } from "@/lib/list-search";
+import { preloadQueries } from "@/lib/preload";
 import { admin } from "@/modules/admin/lib/api";
 
 export const Route = createFileRoute("/admin/orders")({
+  validateSearch: listSearchParams,
+  // URL 分页参数透传给 loader（loaderDeps 变化 → loader 重跑，预取对应页）。
+  loaderDeps: ({ search }) => search,
+  // hover 预取：按 URL 当前页预取，组件挂载即命中缓存。
+  loader: preloadQueries((deps) => [admin.queries.orders(Number(deps.page) || 1)]),
   component: AdminOrdersPage,
 });
-
-const PAGE_SIZE = 20;
 
 function formatAmount(amount: number, currency: string): string {
   return `${(amount / 100).toFixed(2)} ${currency.toUpperCase()}`;
 }
 
 function AdminOrdersPage() {
-  const [page, setPage] = useState(1);
+  const { page } = Route.useSearch();
+  const navigate = Route.useNavigate();
 
-  const ordersQuery = useQuery({
-    ...admin.queries.orders(page),
-    placeholderData: keepPreviousData,
-  });
+  const ordersQuery = useQuery(admin.queries.orders(page));
 
   const items = ordersQuery.data?.items ?? [];
   const total = ordersQuery.data?.total ?? 0;
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const totalPages = countTotalPages(total, LIST_PAGE_SIZE);
+
+  const handlePageChange = (next: number) => {
+    void navigate({ search: (prev) => ({ ...prev, page: next }), replace: true });
+  };
 
   return (
     <div>
@@ -95,7 +102,7 @@ function AdminOrdersPage() {
         </div>
       ) : null}
 
-      <Pagination onPageChange={setPage} page={page} totalPages={totalPages} />
+      <Pagination onPageChange={handlePageChange} page={page} totalPages={totalPages} />
     </div>
   );
 }
