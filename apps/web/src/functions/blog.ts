@@ -6,21 +6,35 @@
 // SSR 说明：在 server function 内以内存方式将请求分派给已挂载的 Hono `app`（`app.fetch`），
 // 避免在 SSR 期解析部署 origin/端口；`app` 仅在服务端 handler 内**动态导入**，不进入客户端产物。
 // locale 由 localeMiddleware 依请求解析注入，供组件按当前语言渲染文案（R16.5）。
+//
+// 错误语义（sf-error-handling / sf-input-validation）：
+// - 输入经 zod 校验（GET server fn 的数据以字符串形态过 wire，故数值用 coerce）；
+// - 真实故障（5xx / 网络失败 / 信封缺 data）抛出，由路由 error boundary 呈现——
+//   不再 `?? []` 吞成「暂无文章」，后端挂掉伪装成空博客比报错更糟；
+// - 唯一合法的「空」是详情页 404（文章不存在/未发布），返回 `post: null` 交由路由转 notFound()。
 
 import type { AppType } from "@openstarter/api";
 import { createServerFn } from "@tanstack/react-start";
 import { hc } from "hono/client";
+import { z } from "zod";
 
 import { localeMiddleware } from "@/middleware/locale";
 
 // 内存 RPC 基址：主机名仅用于构造合法 URL，Hono 依 pathname 路由；请求经 `app.fetch` 就地分派。
 const INTERNAL_RPC_BASE = "http://blog.internal";
 
-type BlogListInput = {
-  category?: string;
-  page?: number;
-  pageSize?: number;
-};
+const NOT_FOUND_STATUS = 404;
+
+// 与后端 listQuery（createPaginationSchema(100, 12).extend({category})）对齐的入参约束。
+const blogListInput = z.object({
+  category: z.string().min(1).max(100).optional(),
+  page: z.coerce.number().int().min(1).optional(),
+  pageSize: z.coerce.number().int().min(1).max(100).optional(),
+});
+
+const blogSlugInput = z.object({
+  slug: z.string().min(1).max(200),
+});
 
 async function createRpc() {
   const { app } = await import("@openstarter/api");
@@ -30,7 +44,7 @@ async function createRpc() {
   });
 }
 
-function buildListQuery(input: BlogListInput): {
+function buildListQuery(input: z.infer<typeof blogListInput>): {
   category?: string;
   page?: string;
   pageSize?: string;
@@ -51,27 +65,43 @@ function buildListQuery(input: BlogListInput): {
 /** 已发布博客列表：可选按分类精确筛选、分页；随响应回传当前 locale 与激活分类。 */
 export const getBlogPostsFn = createServerFn({ method: "GET" })
   .middleware([localeMiddleware])
-  .validator((input: BlogListInput) => input)
+  .validator((input: unknown) => blogListInput.parse(input))
   .handler(async ({ data, context }) => {
     const rpc = await createRpc();
     const res = await rpc.api.blog.$get({ query: buildListQuery(data) });
-    const json = res.ok ? await res.json() : undefined;
-    const payload = json?.data;
+    if (!res.ok) {
+      throw new Error(`Blog list request failed (HTTP ${res.status})`);
+    }
+    const json = await res.json();
+    const payload = json.data;
+    if (!payload) {
+      throw new Error("Blog list response missing data");
+    }
     return {
       locale: context.locale,
       activeCategory: data.category ?? null,
-      items: payload?.items ?? [],
-      total: payload?.total ?? 0,
+      items: payload.items,
+      total: payload.total,
     };
   });
 
 /** 单篇已发布博客文章：未发布 / 不存在时 `post` 为 `null`（由路由 loader 转 404）。 */
 export const getBlogPostFn = createServerFn({ method: "GET" })
   .middleware([localeMiddleware])
-  .validator((input: { slug: string }) => input)
+  .validator((input: unknown) => blogSlugInput.parse(input))
   .handler(async ({ data, context }) => {
     const rpc = await createRpc();
     const res = await rpc.api.blog[":slug"].$get({ param: { slug: data.slug } });
-    const json = res.ok ? await res.json() : undefined;
-    return { locale: context.locale, post: json?.data ?? null };
+    // 404 是该端点的业务语义（不存在/未发布）→ null 交给路由 notFound()；其余非 2xx 是故障 → 抛。
+    if (res.status === NOT_FOUND_STATUS) {
+      return { locale: context.locale, post: null };
+    }
+    if (!res.ok) {
+      throw new Error(`Blog post request failed (HTTP ${res.status})`);
+    }
+    const json = await res.json();
+    if (!json.data) {
+      throw new Error("Blog post response missing data");
+    }
+    return { locale: context.locale, post: json.data };
   });
