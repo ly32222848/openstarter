@@ -5,12 +5,18 @@ import {
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 
-import { tDynamic } from "@/lib/i18n";
+import { m } from "@/paraglide/messages.js";
 
-// Theme values map to `common.nav.theme_{value}` message keys. This is a keyed
-// list, so labels are resolved with tDynamic (R23.2) rather than one static
-// `m[...]()` call per branch.
-const THEME_OPTIONS = ["system", "light", "dark"] as const;
+// Theme values map to `common.nav.theme_{value}` message keys. The key is only
+// known at runtime, but the candidate set is small and fixed, so each label is
+// resolved with a static `m["..."]()` lookup — a runtime-computed key into the
+// whole message namespace (`m[dynamicKey]()`) would defeat Paraglide's
+// tree-shaking and ship the entire catalog. Requirements: 23.2.
+const THEME_OPTIONS = [
+  { value: "system", label: () => m["common.nav.theme_system"]() },
+  { value: "light", label: () => m["common.nav.theme_light"]() },
+  { value: "dark", label: () => m["common.nav.theme_dark"]() },
+] as const;
 
 export function ThemeMenuItems() {
   const { theme, setTheme } = useTheme();
@@ -25,9 +31,9 @@ export function ThemeMenuItems() {
       onValueChange={(value) => setTheme(String(value))}
       value={mounted ? theme : undefined}
     >
-      {THEME_OPTIONS.map((value) => (
-        <DropdownMenuRadioItem key={value} value={value}>
-          {tDynamic(`common.nav.theme_${value}`)}
+      {THEME_OPTIONS.map((option) => (
+        <DropdownMenuRadioItem key={option.value} value={option.value}>
+          {option.label()}
         </DropdownMenuRadioItem>
       ))}
     </DropdownMenuRadioGroup>
