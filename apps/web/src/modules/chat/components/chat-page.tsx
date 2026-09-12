@@ -4,7 +4,7 @@
 // GET /api/llm/chats/:id/messages 拉取后映射为 UIMessage[] 注入 setMessages。
 
 import { Button } from "@openstarter/ui-web/components/button";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useChat } from "@ai-sdk/react";
 // DefaultChatTransport 仅由 `ai` 包导出（@ai-sdk/react 3.x 内部自 `ai` 引入但不转发）。
 import { DefaultChatTransport } from "ai";
@@ -22,11 +22,14 @@ import {
 import { Textarea } from "@openstarter/ui-web/components/textarea";
 
 import { ai, type AiModelView } from "@/modules/ai/lib/api";
-import { client } from "@/lib/api";
+import {
+  chatKeys,
+  fetchHistoryPage,
+  flattenHistoryPages,
+  getNextHistoryPage,
+} from "@/modules/chat/lib/api";
 
 import { ChatMessages } from "./chat-messages";
-
-const HISTORY_PAGE_SIZE = 100;
 
 type ChatRow = {
   id: string;
@@ -177,8 +180,8 @@ export function ChatPage() {
   );
 }
 
-/** 历史查询 key（与下方 historyQuery 一致）：流式结束后据此失效缓存。 */
-const historyKey = (chatId: string) => ["ai", "chats", chatId, "messages"] as const;
+/** 历史查询 key（与 chatQueries.history 一致）：流式结束后按前缀失效所有页。 */
+const historyKey = chatKeys.history;
 
 function ChatSurface({
   chatId,
@@ -201,27 +204,18 @@ function ChatSurface({
     },
   });
 
-  const historyQuery = useQuery({
-    queryFn: async () => {
-      const res = await client.api.llm.chats[":id"].messages.$get({
-        param: { id: chatId },
-        query: { page: "1", pageSize: String(HISTORY_PAGE_SIZE) },
-      });
-      if (!res.ok) {
-        throw new Error("Failed to load chat history");
-      }
-      const json = await res.json();
-      if (!json.data) {
-        throw new Error("Failed to load chat history");
-      }
-      return json.data.items as Array<{ id: string; role: string; content: string }>;
-    },
+  // 分页历史（inf-page-params）：page 1 = 最新一页，向后翻页取更早消息，
+  // 长会话不再被单页上限静默截断。
+  const historyQuery = useInfiniteQuery({
+    getNextPageParam: getNextHistoryPage,
+    initialPageParam: 1,
+    queryFn: ({ pageParam }) => fetchHistoryPage(chatId, pageParam),
     queryKey: historyKey(chatId),
   });
 
   useEffect(() => {
     if (historyQuery.data) {
-      setMessages(historyQuery.data.map(toUiMessage));
+      setMessages(flattenHistoryPages(historyQuery.data.pages).map(toUiMessage));
     }
   }, [historyQuery.data, setMessages]);
 
@@ -239,6 +233,21 @@ function ChatSurface({
   return (
     <section className="flex flex-1 flex-col gap-3 rounded-lg border p-4" key={chatId}>
       <div className="flex-1 overflow-y-auto">
+        {/* 长会话不再静默截断：仍有更早消息时提供显式入口（inf-loading-guards：
+            fetchNextPage 前判 hasNextPage 与 isFetchingNextPage）。 */}
+        {historyQuery.hasNextPage ? (
+          <div className="flex justify-center pb-2">
+            <Button
+              disabled={historyQuery.isFetchingNextPage}
+              onClick={() => void historyQuery.fetchNextPage()}
+              size="sm"
+              type="button"
+              variant="outline"
+            >
+              {historyQuery.isFetchingNextPage ? "Loading..." : "Load earlier messages"}
+            </Button>
+          </div>
+        ) : null}
         <ChatMessages messages={messages} />
       </div>
 

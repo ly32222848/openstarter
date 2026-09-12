@@ -255,6 +255,68 @@ describe("ChatPage", () => {
     });
   });
 
+  it("loads earlier messages past the first history page", async () => {
+    // 后端按倒序分页：page 1 = 最新一页。这里 total=3、每页 2 条 → 存在更早的一页。
+    messagesGetMock.mockImplementation(async ({ query }) => {
+      const page = Number(query.page);
+      return {
+        ok: true,
+        json: async () => ({
+          code: 0,
+          data:
+            page === 1
+              ? {
+                  items: [
+                    messageRow({ content: "newer-1", id: "msg-2", role: "user" }),
+                    messageRow({ content: "newer-2", id: "msg-3", role: "assistant" }),
+                  ],
+                  total: 3,
+                }
+              : {
+                  items: [messageRow({ content: "oldest", id: "msg-1", role: "user" })],
+                  total: 3,
+                },
+          message: "ok",
+        }),
+      };
+    });
+
+    renderChatPage();
+    fireEvent.click(await screen.findByRole("button", { name: "Trip planning" }));
+
+    const loadOlder = await screen.findByRole("button", { name: "Load earlier messages" });
+    fireEvent.click(loadOlder);
+
+    await waitFor(() => {
+      expect(messagesGetMock).toHaveBeenCalledWith({
+        param: { id: "chat-1" },
+        query: { page: "2", pageSize: "100" },
+      });
+    });
+    // 更早的消息拼接在列表最前（pages 新→旧，展平时反转为时间正序）。
+    await waitFor(() => {
+      expect(useChatState.current.setMessages).toHaveBeenCalledWith([
+        { id: "msg-1", parts: [{ type: "text", text: "oldest" }], role: "user" },
+        { id: "msg-2", parts: [{ type: "text", text: "newer-1" }], role: "user" },
+        { id: "msg-3", parts: [{ type: "text", text: "newer-2" }], role: "assistant" },
+      ]);
+    });
+  });
+
+  it("does not offer to load earlier messages when everything is already loaded", async () => {
+    renderChatPage();
+    fireEvent.click(await screen.findByRole("button", { name: "Trip planning" }));
+
+    // beforeEach 桩：items=2 / total=2 → 已加载完整，不出现按钮。
+    await waitFor(() => {
+      expect(messagesGetMock).toHaveBeenCalledWith({
+        param: { id: "chat-1" },
+        query: { page: "1", pageSize: "100" },
+      });
+    });
+    expect(screen.queryByRole("button", { name: "Load earlier messages" })).toBeNull();
+  });
+
   it("invalidates the chat history query when the stream finishes", async () => {
     renderChatPage();
 
