@@ -151,6 +151,8 @@
   "dashboard.chart.description": "Daily grants and consumption over the last 30 days",
   "dashboard.chart.granted": "Granted",
   "dashboard.chart.consumed": "Used",
+  "dashboard.chart.date": "Date",
+  "dashboard.chart.aria": "Daily granted and consumed credits over the last 30 days",
   "dashboard.recent_orders.title": "Recent Orders",
   "dashboard.recent_orders.description": "Your latest payments at a glance",
   "dashboard.recent_orders.empty": "No orders yet.",

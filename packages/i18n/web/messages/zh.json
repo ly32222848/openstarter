@@ -151,6 +151,8 @@
   "dashboard.chart.description": "最近 30 天的每日授予与消耗",
   "dashboard.chart.granted": "获得",
   "dashboard.chart.consumed": "消耗",
+  "dashboard.chart.date": "日期",
+  "dashboard.chart.aria": "最近 30 天每日授予与消耗积分",
   "dashboard.recent_orders.title": "最近订单",
   "dashboard.recent_orders.description": "快速查看你的最新支付记录",
   "dashboard.recent_orders.empty": "暂无订单。",

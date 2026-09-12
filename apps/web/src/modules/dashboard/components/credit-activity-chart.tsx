@@ -1,10 +1,5 @@
-// 仪表盘积分动态图：近 30 天逐日授予 / 消耗双曲线（recharts + ChartContainer）。
+// 仪表盘积分动态图：近 30 天逐日授予 / 消耗双曲线（零依赖原生 SVG，见 ui-web/line-chart）。
 
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@openstarter/ui-web/components/chart";
 import {
   Card,
   CardContent,
@@ -12,17 +7,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@openstarter/ui-web/components/card";
+import { LineChart } from "@openstarter/ui-web/components/line-chart";
 import { Skeleton } from "@openstarter/ui-web/components/skeleton";
-import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 
 import { m } from "@/paraglide/messages.js";
 
 import type { DashboardStats } from "./stats-view";
-
-const chartConfig = {
-  granted: { color: "var(--chart-2)", label: m["dashboard.chart.granted"]() },
-  consumed: { color: "var(--chart-1)", label: m["dashboard.chart.consumed"]() },
-} as const;
 
 /** 轴刻度只显示 `MM-DD`，避免横轴拥挤。 */
 function formatTick(date: string): string {
@@ -46,34 +36,16 @@ export function CreditActivityChart({
         {isPending || !stats ? (
           <Skeleton className="h-[240px] w-full" />
         ) : (
-          <ChartContainer className="h-[240px] w-full" config={chartConfig}>
-            <LineChart data={stats.trend} margin={{ bottom: 0, left: 0, right: 8, top: 8 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis
-                axisLine={false}
-                dataKey="date"
-                tickFormatter={formatTick}
-                tickLine={false}
-                tickMargin={8}
-              />
-              <YAxis axisLine={false} tickLine={false} width={40} />
-              <ChartTooltip content={<ChartTooltipContent indicator="line" />} />
-              <Line
-                dataKey="granted"
-                dot={false}
-                stroke="var(--color-granted)"
-                strokeWidth={2}
-                type="monotone"
-              />
-              <Line
-                dataKey="consumed"
-                dot={false}
-                stroke="var(--color-consumed)"
-                strokeWidth={2}
-                type="monotone"
-              />
-            </LineChart>
-          </ChartContainer>
+          <LineChart
+            ariaLabel={m["dashboard.chart.aria"]()}
+            data={stats.trend}
+            dateLabel={m["dashboard.chart.date"]()}
+            formatTickLabel={formatTick}
+            series={[
+              { dataKey: "granted", label: m["dashboard.chart.granted"]() },
+              { dataKey: "consumed", label: m["dashboard.chart.consumed"]() },
+            ]}
+          />
         )}
       </CardContent>
     </Card>
