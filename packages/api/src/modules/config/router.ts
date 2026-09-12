@@ -22,6 +22,7 @@ const PUBLIC_AUTH_KEYS = [
   "apple_client_id",
   "magic_link_enabled",
   "email_otp_enabled",
+  "anonymous_auth_enabled",
   "invite_code_required",
   // 移动端 IAP kill-switch：与 RC SDK key（env）同时满足才展示付费墙入口。
   "revenuecat_enabled",

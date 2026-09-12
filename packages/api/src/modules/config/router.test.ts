@@ -31,6 +31,15 @@ describe("GET /config/public", () => {
     expect(body.data.revenuecat_enabled).toBe("true");
   });
 
+  it("exposes anonymous_auth_enabled when set", async () => {
+    configsState.map = { anonymous_auth_enabled: "true" };
+    const response = await configRouter.request("/config/public");
+
+    expect(response.status).toBe(200);
+    const body = (await response.json()) as { data: Record<string, string> };
+    expect(body.data.anonymous_auth_enabled).toBe("true");
+  });
+
   it("never exposes secret config keys", async () => {
     configsState.map = {
       revenuecat_enabled: "true",

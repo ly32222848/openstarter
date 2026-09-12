@@ -125,6 +125,12 @@ export function getSettingGroups(): SettingGroup[] {
       title: "Email OTP",
     },
     {
+      description: "Temporary guest sessions for anonymous users",
+      name: "anonymous_auth",
+      tab: "auth",
+      title: "Anonymous Auth",
+    },
+    {
       description: "Payment general settings",
       name: "basic_payment",
       tab: "payment",
@@ -503,6 +509,16 @@ export function getSettings(): Setting[] {
       tab: "auth",
       title: "Code expiry (seconds)",
       type: "number",
+    },
+
+    // Auth / Anonymous
+    {
+      group: "anonymous_auth",
+      name: "anonymous_auth_enabled",
+      tab: "auth",
+      tip: "Allow visitors to create a temporary guest session before signing up.",
+      title: "Enable anonymous sign-in",
+      type: "switch",
     },
 
     // Payment / Basic

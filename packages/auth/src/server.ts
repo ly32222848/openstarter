@@ -44,7 +44,12 @@ const LOGIN_METHOD_BY_PATH = new Map<string, AuthProvider>([
   ["/magic-link/verify", AuthProvider.MAGIC_LINK],
   ["/passkey/verify-authentication", AuthProvider.PASSKEY],
   ["/sign-in/email-otp", AuthProvider.EMAIL_OTP],
-]);
+  // 匿名登录与 Google One Tap 回调：默认 resolver 不识别这两个路径，
+  // 显式映射使 last-used-method cookie 覆盖全部登录入口。
+  ["/sign-in/anonymous", AuthProvider.ANONYMOUS],
+  ["/one-tap/callback", AuthProvider.GOOGLE],
+]) as Map<string, AuthProvider>;
+
 
 // ─── 运行时配置读取（Runtime config-driven enablement）──────────────────────────
 //
