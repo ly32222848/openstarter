@@ -2,6 +2,7 @@ import { Outlet, createFileRoute, redirect } from "@tanstack/react-router";
 
 import { authClient } from "@/lib/auth-client";
 import { BRAND_NAME } from "@/lib/branding";
+import { publicConfig } from "@/modules/public-config/lib/api";
 
 export const Route = createFileRoute("/_auth-pages")({
   ssr: false,
@@ -11,6 +12,10 @@ export const Route = createFileRoute("/_auth-pages")({
       throw redirect({ to: "/dashboard" });
     }
   },
+  // 认证页共享的 publicConfig 在布局 loader 里预取（而非各表单组件内 fetch-on-render）。
+  // 各组件 `useQuery(publicConfig.queries.get())` 命中同一 `["public-config"]` key 与
+  // 5m staleTime，预取后同步读缓存、不再重复请求（load-use-loaders）。
+  loader: ({ context: { queryClient } }) => queryClient.prefetchQuery(publicConfig.queries.get()),
   component: AuthPagesLayout,
 });
 

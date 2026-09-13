@@ -37,7 +37,9 @@ function createQueryClient() {
         });
       },
     }),
-    defaultOptions: { queries: { staleTime: 60 * 1000 } },
+    // staleTime: 窗口聚焦仅重拉已过期数据（staleTime 内命中缓存）。refetchOnWindowFocus
+    // 显式关闭:避免切回标签页时对已展示数据的无谓重拉,结合 staleTime 行为更可预期。
+    defaultOptions: { queries: { staleTime: 60 * 1000, refetchOnWindowFocus: false } },
   });
 }
 
@@ -48,7 +50,9 @@ export const getRouter = () => {
     routeTree,
     scrollRestoration: true,
     // Link 悬停/聚焦时预加载目标路由（intent）；配合 staleTime:0 让预加载的数据始终最新。
+    // defaultPreloadDelay 防抖：避免鼠标快速划过多个链接时触发多余预取。
     defaultPreload: "intent",
+    defaultPreloadDelay: 50,
     defaultPreloadStaleTime: 0,
     context: { queryClient },
     // Paraglide owns locale prefixes: incoming URLs are de-localized before
