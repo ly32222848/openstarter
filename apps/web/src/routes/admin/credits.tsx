@@ -1,6 +1,5 @@
 // apps/web/src/routes/admin/credits.tsx
-// 积分管理（R26.2）：分页列表。数据经 GET /api/admin/credits（requirePermission admin.*）。
-// 分页状态经 validateSearch 进 URL（刷新/后退/分享可恢复视图）。
+// 积分管理（R26.2）：分页列表。
 
 import { Badge } from "@openstarter/ui-web/components/badge";
 import {
@@ -18,17 +17,17 @@ import { AdminHeader, Pagination, StatusText } from "@/components/admin/list";
 import { countTotalPages, listSearchParams, LIST_PAGE_SIZE } from "@/lib/list-search";
 import { preloadQueries } from "@/lib/preload";
 import { admin } from "@/modules/admin/lib/api";
+import { m } from "@/paraglide/messages.js";
 
 export const Route = createFileRoute("/admin/credits")({
   validateSearch: listSearchParams,
-  // URL 分页参数透传给 loader（loaderDeps 变化 → loader 重跑，预取对应页）。
   loaderDeps: ({ search }) => search,
   loader: preloadQueries((deps) => [admin.queries.credits(Number(deps.page) || 1)]),
   component: AdminCreditsPage,
 });
 
 function formatDate(value: string | null | undefined): string {
-  return value ? new Date(value).toLocaleDateString() : "Never";
+  return value ? new Date(value).toLocaleDateString() : m["common.never"]();
 }
 
 function AdminCreditsPage() {
@@ -47,11 +46,14 @@ function AdminCreditsPage() {
 
   return (
     <div>
-      <AdminHeader description="All credit transactions." title="Credits" />
+      <AdminHeader
+        description={m["admin.credits.all_transactions"]()}
+        title={m["admin.credits.title"]()}
+      />
 
       <StatusText
         empty={items.length === 0}
-        emptyLabel="No credit transactions found."
+        emptyLabel={m["admin.credits.no_transactions_found"]()}
         error={query.error as Error | null}
         loading={query.isPending}
       />
@@ -61,12 +63,12 @@ function AdminCreditsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>User</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Remaining</TableHead>
-                <TableHead>Expires</TableHead>
-                <TableHead>Created</TableHead>
+                <TableHead>{m["admin.credits.user"]()}</TableHead>
+                <TableHead>{m["admin.credits.type"]()}</TableHead>
+                <TableHead>{m["admin.credits.amount"]()}</TableHead>
+                <TableHead>{m["admin.credits.remaining"]()}</TableHead>
+                <TableHead>{m["admin.credits.expires_at"]()}</TableHead>
+                <TableHead>{m["admin.credits.created_at"]()}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

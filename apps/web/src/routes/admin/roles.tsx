@@ -1,6 +1,5 @@
 // apps/web/src/routes/admin/roles.tsx
 // 角色管理（R26.2/R26.3）：列出/创建/编辑/删除角色，并覆盖式设置角色权限集合。
-// 数据经 /api/admin/roles* 与 /api/admin/permissions（requirePermission admin.*）。
 
 import { Button } from "@openstarter/ui-web/components/button";
 import { Checkbox } from "@openstarter/ui-web/components/checkbox";
@@ -29,9 +28,9 @@ import { toast } from "sonner";
 
 import { AdminHeader, StatusText } from "@/components/admin/list";
 import { admin } from "@/modules/admin/lib/api";
+import { m } from "@/paraglide/messages.js";
 
 export const Route = createFileRoute("/admin/roles")({
-  // hover 预取角色 + 权限码（角色权限抽屉按选中态惰性加载，不预取）。
   loader: ({ context: { queryClient } }) =>
     Promise.all([
       queryClient.prefetchQuery(admin.queries.roles()),
@@ -75,7 +74,7 @@ function AdminRolesPage() {
     onSuccess: () => {
       setForm(null);
       queryClient.invalidateQueries({ queryKey: admin.queries.roles().queryKey });
-      toast.success("Role saved");
+      toast.success(m["admin.roles.updated"]());
     },
   });
 
@@ -84,7 +83,7 @@ function AdminRolesPage() {
     onError: (error: Error) => toast.error(error.message),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: admin.queries.roles().queryKey });
-      toast.success("Role deleted");
+      toast.success(m["admin.roles.deleted"]());
     },
   });
 
@@ -96,7 +95,7 @@ function AdminRolesPage() {
         queryKey: admin.queries.rolePermissions(permRoleId).queryKey,
       });
       setPermRoleId(null);
-      toast.success("Permissions updated");
+      toast.success(m["admin.roles.permissions_saved"]());
     },
   });
 
@@ -120,16 +119,16 @@ function AdminRolesPage() {
       <AdminHeader
         action={
           <Button onClick={() => setForm(EMPTY_FORM)} size="sm" type="button">
-            New role
+            {m["admin.roles.create_role"]()}
           </Button>
         }
-        description="Roles group permissions and are assigned to users."
-        title="Roles"
+        description={m["admin.roles.description"]()}
+        title={m["admin.roles.title"]()}
       />
 
       <StatusText
         empty={roles.length === 0}
-        emptyLabel="No roles yet."
+        emptyLabel={m["admin.roles.no_roles"]()}
         error={rolesQuery.error as Error | null}
         loading={rolesQuery.isPending}
       />
@@ -139,9 +138,9 @@ function AdminRolesPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Title</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>{m["admin.roles.name_col"]()}</TableHead>
+                <TableHead>{m["admin.roles.title_col"]()}</TableHead>
+                <TableHead className="text-right">{m["admin.roles.actions_col"]()}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -156,7 +155,7 @@ function AdminRolesPage() {
                       type="button"
                       variant="outline"
                     >
-                      Permissions
+                      {m["admin.roles.manage_permissions"]()}
                     </Button>
                     <Button
                       onClick={() =>
@@ -170,7 +169,7 @@ function AdminRolesPage() {
                       type="button"
                       variant="ghost"
                     >
-                      Edit
+                      {m["admin.roles.edit_title"]().split(" ")[0]}
                     </Button>
                     <Button
                       onClick={() => deleteMutation.mutate(role.id)}
@@ -178,7 +177,7 @@ function AdminRolesPage() {
                       type="button"
                       variant="ghost"
                     >
-                      Delete
+                      {m["admin.roles.confirm_delete"]()}
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -198,15 +197,15 @@ function AdminRolesPage() {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{form?.id ? "Edit role" : "New role"}</DialogTitle>
-            <DialogDescription>
-              Use a machine name (e.g. admin) and a human-readable title.
-            </DialogDescription>
+            <DialogTitle>
+              {form?.id ? m["admin.roles.edit_title"]() : m["admin.roles.create_title"]()}
+            </DialogTitle>
+            <DialogDescription>{m["admin.roles.create_description"]()}</DialogDescription>
           </DialogHeader>
           {form ? (
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="role-name">Name</Label>
+                <Label htmlFor="role-name">{m["admin.roles.name_field"]()}</Label>
                 <Input
                   id="role-name"
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -215,7 +214,7 @@ function AdminRolesPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="role-title">Title</Label>
+                <Label htmlFor="role-title">{m["admin.roles.title_field"]()}</Label>
                 <Input
                   id="role-title"
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
@@ -244,7 +243,7 @@ function AdminRolesPage() {
               }}
               type="button"
             >
-              {saveMutation.isPending ? "Saving..." : "Save"}
+              {saveMutation.isPending ? m["admin.roles.saving"]() : m["admin.roles.save"]()}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -260,8 +259,8 @@ function AdminRolesPage() {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Role permissions</DialogTitle>
-            <DialogDescription>Select the permissions granted by this role.</DialogDescription>
+            <DialogTitle>{m["admin.roles.manage_permissions_title"]()}</DialogTitle>
+            <DialogDescription>{m["admin.roles.manage_permissions_description"]()}</DialogDescription>
           </DialogHeader>
           <div className="max-h-80 space-y-2 overflow-y-auto">
             {permissions.map((permission) => (
@@ -293,7 +292,9 @@ function AdminRolesPage() {
               }}
               type="button"
             >
-              {savePermsMutation.isPending ? "Saving..." : "Save permissions"}
+              {savePermsMutation.isPending
+                ? m["admin.roles.saving"]()
+                : m["admin.roles.save_permissions"]()}
             </Button>
           </DialogFooter>
         </DialogContent>

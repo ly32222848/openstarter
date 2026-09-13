@@ -1,7 +1,5 @@
 // apps/web/src/routes/admin/ai-models.tsx
-// AI 模型目录管理（Task 10）：列表（provider/modelId/mediaType/price/enabled 开关）+
-// Dialog 表单（create/update）+ 直接删除（与 roles.tsx 一致，无确认弹层——admin 内无 AlertDialog 先例）。
-// 数据经 /api/admin/ai-models*（requirePermission admin.*）。
+// AI 模型目录管理（Task 10）：列表 + Dialog 表单（create/update）+ 删除。
 
 import { Badge } from "@openstarter/ui-web/components/badge";
 import { Button } from "@openstarter/ui-web/components/button";
@@ -46,10 +44,10 @@ import {
   type AiModelRow,
   AI_MODEL_MEDIA_TYPES,
 } from "@/modules/admin/lib/api";
+import { m } from "@/paraglide/messages.js";
 
 export const Route = createFileRoute("/admin/ai-models")({
   validateSearch: listSearchParams,
-  // URL 分页参数透传给 loader（loaderDeps 变化 → loader 重跑，预取对应页）。
   loaderDeps: ({ search }) => search,
   loader: preloadQueries((deps) => [admin.queries.aiModels(Number(deps.page) || 1)]),
   component: AdminAiModelsPage,
@@ -87,7 +85,6 @@ const EMPTY_FORM: ModelForm = {
   sortOrder: "0",
 };
 
-/** 整数输入解析：空串 → null（后端 nullable 语义），非法输入返回 undefined（提交前拦截）。 */
 const parseIntOrNull = (value: string): number | null | undefined => {
   if (value.trim() === "") {
     return null;
@@ -108,7 +105,6 @@ function AdminAiModelsPage() {
     void navigate({ search: (prev) => ({ ...prev, page: next }), replace: true });
   };
 
-  // 前缀失效：["admin","ai-models"] 覆盖所有分页。
   const invalidate = () => {
     void queryClient.invalidateQueries({ queryKey: ["admin", "ai-models"] });
   };
@@ -119,7 +115,7 @@ function AdminAiModelsPage() {
     onSuccess: () => {
       setForm(null);
       invalidate();
-      toast.success("Model saved");
+      toast.success(m["admin.ai_models.saved"]());
     },
   });
 
@@ -128,7 +124,7 @@ function AdminAiModelsPage() {
     onError: (error: Error) => toast.error(error.message),
     onSuccess: () => {
       invalidate();
-      toast.success("Model deleted");
+      toast.success(m["admin.ai_models.deleted"]());
     },
   });
 
@@ -137,7 +133,7 @@ function AdminAiModelsPage() {
     onError: (error: Error) => toast.error(error.message),
     onSuccess: () => {
       invalidate();
-      toast.success("Model updated");
+      toast.success(m["admin.ai_models.updated"]());
     },
   });
 
@@ -152,7 +148,7 @@ function AdminAiModelsPage() {
     const creditPrice = Number.parseInt(form.creditPrice, 10);
     const maxOutputTokens = parseIntOrNull(form.maxOutputTokens);
     if (!Number.isFinite(creditPrice) || creditPrice < 0 || maxOutputTokens === undefined) {
-      toast.error("Price and token limit must be non-negative integers.");
+      toast.error(m["admin.ai_models.validation_error"]());
       return;
     }
     saveMutation.mutate({
@@ -175,16 +171,16 @@ function AdminAiModelsPage() {
       <AdminHeader
         action={
           <Button onClick={() => setForm(EMPTY_FORM)} size="sm" type="button">
-            New model
+            {m["admin.ai_models.new_model"]()}
           </Button>
         }
-        description="Catalog of AI models available for generation and credit pricing."
-        title="AI Models"
+        description={m["admin.ai_models.description"]()}
+        title={m["admin.ai_models.title"]()}
       />
 
       <StatusText
         empty={items.length === 0}
-        emptyLabel="No AI models yet."
+        emptyLabel={m["admin.ai_models.no_models"]()}
         error={modelsQuery.error as Error | null}
         loading={modelsQuery.isPending}
       />
@@ -194,13 +190,13 @@ function AdminAiModelsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Provider</TableHead>
-                <TableHead>Model</TableHead>
-                <TableHead>Display name</TableHead>
-                <TableHead>Media type</TableHead>
-                <TableHead className="text-right">Price</TableHead>
-                <TableHead>Enabled</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>{m["admin.ai_models.provider_col"]()}</TableHead>
+                <TableHead>{m["admin.ai_models.model_col"]()}</TableHead>
+                <TableHead>{m["admin.ai_models.display_name_col"]()}</TableHead>
+                <TableHead>{m["admin.ai_models.media_type_col"]()}</TableHead>
+                <TableHead className="text-right">{m["admin.ai_models.price_col"]()}</TableHead>
+                <TableHead>{m["admin.ai_models.enabled_col"]()}</TableHead>
+                <TableHead className="text-right">{m["admin.ai_models.actions_col"]()}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -246,7 +242,7 @@ function AdminAiModelsPage() {
                       type="button"
                       variant="ghost"
                     >
-                      Edit
+                      {m["admin.ai_models.edit"]()}
                     </Button>
                     <Button
                       onClick={() => deleteMutation.mutate(model.id)}
@@ -254,7 +250,7 @@ function AdminAiModelsPage() {
                       type="button"
                       variant="ghost"
                     >
-                      Delete
+                      {m["admin.ai_models.delete"]()}
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -276,16 +272,16 @@ function AdminAiModelsPage() {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{form?.id ? "Edit model" : "New model"}</DialogTitle>
-            <DialogDescription>
-              Configure a catalog entry consumed by the generation studio and credit pricing.
-            </DialogDescription>
+            <DialogTitle>
+              {form?.id ? m["admin.ai_models.edit_title"]() : m["admin.ai_models.create_title"]()}
+            </DialogTitle>
+            <DialogDescription>{m["admin.ai_models.dialog_description"]()}</DialogDescription>
           </DialogHeader>
           {form ? (
             <div className="grid max-h-[60vh] gap-4 overflow-y-auto pr-1">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="ai-model-provider">Provider</Label>
+                  <Label htmlFor="ai-model-provider">{m["admin.ai_models.provider_field"]()}</Label>
                   <Input
                     id="ai-model-provider"
                     onChange={(e) => setForm({ ...form, provider: e.target.value })}
@@ -294,7 +290,7 @@ function AdminAiModelsPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="ai-model-model-id">Model ID</Label>
+                  <Label htmlFor="ai-model-model-id">{m["admin.ai_models.model_id_field"]()}</Label>
                   <Input
                     id="ai-model-model-id"
                     onChange={(e) => setForm({ ...form, modelId: e.target.value })}
@@ -304,7 +300,7 @@ function AdminAiModelsPage() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="ai-model-display-name">Display name</Label>
+                <Label htmlFor="ai-model-display-name">{m["admin.ai_models.display_name_field"]()}</Label>
                 <Input
                   id="ai-model-display-name"
                   onChange={(e) => setForm({ ...form, displayName: e.target.value })}
@@ -314,7 +310,7 @@ function AdminAiModelsPage() {
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="ai-model-media-type">Media type</Label>
+                  <Label htmlFor="ai-model-media-type">{m["admin.ai_models.media_type_field"]()}</Label>
                   <Select
                     onValueChange={(value) => setForm({ ...form, mediaType: value as MediaType })}
                     value={form.mediaType}
@@ -332,7 +328,7 @@ function AdminAiModelsPage() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="ai-model-price">Credit price</Label>
+                  <Label htmlFor="ai-model-price">{m["admin.ai_models.credit_price_field"]()}</Label>
                   <Input
                     id="ai-model-price"
                     inputMode="numeric"
@@ -343,17 +339,17 @@ function AdminAiModelsPage() {
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="ai-model-max-tokens">Max output tokens</Label>
+                  <Label htmlFor="ai-model-max-tokens">{m["admin.ai_models.max_output_tokens_field"]()}</Label>
                   <Input
                     id="ai-model-max-tokens"
                     inputMode="numeric"
                     onChange={(e) => setForm({ ...form, maxOutputTokens: e.target.value })}
-                    placeholder="Leave empty for no limit"
+                    placeholder={m["admin.ai_models.max_tokens_placeholder"]()}
                     value={form.maxOutputTokens}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="ai-model-sort-order">Sort order</Label>
+                  <Label htmlFor="ai-model-sort-order">{m["admin.ai_models.sort_order_field"]()}</Label>
                   <Input
                     id="ai-model-sort-order"
                     inputMode="numeric"
@@ -363,7 +359,7 @@ function AdminAiModelsPage() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="ai-model-options-schema">Options schema (JSON)</Label>
+                <Label htmlFor="ai-model-options-schema">{m["admin.ai_models.options_schema_field"]()}</Label>
                 <Textarea
                   id="ai-model-options-schema"
                   onChange={(e) => setForm({ ...form, optionsSchema: e.target.value })}
@@ -373,7 +369,7 @@ function AdminAiModelsPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="ai-model-metadata">Metadata (JSON)</Label>
+                <Label htmlFor="ai-model-metadata">{m["admin.ai_models.metadata_field"]()}</Label>
                 <Textarea
                   id="ai-model-metadata"
                   onChange={(e) => setForm({ ...form, metadata: e.target.value })}
@@ -388,7 +384,7 @@ function AdminAiModelsPage() {
                   id="ai-model-form-enabled"
                   onChange={(checked) => setForm({ ...form, enabled: checked })}
                 />
-                <Label htmlFor="ai-model-form-enabled">Enabled</Label>
+                <Label htmlFor="ai-model-form-enabled">{m["admin.ai_models.enabled_field"]()}</Label>
               </div>
             </div>
           ) : null}
@@ -404,7 +400,7 @@ function AdminAiModelsPage() {
               onClick={handleSave}
               type="button"
             >
-              {saveMutation.isPending ? "Saving..." : "Save"}
+              {saveMutation.isPending ? m["admin.ai_models.saving"]() : m["admin.ai_models.save"]()}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -413,8 +409,6 @@ function AdminAiModelsPage() {
   );
 }
 
-// base-ui 无 Switch 组件封装，这里用一个带样式的 checkbox 作为开关（与 settings.tsx 一致）。
-// 外观与 shadcn/base-ui toggle 一致（圆点滑动），纯 CSS 实现，无新依赖。
 function SwitchField({
   id,
   checked,

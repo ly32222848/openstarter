@@ -13,18 +13,18 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { AdminHeader } from "@/components/admin/list";
 import { admin } from "@/modules/admin/lib/api";
+import { m } from "@/paraglide/messages.js";
 
 export const Route = createFileRoute("/admin/")({
-  // hover 预取汇总指标，点击后组件 useQuery 命中缓存。
   loader: ({ context: { queryClient } }) => queryClient.prefetchQuery(admin.queries.metrics()),
   component: AdminDashboard,
 });
 
 const METRIC_CARDS = [
-  { key: "userCount", label: "Users" },
-  { key: "orderCount", label: "Orders" },
-  { key: "subscriptionCount", label: "Subscriptions" },
-  { key: "creditsConsumed", label: "Credits consumed" },
+  { key: "userCount", label: () => m["admin.dashboard.users"]() },
+  { key: "orderCount", label: () => m["admin.dashboard.orders"]() },
+  { key: "subscriptionCount", label: () => m["admin.dashboard.subscriptions"]() },
+  { key: "creditsConsumed", label: () => m["admin.dashboard.credits_consumed"]() },
 ] as const;
 
 function AdminDashboard() {
@@ -34,12 +34,15 @@ function AdminDashboard() {
 
   return (
     <div>
-      <AdminHeader description="Key platform metrics at a glance." title="Dashboard" />
+      <AdminHeader
+        description={m["admin.dashboard.description"]()}
+        title={m["admin.dashboard.title"]()}
+      />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {METRIC_CARDS.map((card) => (
           <Card key={card.key}>
             <CardHeader className="pb-2">
-              <CardDescription>{card.label}</CardDescription>
+              <CardDescription>{card.label()}</CardDescription>
               <CardTitle className="text-3xl tabular-nums">
                 {metricsQuery.isPending ? "—" : (metrics?.[card.key] ?? 0).toLocaleString()}
               </CardTitle>

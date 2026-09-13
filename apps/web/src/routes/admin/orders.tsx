@@ -1,6 +1,5 @@
 // apps/web/src/routes/admin/orders.tsx
-// 订单管理（R26.2）：分页列表。数据经 GET /api/admin/orders（requirePermission admin.*）。
-// 分页状态经 validateSearch 进 URL（刷新/后退/分享可恢复视图）。
+// 订单管理（R26.2）：分页列表。
 
 import { Badge } from "@openstarter/ui-web/components/badge";
 import {
@@ -18,12 +17,11 @@ import { AdminHeader, Pagination, StatusText } from "@/components/admin/list";
 import { countTotalPages, listSearchParams, LIST_PAGE_SIZE } from "@/lib/list-search";
 import { preloadQueries } from "@/lib/preload";
 import { admin } from "@/modules/admin/lib/api";
+import { m } from "@/paraglide/messages.js";
 
 export const Route = createFileRoute("/admin/orders")({
   validateSearch: listSearchParams,
-  // URL 分页参数透传给 loader（loaderDeps 变化 → loader 重跑，预取对应页）。
   loaderDeps: ({ search }) => search,
-  // hover 预取：按 URL 当前页预取，组件挂载即命中缓存。
   loader: preloadQueries((deps) => [admin.queries.orders(Number(deps.page) || 1)]),
   component: AdminOrdersPage,
 });
@@ -48,11 +46,14 @@ function AdminOrdersPage() {
 
   return (
     <div>
-      <AdminHeader description="All customer orders." title="Orders" />
+      <AdminHeader
+        description={m["admin.orders.description"]()}
+        title={m["admin.orders.title"]()}
+      />
 
       <StatusText
         empty={items.length === 0}
-        emptyLabel="No orders found."
+        emptyLabel={m["admin.orders.no_orders"]()}
         error={ordersQuery.error as Error | null}
         loading={ordersQuery.isPending}
       />
@@ -62,13 +63,13 @@ function AdminOrdersPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Order</TableHead>
-                <TableHead>User</TableHead>
-                <TableHead>Product</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Provider</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Created</TableHead>
+                <TableHead>{m["admin.orders.order_col"]()}</TableHead>
+                <TableHead>{m["admin.orders.user_col"]()}</TableHead>
+                <TableHead>{m["admin.orders.product_col"]()}</TableHead>
+                <TableHead>{m["admin.orders.amount_col"]()}</TableHead>
+                <TableHead>{m["admin.orders.provider_col"]()}</TableHead>
+                <TableHead>{m["admin.orders.status_col"]()}</TableHead>
+                <TableHead>{m["admin.orders.created_col"]()}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

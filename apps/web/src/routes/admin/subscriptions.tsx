@@ -1,6 +1,5 @@
 // apps/web/src/routes/admin/subscriptions.tsx
-// 订阅管理（R26.2）：分页列表。数据经 GET /api/admin/subscriptions（requirePermission admin.*）。
-// 分页状态经 validateSearch 进 URL（刷新/后退/分享可恢复视图）。
+// 订阅管理（R26.2）：分页列表。
 
 import { Badge } from "@openstarter/ui-web/components/badge";
 import {
@@ -18,10 +17,10 @@ import { AdminHeader, Pagination, StatusText } from "@/components/admin/list";
 import { countTotalPages, listSearchParams, LIST_PAGE_SIZE } from "@/lib/list-search";
 import { preloadQueries } from "@/lib/preload";
 import { admin } from "@/modules/admin/lib/api";
+import { m } from "@/paraglide/messages.js";
 
 export const Route = createFileRoute("/admin/subscriptions")({
   validateSearch: listSearchParams,
-  // URL 分页参数透传给 loader（loaderDeps 变化 → loader 重跑，预取对应页）。
   loaderDeps: ({ search }) => search,
   loader: preloadQueries((deps) => [admin.queries.subscriptions(Number(deps.page) || 1)]),
   component: AdminSubscriptionsPage,
@@ -47,11 +46,14 @@ function AdminSubscriptionsPage() {
 
   return (
     <div>
-      <AdminHeader description="All customer subscriptions." title="Subscriptions" />
+      <AdminHeader
+        description={m["admin.subscriptions.all_subscriptions_desc"]()}
+        title={m["admin.subscriptions.title"]()}
+      />
 
       <StatusText
         empty={items.length === 0}
-        emptyLabel="No subscriptions found."
+        emptyLabel={m["admin.subscriptions.no_subscriptions_found"]()}
         error={query.error as Error | null}
         loading={query.isPending}
       />
@@ -61,11 +63,11 @@ function AdminSubscriptionsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>User</TableHead>
-                <TableHead>Plan</TableHead>
-                <TableHead>Provider</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Period end</TableHead>
+                <TableHead>{m["admin.subscriptions.user"]()}</TableHead>
+                <TableHead>{m["admin.subscriptions.plan_col"]()}</TableHead>
+                <TableHead>{m["admin.subscriptions.provider"]()}</TableHead>
+                <TableHead>{m["admin.subscriptions.status"]()}</TableHead>
+                <TableHead>{m["admin.subscriptions.period_end_col"]()}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

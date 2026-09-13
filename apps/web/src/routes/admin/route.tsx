@@ -1,17 +1,12 @@
 // apps/web/src/routes/admin/route.tsx
 // 管理后台外壳（Admin_Console，R26）：登录 + 平台级 RBAC 守卫、分组侧边导航（按权限过滤）。
-//
-// 守卫（R26.1）：beforeLoad 并发校验登录与当前用户权限码集合（GET /api/user/permissions）——
-// 无会话跳 /login，不具备任何后台入口权限跳 /dashboard。权限经 queryClient 缓存
-// （staleTime 5min），会话内重复进入 /admin 不再重发请求（load-ensure-query-data）。
-// 菜单过滤（R26.4）：仅展示当前权限码（含通配符）可访问的入口，权限码经 matchPermission 判定。
-// 平台级授权仅依通配符 RBAC，与 organization 解耦。ssr:false 对齐 _app（认证态在客户端解析）。
 
 import { cn } from "@openstarter/ui-web/lib/utils";
 import { createFileRoute, Link, Outlet, redirect } from "@tanstack/react-router";
 
 import { authClient } from "@/lib/auth-client";
 import { matchAnyPermission, matchPermission } from "@/lib/permissions";
+import { m } from "@/paraglide/messages.js";
 import { user } from "@/modules/user/lib/api";
 
 type AdminPath =
@@ -25,40 +20,40 @@ type AdminPath =
   | "/admin/settings";
 
 interface AdminNavItem {
-  label: string;
+  label: () => string;
   permission: string;
   to: AdminPath;
 }
 
 interface AdminNavGroup {
-  group: string;
+  group: () => string;
   items: AdminNavItem[];
 }
 
 export const ADMIN_NAV: AdminNavGroup[] = [
   {
-    group: "Overview",
-    items: [{ label: "Dashboard", permission: "admin.*", to: "/admin" }],
+    group: () => m["admin.nav.overview"](),
+    items: [{ label: () => m["admin.nav.dashboard"](), permission: "admin.*", to: "/admin" }],
   },
   {
-    group: "Access control",
+    group: () => m["admin.nav.access_control"](),
     items: [
-      { label: "Users", permission: "admin.*", to: "/admin/users" },
-      { label: "Roles", permission: "admin.*", to: "/admin/roles" },
-      { label: "AI Models", permission: "admin.*", to: "/admin/ai-models" },
-      { label: "Settings", permission: "admin.*", to: "/admin/settings" },
+      { label: () => m["admin.nav.users"](), permission: "admin.*", to: "/admin/users" },
+      { label: () => m["admin.nav.roles"](), permission: "admin.*", to: "/admin/roles" },
+      { label: () => m["admin.nav.ai_models"](), permission: "admin.*", to: "/admin/ai-models" },
+      { label: () => m["admin.nav.settings"](), permission: "admin.*", to: "/admin/settings" },
     ],
   },
   {
-    group: "Billing",
+    group: () => m["admin.nav.billing"](),
     items: [
-      { label: "Orders", permission: "admin.*", to: "/admin/orders" },
+      { label: () => m["admin.nav.orders"](), permission: "admin.*", to: "/admin/orders" },
       {
-        label: "Subscriptions",
+        label: () => m["admin.nav.subscriptions"](),
         permission: "admin.*",
         to: "/admin/subscriptions",
       },
-      { label: "Credits", permission: "admin.*", to: "/admin/credits" },
+      { label: () => m["admin.nav.credits"](), permission: "admin.*", to: "/admin/credits" },
     ],
   },
 ];
@@ -67,15 +62,10 @@ const ALL_ADMIN_PERMISSIONS = ADMIN_NAV.flatMap((g) => g.items.map((item) => ite
 
 export const Route = createFileRoute("/admin")({
   beforeLoad: async ({ context: { queryClient } }) => {
-    // 并发发起：会话 + 权限码（load-ensure-query-data + pf-route-prefetch）。
-    // 已登录时省一次串行往返；未登录时权限请求注定 401，落 catch 降级为空数组，
-    // 下方先判会话、跳 /login，行为与旧的串行版本一致。
     const [session, permissions] = await Promise.all([
       authClient.getSession(),
       queryClient
         .ensureQueryData(user.queries.permissions())
-        // 权限接口网络失败时抛异常会落到通用错误页；按「无权限」降级重定向更合理
-        // （真正的数据边界由 API 侧每个 admin 路由的 requirePermission 保证，此处只是 UX 门面）。
         .catch(() => [] as string[]),
     ]);
 
@@ -83,12 +73,10 @@ export const Route = createFileRoute("/admin")({
       throw redirect({ to: "/login" });
     }
 
-    // 无任何后台入口权限 → 拒绝访问并重定向（R26.1）。
     if (!matchAnyPermission(ALL_ADMIN_PERMISSIONS, permissions)) {
       throw redirect({ to: "/dashboard" });
     }
 
-    // 返回 merge 进路由 context：AdminLayout 与各子页复用，不再各自拉取。
     return { permissions };
   },
   component: AdminLayout,
@@ -99,7 +87,7 @@ function AdminLayout() {
   const { permissions } = Route.useRouteContext();
 
   const visibleGroups = ADMIN_NAV.map((group) => ({
-    group: group.group,
+    group: group.group(),
     items: group.items.filter((item) => matchPermission(item.permission, permissions)),
   })).filter((group) => group.items.length > 0);
 
@@ -108,7 +96,7 @@ function AdminLayout() {
       <aside className="hidden w-60 shrink-0 flex-col border-r bg-sidebar md:flex">
         <div className="flex h-14 items-center border-b px-4">
           <Link className="font-semibold" to="/admin">
-            Admin
+            {m["common.systems.admin"]()}
           </Link>
         </div>
         <nav className="flex-1 space-y-4 overflow-y-auto p-3">
@@ -120,7 +108,6 @@ function AdminLayout() {
               <div className="flex flex-col gap-0.5">
                 {group.items.map((item) => (
                   <Link
-                    // Dashboard 是列表入口的父路径，仅精确匹配时高亮，避免 /admin/xxx 误点亮。
                     activeOptions={{ exact: item.to === "/admin" }}
                     className={cn(
                       "rounded-md px-2 py-1.5 text-sm transition-colors",
@@ -130,7 +117,7 @@ function AdminLayout() {
                     key={item.to}
                     to={item.to}
                   >
-                    {item.label}
+                    {item.label()}
                   </Link>
                 ))}
               </div>
@@ -139,7 +126,7 @@ function AdminLayout() {
         </nav>
         <div className="border-t p-3">
           <Link className="text-muted-foreground text-sm hover:text-foreground" to="/dashboard">
-            ← Back to app
+            {m["common.back_to_app"]()}
           </Link>
         </div>
       </aside>

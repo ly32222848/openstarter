@@ -3,6 +3,7 @@
 
 import { Button } from "@openstarter/ui-web/components/button";
 import type { ReactNode } from "react";
+import { m } from "@/paraglide/messages.js";
 
 export function AdminHeader({
   title,
@@ -39,7 +40,7 @@ export function Pagination({
   return (
     <div className="mt-4 flex items-center justify-between">
       <span className="text-muted-foreground text-sm">
-        Page {page} of {totalPages}
+        {m["common.table.page_info"]({ current: String(page), total: String(totalPages) })}
       </span>
       <div className="flex gap-2">
         <Button
@@ -49,7 +50,7 @@ export function Pagination({
           type="button"
           variant="outline"
         >
-          Previous
+          {m["common.table.previous"]()}
         </Button>
         <Button
           disabled={page >= totalPages}
@@ -58,7 +59,7 @@ export function Pagination({
           type="button"
           variant="outline"
         >
-          Next
+          {m["common.table.next"]()}
         </Button>
       </div>
     </div>
@@ -69,7 +70,7 @@ export function StatusText({
   loading,
   error,
   empty,
-  emptyLabel = "No records found.",
+  emptyLabel = m["common.no_records_found"](),
 }: {
   loading: boolean;
   error: Error | null;
@@ -77,7 +78,7 @@ export function StatusText({
   emptyLabel?: string;
 }) {
   if (loading) {
-    return <p className="text-muted-foreground text-sm">Loading...</p>;
+    return <p className="text-muted-foreground text-sm">{m["admin.loading"]()}</p>;
   }
   if (error) {
     return <p className="text-destructive text-sm">{error.message}</p>;

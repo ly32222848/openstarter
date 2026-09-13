@@ -2,12 +2,6 @@
 // 系统设置（Admin_Console · System Settings,R26/R2）：
 // 通过 GET /api/admin/config 拉取 `{configs, settings, groups, tabs}`,
 // 按 tab 切换、按 group 分卡渲染所有平台级开关与凭证项,本地编辑后批量提交。
-//
-// 控制:全部登录方式（email/magic link/email OTP/Google/GitHub/Apple）与全部支付
-// 供应商（Stripe/PayPal/Creem/Alipay/WeChat）的 enable / 凭证 / 行为开关。
-// 秘密项后端已掩码（`••••••••` 前缀）,掩码值视为「未修改」不回传,落库前由后端加密。
-//
-// 仅展示拥有 admin.* 权限的用户可见（路由外壳已守卫）。
 
 import { Button } from "@openstarter/ui-web/components/button";
 import { Card, CardContent, CardHeader } from "@openstarter/ui-web/components/card";
@@ -29,14 +23,12 @@ import { toast } from "sonner";
 
 import { AdminHeader, StatusText } from "@/components/admin/list";
 import { admin } from "@/modules/admin/lib/api";
+import { m } from "@/paraglide/messages.js";
 
 export const Route = createFileRoute("/admin/settings")({
-  // hover 预取平台配置。
   loader: ({ context: { queryClient } }) => queryClient.prefetchQuery(admin.queries.config()),
   component: AdminSettingsPage,
 });
-
-// ─── 形状(由 GET /api/admin/config 返回)──────────────────────────────────
 
 interface SettingField {
   defaultValue?: string;
@@ -52,7 +44,6 @@ interface SettingField {
 
 const MASK_PREFIX = "••••••••";
 
-/** 掩码值表示秘密项未修改,不进入提交 payload(后端同样会跳过)。 */
 const isMasked = (value: string): boolean => value.startsWith(MASK_PREFIX);
 
 function AdminSettingsPage() {
@@ -73,12 +64,10 @@ function AdminSettingsPage() {
     onError: (error: Error) => toast.error(error.message),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: admin.queries.config().queryKey });
-      toast.success("Settings saved");
+      toast.success(m["admin.settings.save_success"]());
     },
   });
 
-  // 首次加载完成后初始化 active tab 与可编辑值快照。
-  // (useEffect 必须在任何 early-return 之前挂在顶层,以保持 hook 调用顺序稳定。)
   useEffect(() => {
     if (data && activeTab === null && tabs.length > 0) {
       setActiveTab(tabs.at(0)?.name ?? null);
@@ -89,7 +78,10 @@ function AdminSettingsPage() {
   if (configQuery.isPending || !data) {
     return (
       <div>
-        <AdminHeader description="Configure system-wide settings" title="System Settings" />
+        <AdminHeader
+          description={m["admin.settings.description"]()}
+          title={m["admin.settings.title"]()}
+        />
         <StatusText empty emptyLabel="" error={null} loading />
       </div>
     );
@@ -98,7 +90,10 @@ function AdminSettingsPage() {
   if (configQuery.error) {
     return (
       <div>
-        <AdminHeader description="Configure system-wide settings" title="System Settings" />
+        <AdminHeader
+          description={m["admin.settings.description"]()}
+          title={m["admin.settings.title"]()}
+        />
         <p className="text-destructive text-sm">{(configQuery.error as Error).message}</p>
       </div>
     );
@@ -114,7 +109,6 @@ function AdminSettingsPage() {
     fieldsByGroup.set(field.group, list);
   }
 
-  // 已编辑且未掩码(被改动的真实值)的字段统计。
   const dirtyCount = Object.entries(pending).filter(
     ([name, value]) => configs[name] !== value && !isMasked(value),
   ).length;
@@ -128,13 +122,12 @@ function AdminSettingsPage() {
     const toSave: Record<string, string> = {};
     for (const [name, value] of dirtyEntries) {
       if (isMasked(value)) {
-        // 未修改的秘密项不回传。
         continue;
       }
       toSave[name] = value;
     }
     if (Object.keys(toSave).length === 0) {
-      toast.info("Nothing to save");
+      toast.info(m["admin.settings.nothing_to_save"]());
       return;
     }
     saveMutation.mutate(toSave);
@@ -150,16 +143,16 @@ function AdminSettingsPage() {
             size="sm"
             type="button"
           >
-            {saveMutation.isPending ? "Saving..." : "Save changes"}
+            {saveMutation.isPending ? m["admin.settings.saving"]() : m["admin.settings.save_changes"]()}
           </Button>
         }
-        description="Configure system-wide settings"
-        title="System Settings"
+        description={m["admin.settings.description"]()}
+        title={m["admin.settings.title"]()}
       />
 
       <div className="flex flex-col gap-6 lg:flex-row">
         <nav
-          aria-label="Settings sections"
+          aria-label={m["admin.settings.title"]()}
           className="flex shrink-0 flex-row gap-1 overflow-x-auto lg:w-48 lg:flex-col lg:overflow-visible"
         >
           {tabs.map((tab) => {
@@ -221,15 +214,13 @@ function AdminSettingsPage() {
             );
           })}
           {tabGroups.length === 0 ? (
-            <p className="text-muted-foreground text-sm">No settings for this section.</p>
+            <p className="text-muted-foreground text-sm">{m["admin.settings.no_settings_for_section"]()}</p>
           ) : null}
         </div>
       </div>
     </div>
   );
 }
-
-// ─── 字段渲染器 ──────────────────────────────────────────────────────────────
 
 function FieldRow({
   field,
@@ -320,8 +311,6 @@ function renderControl(
   }
 }
 
-// base-ui 无 Switch 组件封装,这里用一个带样式的 checkbox 作为开关。
-// 外观与 shadcn/base-ui toggle 一致(圆点滑动),纯 CSS 实现,无新依赖。
 function SwitchField({
   id,
   checked,
@@ -374,7 +363,7 @@ function FieldSelect({
   return (
     <Select onValueChange={handleValue} value={value}>
       <SelectTrigger className="w-full" id={id}>
-        <SelectValue placeholder={field.placeholder ?? "Select..."} />
+        <SelectValue placeholder={field.placeholder ?? m["common.select_placeholder"]()} />
       </SelectTrigger>
       <SelectContent>
         {options.map((option) => (
