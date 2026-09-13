@@ -13,6 +13,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { authClient } from "@/lib/auth-client";
+import { m } from "@/paraglide/messages.js";
 
 export function SecurityPage() {
   const { data: session } = authClient.useSession();
@@ -27,7 +28,7 @@ export function SecurityPage() {
     },
     onSubmit: async ({ value }) => {
       if (value.newPassword !== value.confirmPassword) {
-        toast.error("New passwords do not match");
+        toast.error(m["settings.security.passwords_dont_match"]());
         return;
       }
       setChangingPassword(true);
@@ -38,10 +39,10 @@ export function SecurityPage() {
           revokeOtherSessions: false,
         });
         if (result.error) {
-          toast.error(result.error.message || "Failed to change password");
+          toast.error(result.error.message || m["settings.security.password_update_failed"]());
           return;
         }
-        toast.success("Password updated");
+        toast.success(m["settings.security.password_updated"]());
         passwordForm.reset();
       } finally {
         setChangingPassword(false);
@@ -49,9 +50,9 @@ export function SecurityPage() {
     },
     validators: {
       onSubmit: z.object({
-        confirmPassword: z.string().min(1, "Please confirm the new password"),
-        currentPassword: z.string().min(1, "Current password is required"),
-        newPassword: z.string().min(8, "Password must be at least 8 characters"),
+        confirmPassword: z.string().min(1, m["settings.security.confirm_password_required"]()),
+        currentPassword: z.string().min(1, m["settings.security.current_password_required"]()),
+        newPassword: z.string().min(8, m["settings.security.password_min_length"]()),
       }),
     },
   });
@@ -65,17 +66,17 @@ export function SecurityPage() {
           newEmail: value.newEmail,
         });
         if (result.error) {
-          toast.error(result.error.message || "Failed to change email");
+          toast.error(result.error.message || m["settings.security.email_change_failed"]());
           return;
         }
-        toast.success("Email update requested. Check your inbox to confirm the change.");
+        toast.success(m["settings.security.email_change_requested"]());
       } finally {
         setChangingEmail(false);
       }
     },
     validators: {
       onSubmit: z.object({
-        newEmail: z.email("Invalid email address"),
+        newEmail: z.email(m["settings.security.invalid_email"]()),
       }),
     },
   });
@@ -84,8 +85,8 @@ export function SecurityPage() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Change password</CardTitle>
-          <CardDescription>Use a strong password of at least 8 characters.</CardDescription>
+          <CardTitle>{m["settings.security.change_password_title"]()}</CardTitle>
+          <CardDescription>{m["settings.security.change_password_description"]()}</CardDescription>
         </CardHeader>
         <CardContent>
           <form
@@ -99,7 +100,7 @@ export function SecurityPage() {
             <passwordForm.Field name="currentPassword">
               {(field) => (
                 <div className="space-y-2">
-                  <Label htmlFor={field.name}>Current password</Label>
+                  <Label htmlFor={field.name}>{m["settings.security.current_password"]()}</Label>
                   <Input
                     autoComplete="current-password"
                     id={field.name}
@@ -121,7 +122,7 @@ export function SecurityPage() {
             <passwordForm.Field name="newPassword">
               {(field) => (
                 <div className="space-y-2">
-                  <Label htmlFor={field.name}>New password</Label>
+                  <Label htmlFor={field.name}>{m["settings.security.new_password"]()}</Label>
                   <Input
                     autoComplete="new-password"
                     id={field.name}
@@ -143,7 +144,7 @@ export function SecurityPage() {
             <passwordForm.Field name="confirmPassword">
               {(field) => (
                 <div className="space-y-2">
-                  <Label htmlFor={field.name}>Confirm new password</Label>
+                  <Label htmlFor={field.name}>{m["settings.security.confirm_new_password"]()}</Label>
                   <Input
                     autoComplete="new-password"
                     id={field.name}
@@ -163,7 +164,9 @@ export function SecurityPage() {
             </passwordForm.Field>
 
             <Button disabled={changingPassword} type="submit">
-              {changingPassword ? "Updating..." : "Update password"}
+              {changingPassword
+                ? m["settings.security.updating_password"]()
+                : m["settings.security.update_password"]()}
             </Button>
           </form>
         </CardContent>
@@ -171,10 +174,8 @@ export function SecurityPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Change email</CardTitle>
-          <CardDescription>
-            A confirmation link will be sent to the new address before the change takes effect.
-          </CardDescription>
+          <CardTitle>{m["settings.security.change_email_title"]()}</CardTitle>
+          <CardDescription>{m["settings.security.change_email_description"]()}</CardDescription>
         </CardHeader>
         <CardContent>
           <form
@@ -188,7 +189,7 @@ export function SecurityPage() {
             <emailForm.Field name="newEmail">
               {(field) => (
                 <div className="space-y-2">
-                  <Label htmlFor={field.name}>New email</Label>
+                  <Label htmlFor={field.name}>{m["settings.security.new_email"]()}</Label>
                   <Input
                     autoComplete="email"
                     id={field.name}
@@ -208,7 +209,9 @@ export function SecurityPage() {
             </emailForm.Field>
 
             <Button disabled={changingEmail} type="submit">
-              {changingEmail ? "Requesting..." : "Request email change"}
+              {changingEmail
+                ? m["settings.security.requesting"]()
+                : m["settings.security.request_email_change"]()}
             </Button>
           </form>
         </CardContent>

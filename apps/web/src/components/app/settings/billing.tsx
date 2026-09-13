@@ -11,12 +11,13 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { user } from "@/modules/user/lib/api";
+import { m } from "@/paraglide/messages.js";
 
 const PLAN_LABEL: Record<string, string> = {
-  expired: "Expired",
-  member: "Member",
-  none: "Free",
-  trial: "Trial",
+  expired: m["settings.billing.plan_expired"](),
+  member: m["settings.billing.plan_member"](),
+  none: m["settings.billing.plan_free"](),
+  trial: m["settings.billing.plan_trial"](),
 };
 
 function formatDate(value: string | null | undefined): string {
@@ -38,7 +39,9 @@ export function BillingPage() {
   const billingPortalMutation = useMutation({
     ...user.mutations.billingPortal(),
     onError: (err) => {
-      toast.error(err instanceof Error ? err.message : "Failed to open billing portal");
+      toast.error(
+        err instanceof Error ? err.message : m["settings.billing.portal_failed"](),
+      );
     },
     onSuccess: (data) => {
       if (data?.billingUrl) {
@@ -51,20 +54,22 @@ export function BillingPage() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Plan</CardTitle>
-          <CardDescription>Your current plan and subscription status.</CardDescription>
+          <CardTitle>{m["settings.billing.plan"]()}</CardTitle>
+          <CardDescription>
+            {m["settings.billing.subscription_details"]()}
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {isLoading ? (
-            <p className="text-muted-foreground text-sm">Loading...</p>
+            <p className="text-muted-foreground text-sm">{m["settings.billing.loading"]()}</p>
           ) : (
             <div className="flex flex-wrap items-center gap-3">
               <Badge variant="secondary">
-                {plan ? (PLAN_LABEL[plan.plan] ?? plan.plan) : "Unknown"}
+                {plan ? (PLAN_LABEL[plan.plan] ?? plan.plan) : m["settings.billing.unknown"]()}
               </Badge>
               {plan?.trialEndsAt ? (
                 <span className="text-muted-foreground text-sm">
-                  Trial ends {formatDate(plan.trialEndsAt)}
+                  {m["settings.billing.trial_ends"]({ date: formatDate(plan.trialEndsAt) })}
                 </span>
               ) : null}
             </div>
@@ -72,25 +77,25 @@ export function BillingPage() {
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="rounded-lg border p-4">
-              <p className="text-muted-foreground text-xs">Status</p>
+              <p className="text-muted-foreground text-xs">{m["settings.billing.status"]()}</p>
               <p className="font-medium text-sm">
                 {subscription?.hasSubscription
                   ? (subscription.status ?? "—")
-                  : "No active subscription"}
+                  : m["settings.billing.no_subscription"]()}
               </p>
             </div>
             <div className="rounded-lg border p-4">
-              <p className="text-muted-foreground text-xs">Plan name</p>
+              <p className="text-muted-foreground text-xs">{m["settings.billing.plan_name"]()}</p>
               <p className="font-medium text-sm">{subscription?.planName ?? "—"}</p>
             </div>
             <div className="rounded-lg border p-4">
-              <p className="text-muted-foreground text-xs">Next billing date</p>
+              <p className="text-muted-foreground text-xs">{m["settings.billing.next_billing_date"]()}</p>
               <p className="font-medium text-sm">{formatDate(subscription?.nextBillingDate)}</p>
             </div>
           </div>
 
           <Link className={buttonVariants()} to="/pricing">
-            View plans
+            {m["settings.billing.view_plans"]()}
           </Link>
 
           {subscription?.hasSubscription ? (
@@ -99,7 +104,9 @@ export function BillingPage() {
               onClick={() => billingPortalMutation.mutate()}
               variant="outline"
             >
-              {billingPortalMutation.isPending ? "Opening..." : "Manage on Stripe"}
+              {billingPortalMutation.isPending
+                ? m["settings.billing.opening"]()
+                : m["settings.billing.manage_stripe"]()}
             </Button>
           ) : null}
         </CardContent>

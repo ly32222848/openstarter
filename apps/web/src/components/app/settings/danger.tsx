@@ -11,6 +11,7 @@ import { Label } from "@openstarter/ui-web/components/label";
 import { useState } from "react";
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
+import { m } from "@/paraglide/messages.js";
 
 export function DangerPage() {
   const { data: session } = authClient.useSession();
@@ -32,10 +33,10 @@ export function DangerPage() {
         callbackURL: "/login",
       });
       if (result.error) {
-        toast.error(result.error.message || "Failed to delete account");
+        toast.error(result.error.message || m["settings.danger.delete_failed"]());
         return;
       }
-      toast.success(result.data?.message || "Verification email sent");
+      toast.success(result.data?.message || m["settings.danger.verification_sent"]());
     } finally {
       setDeleting(false);
     }
@@ -44,24 +45,22 @@ export function DangerPage() {
   return (
     <Card className="border-destructive/40">
       <CardHeader>
-        <CardTitle className="text-destructive">Danger zone</CardTitle>
-        <CardDescription>
-          Permanently delete your account and all associated data. This action is irreversible.
-        </CardDescription>
+        <CardTitle className="text-destructive">{m["settings.danger.title"]()}</CardTitle>
+        <CardDescription>{m["settings.danger.description"]()}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="rounded-md bg-destructive/5 p-4 text-sm">
-          <p className="font-medium">This will remove:</p>
+          <p className="font-medium">{m["settings.danger.will_remove"]()}</p>
           <ul className="ml-4 list-disc text-muted-foreground">
-            <li>Your profile, settings, and preferences</li>
-            <li>Owned organizations (unless transferred)</li>
-            <li>Active sessions and access tokens</li>
+            <li>{m["settings.danger.remove_profile"]()}</li>
+            <li>{m["settings.danger.remove_organizations"]()}</li>
+            <li>{m["settings.danger.remove_sessions"]()}</li>
           </ul>
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="confirm-email">
-            Type your email <span className="text-destructive">{userEmail}</span> to confirm
+            {m["settings.danger.confirm_label"]({ email: userEmail })}
           </Label>
           <Input
             disabled={deleting}
@@ -81,7 +80,7 @@ export function DangerPage() {
           type="button"
           variant="destructive"
         >
-          {deleting ? "Deleting..." : "Delete my account"}
+          {deleting ? m["settings.danger.deleting"]() : m["settings.danger.delete_button"]()}
         </Button>
       </CardContent>
     </Card>

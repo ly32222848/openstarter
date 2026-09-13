@@ -12,6 +12,7 @@ import {
 import { cn } from "@openstarter/ui-web/lib/utils";
 import type { ComponentType } from "react";
 import { useState } from "react";
+import { m } from "@/paraglide/messages.js";
 
 import { AccountsPage } from "@/components/app/settings/accounts";
 import { ApiKeysPage } from "@/components/app/settings/apikeys";
@@ -25,20 +26,20 @@ import { SessionsPage } from "@/components/app/settings/sessions";
 import { TicketsPage } from "@/components/app/settings/tickets";
 
 const SECTIONS = [
-  { component: ProfilePage, key: "profile", label: "Profile" },
-  { component: BillingPage, key: "billing", label: "Billing" },
-  { component: CreditsPage, key: "credits", label: "Credits" },
-  { component: PaymentsPage, key: "payments", label: "Payments" },
-  { component: ApiKeysPage, key: "apikeys", label: "API keys" },
-  { component: TicketsPage, key: "tickets", label: "Tickets" },
-  { component: SecurityPage, key: "security", label: "Security" },
-  { component: AccountsPage, key: "accounts", label: "Accounts" },
-  { component: SessionsPage, key: "sessions", label: "Sessions" },
-  { component: DangerPage, key: "danger", label: "Danger zone" },
+  { component: ProfilePage, key: "profile", label: () => m["settings.nav.profile"]() },
+  { component: BillingPage, key: "billing", label: () => m["settings.nav.billing"]() },
+  { component: CreditsPage, key: "credits", label: () => m["settings.nav.credits"]() },
+  { component: PaymentsPage, key: "payments", label: () => m["settings.nav.payments"]() },
+  { component: ApiKeysPage, key: "apikeys", label: () => m["settings.nav.apikeys"]() },
+  { component: TicketsPage, key: "tickets", label: () => m["settings.nav.tickets"]() },
+  { component: SecurityPage, key: "security", label: () => m["settings.nav.security"]() },
+  { component: AccountsPage, key: "accounts", label: () => m["settings.nav.accounts"]() },
+  { component: SessionsPage, key: "sessions", label: () => m["settings.nav.sessions"]() },
+  { component: DangerPage, key: "danger", label: () => m["settings.nav.danger"]() },
 ] as const satisfies readonly {
   component: ComponentType;
   key: string;
-  label: string;
+  label: () => string;
 }[];
 
 export function ManageAccountDialog({
@@ -56,10 +57,8 @@ export function ManageAccountDialog({
     <Dialog onOpenChange={onOpenChange} open={open}>
       <DialogContent className="sm:max-w-6xl">
         <DialogHeader>
-          <DialogTitle>Manage Account</DialogTitle>
-          <DialogDescription>
-            Manage your profile, security, linked accounts, and sessions.
-          </DialogDescription>
+          <DialogTitle>{m["settings.manage_account"]()}</DialogTitle>
+          <DialogDescription>{m["settings.layout.description"]()}</DialogDescription>
         </DialogHeader>
 
         <div className="flex max-h-[70vh] flex-col gap-6 overflow-hidden md:flex-row">
@@ -81,7 +80,7 @@ export function ManageAccountDialog({
                   onClick={() => setActive(section.key)}
                   type="button"
                 >
-                  {section.label}
+                  {section.label()}
                 </button>
               );
             })}

@@ -22,6 +22,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { tickets } from "@/modules/tickets/lib/api";
+import { m } from "@/paraglide/messages.js";
 
 function statusVariant(status: string): "default" | "secondary" | "outline" {
   if (status === "open") {
@@ -65,7 +66,7 @@ export function TicketsPage() {
       queryClient.invalidateQueries({
         queryKey: tickets.queries.list().queryKey,
       });
-      toast.success("Ticket created");
+      toast.success(m["settings.tickets.create_success"]());
     },
   });
 
@@ -80,7 +81,7 @@ export function TicketsPage() {
       queryClient.invalidateQueries({
         queryKey: tickets.queries.list().queryKey,
       });
-      toast.success("Reply sent");
+      toast.success(m["settings.tickets.close_success"]());
     },
   });
 
@@ -92,16 +93,16 @@ export function TicketsPage() {
       <Card>
         <CardHeader className="flex flex-row items-start justify-between gap-4">
           <div>
-            <CardTitle>Support tickets</CardTitle>
-            <CardDescription>Create a ticket and chat with our support team.</CardDescription>
+            <CardTitle>{m["settings.tickets.title"]()}</CardTitle>
+            <CardDescription>{m["settings.tickets.description"]()}</CardDescription>
           </div>
           <Button onClick={() => setCreateOpen(true)} size="sm" type="button">
-            New ticket
+            {m["settings.tickets.create_button"]()}
           </Button>
         </CardHeader>
         <CardContent className="space-y-2">
           {listQuery.isPending ? (
-            <p className="text-muted-foreground text-sm">Loading tickets...</p>
+            <p className="text-muted-foreground text-sm">{m["settings.tickets.loading"]()}</p>
           ) : null}
           {listQuery.error ? (
             <p className="text-destructive text-sm">{(listQuery.error as Error).message}</p>
@@ -122,14 +123,20 @@ export function TicketsPage() {
                       {formatDateTime(item.createdAt)}
                     </span>
                   </div>
-                  <Badge variant={statusVariant(item.status)}>{item.status}</Badge>
+                  <Badge variant={statusVariant(item.status)}>
+                    {item.status === "open"
+                      ? m["settings.tickets.status_open"]()
+                      : item.status === "replied"
+                        ? m["settings.tickets.status_replied"]()
+                        : m["settings.tickets.status_closed"]()}
+                  </Badge>
                 </button>
               ))}
             </div>
           ) : null}
 
           {items.length === 0 && !listQuery.isPending ? (
-            <p className="text-muted-foreground text-sm">No tickets yet.</p>
+            <p className="text-muted-foreground text-sm">{m["settings.tickets.empty"]()}</p>
           ) : null}
         </CardContent>
       </Card>
@@ -140,11 +147,17 @@ export function TicketsPage() {
             <div>
               <CardTitle>{detail.ticket.title}</CardTitle>
               <CardDescription>
-                <Badge variant={statusVariant(detail.ticket.status)}>{detail.ticket.status}</Badge>
+                <Badge variant={statusVariant(detail.ticket.status)}>
+                  {detail.ticket.status === "open"
+                    ? m["settings.tickets.status_open"]()
+                    : detail.ticket.status === "replied"
+                      ? m["settings.tickets.status_replied"]()
+                      : m["settings.tickets.status_closed"]()}
+                </Badge>
               </CardDescription>
             </div>
             <Button onClick={() => setSelectedId(null)} size="sm" type="button" variant="ghost">
-              Close
+              {m["settings.tickets.cancel"]()}
             </Button>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -157,7 +170,11 @@ export function TicketsPage() {
                   key={message.id}
                 >
                   <div className="mb-1 flex items-center gap-2">
-                    <span className="font-medium text-xs uppercase">{message.role}</span>
+                    <span className="font-medium text-xs uppercase">
+                      {message.role === "admin"
+                        ? m["settings.tickets.support_team"]()
+                        : m["settings.tickets.you"]()}
+                    </span>
                     <span className="text-muted-foreground text-xs">
                       {formatDateTime(message.createdAt)}
                     </span>
@@ -168,14 +185,14 @@ export function TicketsPage() {
             </div>
 
             {detail.ticket.status === "closed" ? (
-              <p className="text-muted-foreground text-sm">This ticket is closed.</p>
+              <p className="text-muted-foreground text-sm">{m["settings.tickets.closed_notice"]()}</p>
             ) : (
               <div className="space-y-2">
-                <Label htmlFor="ticket-reply">Reply</Label>
+                <Label htmlFor="ticket-reply">{m["settings.tickets.reply_placeholder"]()}</Label>
                 <Textarea
                   id="ticket-reply"
                   onChange={(e) => setReply(e.target.value)}
-                  placeholder="Type your message..."
+                  placeholder={m["settings.tickets.reply_placeholder"]()}
                   value={reply}
                 />
                 <Button
@@ -189,7 +206,9 @@ export function TicketsPage() {
                   size="sm"
                   type="button"
                 >
-                  {replyMutation.isPending ? "Sending..." : "Send reply"}
+                  {replyMutation.isPending
+                    ? m["settings.tickets.replying"]()
+                    : m["settings.tickets.reply_submit"]()}
                 </Button>
               </div>
             )}
@@ -200,27 +219,25 @@ export function TicketsPage() {
       <Dialog onOpenChange={setCreateOpen} open={createOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>New support ticket</DialogTitle>
-            <DialogDescription>
-              Describe your issue and we&apos;ll get back to you.
-            </DialogDescription>
+            <DialogTitle>{m["settings.tickets.create_title"]()}</DialogTitle>
+            <DialogDescription>{m["settings.tickets.create_description"]()}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="ticket-title">Title</Label>
+              <Label htmlFor="ticket-title">{m["settings.tickets.title_label"]()}</Label>
               <Input
                 id="ticket-title"
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Brief summary"
+                placeholder={m["settings.tickets.title_placeholder"]()}
                 value={title}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="ticket-content">Description</Label>
+              <Label htmlFor="ticket-content">{m["settings.tickets.content_label"]()}</Label>
               <Textarea
                 id="ticket-content"
                 onChange={(e) => setContent(e.target.value)}
-                placeholder="Explain your issue in detail..."
+                placeholder={m["settings.tickets.content_placeholder"]()}
                 value={content}
               />
             </div>
@@ -238,7 +255,9 @@ export function TicketsPage() {
               }
               type="button"
             >
-              {createMutation.isPending ? "Creating..." : "Create ticket"}
+              {createMutation.isPending
+                ? m["settings.tickets.creating"]()
+                : m["settings.tickets.create_submit"]()}
             </Button>
           </DialogFooter>
         </DialogContent>

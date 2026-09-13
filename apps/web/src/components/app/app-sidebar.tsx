@@ -36,6 +36,7 @@ import { ManageAccountDialog } from "@/components/app/manage-account-dialog";
 import { APP_NAV_ITEMS } from "@/components/app/app-nav";
 import { authClient } from "@/lib/auth-client";
 import { BRAND_NAME } from "@/lib/branding";
+import { m } from "@/paraglide/messages.js";
 import { getLocale, setLocale } from "@/paraglide/runtime.js";
 
 const LANGUAGE_OPTIONS = [
@@ -62,9 +63,13 @@ function ThemeMenuItem() {
     <DropdownMenuSub>
       <DropdownMenuSubTrigger className="flex items-center gap-2">
         <Moon className="size-4" />
-        Theme
+        {m["user_menu.theme"]()}
         <span className="ml-auto text-muted-foreground">
-          {currentTheme === "dark" ? "Dark" : currentTheme === "light" ? "Light" : "System"}
+          {currentTheme === "dark"
+            ? m["common.nav.theme_dark"]()
+            : currentTheme === "light"
+              ? m["common.nav.theme_light"]()
+              : m["common.nav.theme_system"]()}
         </span>
       </DropdownMenuSubTrigger>
       <DropdownMenuSubContent>
@@ -75,7 +80,9 @@ function ThemeMenuItem() {
             className={`flex items-center gap-2 ${mounted && theme === option.value ? "font-medium" : ""}`}
           >
             <option.icon className="size-4" />
-            {option.label}
+            {option.value === "light"
+              ? m["common.nav.theme_light"]()
+              : m["common.nav.theme_dark"]()}
           </DropdownMenuItem>
         ))}
       </DropdownMenuSubContent>
@@ -96,7 +103,7 @@ function LanguageMenuItem() {
     <DropdownMenuSub>
       <DropdownMenuSubTrigger className="flex items-center gap-2">
         <Globe className="size-4" />
-        Language
+        {m["common.nav.language"]()}
         <span className="ml-auto text-muted-foreground">
           {currentLocale === "en" ? "English" : "中文"}
         </span>
@@ -137,7 +144,7 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Platform</SidebarGroupLabel>
+          <SidebarGroupLabel>{m["common.platform"]()}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {APP_NAV_ITEMS.map((item) => {
@@ -181,7 +188,7 @@ export function AppSidebar() {
                 <DropdownMenuContent align="start" className="w-56 bg-card" side="top">
                   <DropdownMenuItem onClick={() => setManageOpen(true)}>
                     <UserCog aria-hidden="true" className="size-4" />
-                    Manage Account
+                    {m["user_menu.manage_account"]()}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <ThemeMenuItem />
@@ -200,7 +207,7 @@ export function AppSidebar() {
                     variant="destructive"
                   >
                     <LogOut aria-hidden="true" className="size-4" />
-                    Sign out
+                    {m["user_menu.sign_out"]()}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
                 <ManageAccountDialog onOpenChange={setManageOpen} open={manageOpen} />

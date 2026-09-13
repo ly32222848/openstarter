@@ -16,6 +16,7 @@ import { useState } from "react";
 import { ManageAccountDialog } from "@/components/app/manage-account-dialog";
 import { ThemeMenuItems } from "@/components/theme/theme-menu-items";
 import { authClient } from "@/lib/auth-client";
+import { m } from "@/paraglide/messages.js";
 
 export function UserMenu({ onNavigate }: { onNavigate?: () => void }) {
   const navigate = useNavigate();
@@ -45,18 +46,18 @@ export function UserMenu({ onNavigate }: { onNavigate?: () => void }) {
       <DropdownMenuContent align="start" className="w-56 bg-card" side="top">
         <DropdownMenuItem onClick={() => setManageOpen(true)}>
           <UserCog aria-hidden="true" className="size-4" />
-          Manage Account
+          {m["user_menu.manage_account"]()}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuLabel>Theme</DropdownMenuLabel>
+          <DropdownMenuLabel>{m["user_menu.theme"]()}</DropdownMenuLabel>
           <ThemeMenuItems />
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <Link onClick={onNavigate} to="/settings">
             <Settings aria-hidden="true" className="size-4" />
-            Settings
+            {m["user_menu.settings"]()}
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
@@ -73,7 +74,7 @@ export function UserMenu({ onNavigate }: { onNavigate?: () => void }) {
           variant="destructive"
         >
           <LogOut aria-hidden="true" className="size-4" />
-          Sign out
+          {m["user_menu.sign_out"]()}
         </DropdownMenuItem>
       </DropdownMenuContent>
       <ManageAccountDialog onOpenChange={setManageOpen} open={manageOpen} />

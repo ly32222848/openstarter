@@ -16,10 +16,11 @@ import {
 } from "@openstarter/ui-web/components/table";
 import { useQuery } from "@tanstack/react-query";
 import { user } from "@/modules/user/lib/api";
+import { m } from "@/paraglide/messages.js";
 
 function formatDate(value: string | null | undefined): string {
   if (!value) {
-    return "Never";
+    return "—";
   }
   return new Date(value).toLocaleDateString();
 }
@@ -34,12 +35,12 @@ export function CreditsPage() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Credits</CardTitle>
-          <CardDescription>Your available balance and transaction history.</CardDescription>
+          <CardTitle>{m["settings.credits.title"]()}</CardTitle>
+          <CardDescription>{m["settings.credits.description"]()}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="rounded-lg border p-4">
-            <p className="text-muted-foreground text-xs">Available balance</p>
+            <p className="text-muted-foreground text-xs">{m["settings.credits.balance"]()}</p>
             <p className="font-bold text-3xl tabular-nums">
               {creditsQuery.isPending ? "—" : balance.toLocaleString()}
             </p>
@@ -54,11 +55,11 @@ export function CreditsPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Amount</TableHead>
-                    <TableHead>Remaining</TableHead>
-                    <TableHead>Expires</TableHead>
-                    <TableHead>Date</TableHead>
+                    <TableHead>{m["settings.credits.type"]()}</TableHead>
+                    <TableHead>{m["settings.credits.credits"]()}</TableHead>
+                    <TableHead>{m["settings.credits.remaining"]()}</TableHead>
+                    <TableHead>{m["settings.credits.expires_at"]()}</TableHead>
+                    <TableHead>{m["settings.credits.date"]()}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -87,7 +88,7 @@ export function CreditsPage() {
           ) : null}
 
           {history.length === 0 && !creditsQuery.isPending ? (
-            <p className="text-muted-foreground text-sm">No credit transactions yet.</p>
+            <p className="text-muted-foreground text-sm">{m["settings.credits.no_records"]()}</p>
           ) : null}
         </CardContent>
       </Card>

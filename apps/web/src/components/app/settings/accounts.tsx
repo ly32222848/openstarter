@@ -11,15 +11,16 @@ import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
 import { auth } from "@/modules/auth/lib/api";
+import { m } from "@/paraglide/messages.js";
 
 const LINKABLE_PROVIDERS = ["google", "github", "apple"] as const;
 
 const PROVIDER_META: Record<string, { label: string }> = {
-  apple: { label: "Apple" },
-  credential: { label: "Email & Password" },
-  github: { label: "GitHub" },
-  google: { label: "Google" },
-  passkey: { label: "Passkey" },
+  apple: { label: m["settings.accounts.provider_apple"]() },
+  credential: { label: m["settings.accounts.provider_email"]() },
+  github: { label: m["settings.accounts.provider_github"]() },
+  google: { label: m["settings.accounts.provider_google"]() },
+  passkey: { label: m["settings.accounts.provider_passkey"]() },
 };
 
 const getLinkLabel = (
@@ -28,10 +29,12 @@ const getLinkLabel = (
   isLinking: boolean,
 ) => {
   if (isLinking) {
-    return "Redirecting...";
+    return m["settings.accounts.redirecting"]();
   }
   const label = PROVIDER_META[provider]?.label ?? provider;
-  return alreadyLinked ? `${label} linked` : `Link ${label}`;
+  return alreadyLinked
+    ? m["settings.accounts.linked"]({ provider: label })
+    : m["settings.accounts.link"]({ provider: label });
 };
 
 export function AccountsPage() {
@@ -51,7 +54,7 @@ export function AccountsPage() {
         provider,
       });
       if (result.error) {
-        toast.error(result.error.message || "Failed to link account");
+        toast.error(result.error.message || m["settings.accounts.link_failed"]());
       }
     } finally {
       setLinking(null);
@@ -63,7 +66,7 @@ export function AccountsPage() {
       return;
     }
     if (accounts.length <= 1) {
-      toast.error("Cannot unlink your last sign-in method. Add another one first.");
+      toast.error(m["settings.accounts.cannot_unlink_last"]());
       return;
     }
 
@@ -75,10 +78,10 @@ export function AccountsPage() {
         providerId,
       });
       if (result.error) {
-        toast.error(result.error.message || "Failed to unlink account");
+        toast.error(result.error.message || m["settings.accounts.unlink_failed"]());
         return;
       }
-      toast.success("Account unlinked");
+      toast.success(m["settings.accounts.unlink_success"]());
       await accountsQuery.refetch();
     } finally {
       unlinkInFlight.current = false;
@@ -89,19 +92,19 @@ export function AccountsPage() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Accounts</CardTitle>
-        <CardDescription>Manage linked social accounts and sign-in methods.</CardDescription>
+        <CardTitle>{m["settings.accounts.title"]()}</CardTitle>
+        <CardDescription>{m["settings.accounts.description"]()}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {accountsQuery.isPending ? (
-          <p className="text-muted-foreground text-sm">Loading accounts...</p>
+          <p className="text-muted-foreground text-sm">{m["settings.accounts.loading"]()}</p>
         ) : null}
         {accountsQuery.error ? (
           <p className="text-destructive text-sm">{accountsQuery.error.message}</p>
         ) : null}
         {accounts.length > 0 && (
           <div className="space-y-2">
-            <p className="font-medium text-sm">Linked accounts</p>
+            <p className="font-medium text-sm">{m["settings.accounts.linked_accounts"]()}</p>
             <div className="divide-y rounded-lg border">
               {accounts.map((account) => {
                 const meta = PROVIDER_META[account.providerId] ?? {
@@ -122,12 +125,16 @@ export function AccountsPage() {
                       }}
                       size="sm"
                       title={
-                        accounts.length <= 1 ? "Cannot unlink your last sign-in method" : undefined
+                        accounts.length <= 1
+                          ? m["settings.accounts.cannot_unlink_current"]()
+                          : undefined
                       }
                       type="button"
                       variant="ghost"
                     >
-                      {unlinking === account.accountId ? "Unlinking..." : "Unlink"}
+                      {unlinking === account.accountId
+                        ? m["settings.accounts.unlinking"]()
+                        : m["settings.accounts.unlink"]()}
                     </Button>
                   </div>
                 );
@@ -137,7 +144,7 @@ export function AccountsPage() {
         )}
 
         <div className="space-y-2">
-          <p className="font-medium text-sm">Link a new account</p>
+          <p className="font-medium text-sm">{m["settings.accounts.link_new"]()}</p>
           <div className="flex flex-wrap gap-2">
             {LINKABLE_PROVIDERS.map((provider) => {
               const alreadyLinked = accounts.some((account) => account.providerId === provider);
@@ -163,8 +170,7 @@ export function AccountsPage() {
 
         {session?.user?.email === null && (
           <div className="rounded-md bg-muted p-4 text-sm">
-            You're currently signed in anonymously. Link an account above to save your data
-            permanently.
+            {m["settings.accounts.anonymous_notice"]()}
           </div>
         )}
       </CardContent>

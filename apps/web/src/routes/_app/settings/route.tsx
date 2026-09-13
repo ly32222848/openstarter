@@ -1,34 +1,31 @@
-// apps/web/src/routes/_app/settings/route.tsx
-// 账户设置外壳：左侧二级导航 + <Outlet/>。
-// 子路由：profile / security / accounts / sessions / danger。
-
 import { cn } from "@openstarter/ui-web/lib/utils";
 import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
+import { m } from "@/paraglide/messages.js";
 
 export const Route = createFileRoute("/_app/settings")({
   component: SettingsLayout,
 });
 
-const NAV_ITEMS = [
-  { label: "Profile", to: "/settings/profile" },
-  { label: "Billing", to: "/settings/billing" },
-  { label: "Credits", to: "/settings/credits" },
-  { label: "Payments", to: "/settings/payments" },
-  { label: "API keys", to: "/settings/apikeys" },
-  { label: "Tickets", to: "/settings/tickets" },
-  { label: "Security", to: "/settings/security" },
-  { label: "Accounts", to: "/settings/accounts" },
-  { label: "Sessions", to: "/settings/sessions" },
-  { label: "Danger zone", to: "/settings/danger" },
-] as const;
-
 function SettingsLayout() {
+  const NAV_ITEMS = [
+    { label: m["settings.nav.profile"](), to: "/settings/profile" },
+    { label: m["settings.nav.billing"](), to: "/settings/billing" },
+    { label: m["settings.nav.credits"](), to: "/settings/credits" },
+    { label: m["settings.nav.payments"](), to: "/settings/payments" },
+    { label: m["settings.nav.apikeys"](), to: "/settings/apikeys" },
+    { label: m["settings.nav.tickets"](), to: "/settings/tickets" },
+    { label: m["settings.nav.security"](), to: "/settings/security" },
+    { label: m["settings.nav.accounts"](), to: "/settings/accounts" },
+    { label: m["settings.nav.sessions"](), to: "/settings/sessions" },
+    { label: m["settings.nav.danger"](), to: "/settings/danger" },
+  ] as const;
+
   return (
     <div className="flex w-full flex-col gap-6">
       <div>
-        <h1 className="font-bold text-2xl">Settings</h1>
+        <h1 className="font-bold text-2xl">{m["settings.title"]()}</h1>
         <p className="text-muted-foreground text-sm">
-          Manage your profile, security, linked accounts, and sessions.
+          {m["settings.layout.description"]()}
         </p>
       </div>
 
@@ -37,7 +34,6 @@ function SettingsLayout() {
           aria-label="Settings sections"
           className="flex shrink-0 flex-row gap-1 overflow-x-auto md:w-48 md:flex-col md:overflow-visible"
         >
-          {/* active 态交给 Link 自身（nav-active-states）：不再手算 pathname 比较。 */}
           {NAV_ITEMS.map((item) => (
             <Link
               className={cn(

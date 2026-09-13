@@ -48,12 +48,10 @@ export function ProfilePage() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Profile</CardTitle>
-        <CardDescription>Your display name visible across the app.</CardDescription>
+        <CardTitle>{m["settings.profile.profile"]()}</CardTitle>
+        <CardDescription>{m["settings.profile.description"]()}</CardDescription>
       </CardHeader>
       <CardContent>
-        {/* TODO: avatar upload (Phase ?, requires file storage) */}
-
         <form
           className="space-y-4"
           onSubmit={(e) => {
@@ -65,7 +63,7 @@ export function ProfilePage() {
           <form.Field name="name">
             {(field) => (
               <div className="space-y-2">
-                <Label htmlFor={field.name}>Display name</Label>
+                <Label htmlFor={field.name}>{m["settings.profile.display_name"]()}</Label>
                 <Input
                   id={field.name}
                   name={field.name}
@@ -85,7 +83,7 @@ export function ProfilePage() {
           <form.Subscribe selector={(s) => s.isSubmitting}>
             {(isSubmitting) => (
               <Button disabled={isSubmitting || submitting} type="submit">
-                {submitting ? "Saving..." : "Save"}
+                {submitting ? m["settings.profile.saving"]() : m["settings.profile.save"]()}
               </Button>
             )}
           </form.Subscribe>

@@ -19,6 +19,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { countTotalPages, LIST_PAGE_SIZE } from "@/lib/list-search";
 import { user } from "@/modules/user/lib/api";
+import { m } from "@/paraglide/messages.js";
 
 function formatDate(value: string | null | undefined): string {
   if (!value) {
@@ -60,8 +61,8 @@ export function PaymentsPage({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Payments</CardTitle>
-        <CardDescription>Your order and payment history.</CardDescription>
+        <CardTitle>{m["settings.payments.title"]()}</CardTitle>
+        <CardDescription>{m["settings.payments.description"]()}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {ordersQuery.error ? (
@@ -73,12 +74,12 @@ export function PaymentsPage({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Order</TableHead>
-                  <TableHead>Product</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Provider</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Date</TableHead>
+                  <TableHead>{m["settings.payments.order_no"]()}</TableHead>
+                  <TableHead>{m["settings.payments.product"]()}</TableHead>
+                  <TableHead>{m["settings.payments.amount"]()}</TableHead>
+                  <TableHead>{m["settings.payments.provider"]()}</TableHead>
+                  <TableHead>{m["settings.payments.status"]()}</TableHead>
+                  <TableHead>{m["settings.payments.date"]()}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -108,13 +109,13 @@ export function PaymentsPage({
         ) : null}
 
         {items.length === 0 && !ordersQuery.isPending ? (
-          <p className="text-muted-foreground text-sm">No payments yet.</p>
+          <p className="text-muted-foreground text-sm">{m["settings.payments.no_payments"]()}</p>
         ) : null}
 
         {totalPages > 1 ? (
           <div className="flex items-center justify-between">
             <span className="text-muted-foreground text-sm">
-              Page {page} of {totalPages}
+              {m["common.table.page_info"]({ current: String(page), total: String(totalPages) })}
             </span>
             <div className="flex gap-2">
               <Button
@@ -124,7 +125,7 @@ export function PaymentsPage({
                 type="button"
                 variant="outline"
               >
-                Previous
+                {m["common.table.previous"]()}
               </Button>
               <Button
                 disabled={page >= totalPages}
@@ -133,7 +134,7 @@ export function PaymentsPage({
                 type="button"
                 variant="outline"
               >
-                Next
+                {m["common.table.next"]()}
               </Button>
             </div>
           </div>

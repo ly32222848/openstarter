@@ -11,6 +11,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
 import { auth } from "@/modules/auth/lib/api";
+import { m } from "@/paraglide/messages.js";
 
 export function SessionsPage() {
   const { data: currentSessionData, isPending: isCurrentSessionPending } = authClient.useSession();
@@ -30,10 +31,10 @@ export function SessionsPage() {
     try {
       const result = await authClient.revokeSession({ token });
       if (result.error) {
-        toast.error(result.error.message || "Failed to revoke session");
+        toast.error(result.error.message || m["settings.sessions.revoke_failed"]());
         return;
       }
-      toast.success("Session revoked");
+      toast.success(m["settings.sessions.revoke_success"]());
       await sessionsQuery.refetch();
     } finally {
       setRevokingToken(null);
@@ -45,10 +46,10 @@ export function SessionsPage() {
     try {
       const result = await authClient.revokeOtherSessions();
       if (result.error) {
-        toast.error(result.error.message || "Failed to revoke other sessions");
+        toast.error(result.error.message || m["settings.sessions.revoke_all_failed"]());
         return;
       }
-      toast.success("Other sessions revoked");
+      toast.success(m["settings.sessions.revoke_all_success"]());
       await sessionsQuery.refetch();
     } finally {
       setRevokingOthers(false);
@@ -58,8 +59,8 @@ export function SessionsPage() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Sessions</CardTitle>
-        <CardDescription>Manage your active sessions across devices.</CardDescription>
+        <CardTitle>{m["settings.sessions.title"]()}</CardTitle>
+        <CardDescription>{m["settings.sessions.description"]()}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {sessions.length > 1 && (
@@ -74,12 +75,12 @@ export function SessionsPage() {
             type="button"
             variant="outline"
           >
-            {revokingOthers ? "Revoking..." : "Revoke all other sessions"}
+            {revokingOthers ? m["settings.sessions.revoking_all"]() : m["settings.sessions.revoke_all"]()}
           </Button>
         )}
 
         {sessionsQuery.isPending ? (
-          <p className="text-muted-foreground text-sm">Loading sessions...</p>
+          <p className="text-muted-foreground text-sm">{m["settings.sessions.loading"]()}</p>
         ) : null}
         {sessionsQuery.error ? (
           <p className="text-destructive text-sm">{sessionsQuery.error.message}</p>
@@ -91,8 +92,10 @@ export function SessionsPage() {
               <div className="flex items-center justify-between px-4 py-3" key={session.id}>
                 <div className="flex flex-col gap-0.5">
                   <span className="font-medium text-sm">
-                    {session.userAgent?.split("/").at(0)?.trim() || "Unknown device"}
-                    {isCurrent && <span className="ml-2 text-primary text-xs">Current</span>}
+                    {session.userAgent?.split("/").at(0)?.trim() || m["settings.sessions.unknown_device"]()}
+                    {isCurrent && (
+                      <span className="ml-2 text-primary text-xs">{m["settings.sessions.current"]()}</span>
+                    )}
                   </span>
                   <span className="text-muted-foreground text-xs">
                     {session.createdAt ? new Date(session.createdAt).toLocaleDateString() : ""}
@@ -107,11 +110,13 @@ export function SessionsPage() {
                     });
                   }}
                   size="sm"
-                  title={isCurrent ? "Cannot revoke current session" : undefined}
+                  title={isCurrent ? m["settings.sessions.cannot_revoke_current"]() : undefined}
                   type="button"
                   variant="ghost"
                 >
-                  {revokingToken === session.token ? "Revoking..." : "Revoke"}
+                  {revokingToken === session.token
+                    ? m["settings.sessions.revoking"]()
+                    : m["settings.sessions.revoke"]()}
                 </Button>
               </div>
             );
@@ -119,7 +124,7 @@ export function SessionsPage() {
         </div>
 
         {sessions.length === 0 && !sessionsQuery.isPending && (
-          <p className="text-muted-foreground text-sm">No active sessions found.</p>
+          <p className="text-muted-foreground text-sm">{m["settings.sessions.no_sessions"]()}</p>
         )}
       </CardContent>
     </Card>
