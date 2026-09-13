@@ -7,10 +7,11 @@
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@openstarter/ui-web/components/dropdown-menu";
 import {
@@ -27,14 +28,93 @@ import {
 } from "@openstarter/ui-web/components/sidebar";
 import { Skeleton } from "@openstarter/ui-web/components/skeleton";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { LogOut, User, UserCog } from "lucide-react";
-import { useState } from "react";
+import { Globe, LogOut, Moon, Sun, User, UserCog } from "lucide-react";
+import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
 
 import { ManageAccountDialog } from "@/components/app/manage-account-dialog";
 import { APP_NAV_ITEMS } from "@/components/app/app-nav";
-import { ThemeMenuItems } from "@/components/theme/theme-menu-items";
 import { authClient } from "@/lib/auth-client";
 import { BRAND_NAME } from "@/lib/branding";
+import { getLocale, setLocale } from "@/paraglide/runtime.js";
+
+const LANGUAGE_OPTIONS = [
+  { value: "en", label: "English" },
+  { value: "zh", label: "中文" },
+] as const;
+
+const THEME_OPTIONS = [
+  { value: "light", label: "Light", icon: Sun },
+  { value: "dark", label: "Dark", icon: Moon },
+] as const;
+
+function ThemeMenuItem() {
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const currentTheme = mounted ? theme : "system";
+
+  return (
+    <DropdownMenuSub>
+      <DropdownMenuSubTrigger className="flex items-center gap-2">
+        <Moon className="size-4" />
+        Theme
+        <span className="ml-auto text-muted-foreground">
+          {currentTheme === "dark" ? "Dark" : currentTheme === "light" ? "Light" : "System"}
+        </span>
+      </DropdownMenuSubTrigger>
+      <DropdownMenuSubContent>
+        {THEME_OPTIONS.map((option) => (
+          <DropdownMenuItem
+            key={option.value}
+            onClick={() => setTheme(option.value)}
+            className={`flex items-center gap-2 ${mounted && theme === option.value ? "font-medium" : ""}`}
+          >
+            <option.icon className="size-4" />
+            {option.label}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuSubContent>
+    </DropdownMenuSub>
+  );
+}
+
+function LanguageMenuItem() {
+  const currentLocale = getLocale();
+
+  const handleLanguageChange = (newLocale: string) => {
+    if (newLocale !== currentLocale) {
+      setLocale(newLocale as "en" | "zh");
+    }
+  };
+
+  return (
+    <DropdownMenuSub>
+      <DropdownMenuSubTrigger className="flex items-center gap-2">
+        <Globe className="size-4" />
+        Language
+        <span className="ml-auto text-muted-foreground">
+          {currentLocale === "en" ? "English" : "中文"}
+        </span>
+      </DropdownMenuSubTrigger>
+      <DropdownMenuSubContent>
+        {LANGUAGE_OPTIONS.map((option) => (
+          <DropdownMenuItem
+            key={option.value}
+            onClick={() => handleLanguageChange(option.value)}
+            className={currentLocale === option.value ? "font-medium" : ""}
+          >
+            {option.label}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuSubContent>
+    </DropdownMenuSub>
+  );
+}
 
 export function AppSidebar() {
   const navigate = useNavigate();
@@ -104,10 +184,8 @@ export function AppSidebar() {
                     Manage Account
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuGroup>
-                    <DropdownMenuLabel>Theme</DropdownMenuLabel>
-                    <ThemeMenuItems />
-                  </DropdownMenuGroup>
+                  <ThemeMenuItem />
+                  <LanguageMenuItem />
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     onClick={() => {
