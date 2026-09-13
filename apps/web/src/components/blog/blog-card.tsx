@@ -27,7 +27,13 @@ export function BlogCard({
     <article className="flex flex-col overflow-hidden rounded-lg border bg-card ring-1 ring-foreground/5 transition-colors hover:ring-foreground/15">
       <Link className="group flex flex-1 flex-col" params={{ slug }} to="/blog/$slug">
         {image ? (
-          <img alt={title} className="aspect-video w-full object-cover" src={image} />
+          <img
+            alt={title}
+            className="aspect-video w-full object-cover"
+            decoding="async"
+            loading="lazy"
+            src={image}
+          />
         ) : null}
         <div className="flex flex-1 flex-col gap-2 p-4">
           <h2 className="font-medium text-base group-hover:underline">{title}</h2>
@@ -36,7 +42,13 @@ export function BlogCard({
           ) : null}
           <div className="mt-auto flex items-center gap-2 pt-3 text-muted-foreground text-xs">
             {authorImage ? (
-              <img alt="" className="size-5 rounded-full object-cover" src={authorImage} />
+              <img
+                alt=""
+                className="size-5 rounded-full object-cover"
+                decoding="async"
+                loading="lazy"
+                src={authorImage}
+              />
             ) : null}
             {authorName ? <span>{authorName}</span> : null}
             <time>{date}</time>

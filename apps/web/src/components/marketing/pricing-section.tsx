@@ -11,13 +11,19 @@ import { cn } from "@openstarter/ui-web/lib/utils";
 import { useMutation } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Check } from "lucide-react";
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
 import { PRICING_TIERS, type PricingCheckout, type PricingTier } from "@/lib/marketing/pricing";
 import { checkout } from "@/modules/checkout/lib/api";
 
-import { type WechatQr, WechatQrOverlay } from "./wechat-qr-overlay";
+// qrcode.react（微信支付二维码渲染）仅在某次结账产生二维码时才需要，惰性加载避免
+// 拖进营销首屏包；type-only 的 WechatQr 在编译期被擦除，不产生运行时依赖。
+import type { WechatQr } from "./wechat-qr-overlay";
+
+const WechatQrOverlay = lazy(() =>
+  import("./wechat-qr-overlay").then((m) => ({ default: m.WechatQrOverlay })),
+);
 
 function formatPrice(price: number | "custom"): string {
   if (price === "custom") {
@@ -143,7 +149,11 @@ export function PricingSection() {
           />
         ))}
       </div>
-      {wechatQr ? <WechatQrOverlay onClose={() => setWechatQr(null)} qr={wechatQr} /> : null}
+      {wechatQr ? (
+        <Suspense fallback={null}>
+          <WechatQrOverlay onClose={() => setWechatQr(null)} qr={wechatQr} />
+        </Suspense>
+      ) : null}
     </section>
   );
 }

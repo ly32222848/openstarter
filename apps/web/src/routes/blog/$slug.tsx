@@ -66,7 +66,13 @@ function BlogPostPage() {
             {post.authorName ? (
               <span className="inline-flex items-center gap-2">
                 {post.authorImage ? (
-                  <img alt="" className="size-5 rounded-full object-cover" src={post.authorImage} />
+                  <img
+                    alt=""
+                    className="size-5 rounded-full object-cover"
+                    decoding="async"
+                    loading="lazy"
+                    src={post.authorImage}
+                  />
                 ) : null}
                 {post.authorName}
               </span>
@@ -78,6 +84,8 @@ function BlogPostPage() {
           <img
             alt={title}
             className="mt-8 w-full rounded-2xl border object-cover"
+            decoding="async"
+            fetchPriority="high"
             src={post.image}
           />
         ) : null}
