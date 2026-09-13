@@ -3,6 +3,7 @@
 // 由 anonymous 开关（Config `anonymous_auth_enabled`）控制是否渲染。
 
 import { Button } from "@openstarter/ui-web/components/button";
+import { useNavigate } from "@tanstack/react-router";
 import { Ghost } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -11,12 +12,13 @@ import { authClient } from "@/lib/auth-client";
 import { m } from "@/paraglide/messages.js";
 
 interface AnonymousButtonProps {
-  /** 保留以与其它登录按钮签名对齐（匿名登录后停留在当前页）。 */
+  /** 匿名登录后跳转的地址，默认跳转到 dashboard。 */
   callbackURL?: string;
 }
 
-export function AnonymousButton(_props: AnonymousButtonProps) {
+export function AnonymousButton({ callbackURL = "/dashboard" }: AnonymousButtonProps) {
   const [submitting, setSubmitting] = useState(false);
+  const navigate = useNavigate();
 
   const handleSignIn = async () => {
     setSubmitting(true);
@@ -27,6 +29,7 @@ export function AnonymousButton(_props: AnonymousButtonProps) {
         return;
       }
       toast.success(m["common.sign.guest_success"]());
+      await navigate({ to: callbackURL });
     } finally {
       setSubmitting(false);
     }
