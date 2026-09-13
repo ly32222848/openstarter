@@ -5,15 +5,14 @@
 
 import { SidebarInset, SidebarProvider } from "@openstarter/ui-web/components/sidebar";
 import { Outlet } from "@tanstack/react-router";
-import type { ReactNode } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 
 import { AppHeader } from "@/components/app/app-header";
 import { AppSidebar } from "@/components/app/app-sidebar";
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state";
 
-/** Reads the persisted sidebar state; defaults to expanded when unset. */
-export function getInitialSidebarOpen(): boolean {
+function readSidebarCookie(): boolean {
   if (typeof document === "undefined") {
     return true;
   }
@@ -23,8 +22,14 @@ export function getInitialSidebarOpen(): boolean {
 }
 
 export function AppShell({ children }: { children?: ReactNode }) {
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  useEffect(() => {
+    setSidebarOpen(readSidebarCookie());
+  }, []);
+
   return (
-    <SidebarProvider defaultOpen={getInitialSidebarOpen()}>
+    <SidebarProvider defaultOpen={sidebarOpen}>
       <AppSidebar />
       <SidebarInset>
         <AppHeader>{children}</AppHeader>

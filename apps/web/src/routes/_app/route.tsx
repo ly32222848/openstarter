@@ -4,7 +4,6 @@ import { AppShell } from "@/components/app/app-shell";
 import { authClient } from "@/lib/auth-client";
 
 export const Route = createFileRoute("/_app")({
-  ssr: false,
   beforeLoad: async () => {
     const session = await authClient.getSession();
     if (!session.data) {

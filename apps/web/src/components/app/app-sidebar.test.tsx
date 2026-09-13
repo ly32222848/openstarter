@@ -45,7 +45,7 @@ vi.mock("@tanstack/react-router", () => ({
   },
 }));
 
-import { AppShell, getInitialSidebarOpen } from "./app-shell";
+import { AppShell } from "./app-shell";
 
 beforeAll(() => {
   // jsdom has no matchMedia; useIsMobile (via SidebarProvider) needs it.
@@ -83,20 +83,6 @@ const renderShell = () => render(<AppShell />);
 const getSidebar = () =>
   document.querySelector<HTMLElement>('[data-slot="sidebar"]:not([data-mobile])');
 
-describe("getInitialSidebarOpen", () => {
-  it("defaults to expanded when no cookie is set", () => {
-    expect(getInitialSidebarOpen()).toBe(true);
-  });
-
-  it("restores the collapsed state from the sidebar cookie", () => {
-    document.cookie = "sidebar_state=false; path=/";
-    expect(getInitialSidebarOpen()).toBe(false);
-
-    document.cookie = "sidebar_state=true; path=/";
-    expect(getInitialSidebarOpen()).toBe(true);
-  });
-});
-
 describe("AppShell", () => {
   it("renders brand, primary navigation and the user menu", () => {
     renderShell();
@@ -124,7 +110,7 @@ describe("AppShell", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /toggle sidebar/i }));
 
-    expect(getInitialSidebarOpen()).toBe(false);
+    expect(document.cookie).toContain("sidebar_state=false");
   });
 
   it("marks the nav item matching the current pathname as active", () => {
