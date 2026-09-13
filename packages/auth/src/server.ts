@@ -9,7 +9,7 @@ import { getAllConfigs } from "@openstarter/shared/config";
 import { NodeEnv } from "@openstarter/shared/constants";
 import { logger } from "@openstarter/shared/logger";
 import { betterAuth } from "better-auth/minimal";
-import { nextCookies } from "better-auth/next-js";
+import { tanstackStartCookies } from "better-auth/tanstack-start";
 import {
   admin,
   anonymous,
@@ -218,9 +218,9 @@ export const auth = betterAuth({
     // Bearer 转发（浏览器插件端会话桥接，见 docs/superpowers/specs/2026-08-01-browser-extension-app-design.md
     // §3.2/§4）：插件把 web 端的会话 cookie 值原样作为 Authorization: Bearer 头转发；
     // requireSignature: true 拒绝未签名的裸 token，正常路径（真实会话 cookie 值本就带签名）不受影响。
-    // 必须在 nextCookies() 之前注册 —— nextCookies() 必须是数组最后一项。
+    // Cookie plugin 必须是数组最后一项，以便处理响应中的 Set-Cookie。
     bearer({ requireSignature: true }),
-    nextCookies(),
+    tanstackStartCookies(),
   ],
   session: {
     cookieCache: {
