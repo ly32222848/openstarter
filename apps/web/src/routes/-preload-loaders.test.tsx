@@ -7,7 +7,7 @@ import { QueryClient } from "@tanstack/react-query";
 import type { AnyRoute } from "@tanstack/react-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { Route as ChatRoute } from "./_app/chat";
+import { Route as ChatRoute } from "./(workbench)/chat";
 import { Route as DashboardRoute } from "./_app/dashboard";
 import { Route as AccountsRoute } from "./_app/settings/accounts";
 import { Route as ApiKeysRoute } from "./_app/settings/apikeys";
@@ -16,7 +16,7 @@ import { Route as CreditsRoute } from "./_app/settings/credits";
 import { Route as PaymentsRoute } from "./_app/settings/payments";
 import { Route as SessionsRoute } from "./_app/settings/sessions";
 import { Route as TicketsRoute } from "./_app/settings/tickets";
-import { Route as StudioRoute } from "./_app/studio";
+import { Route as StudioRoute } from "./(workbench)/studio";
 import { Route as AdminIndexRoute } from "./admin/index";
 import { Route as AdminAiModelsRoute } from "./admin/ai-models";
 import { Route as AdminCreditsRoute } from "./admin/credits";
@@ -36,14 +36,14 @@ const ROUTE_QUERY_KEYS: Record<string, { keys: unknown[][]; route: AnyRoute }> =
     ],
     route: DashboardRoute,
   },
-  "/_app/chat": {
+  "/chat": {
     keys: [
       ["ai", "models"],
       ["ai", "chats", 1],
     ],
     route: ChatRoute,
   },
-  "/_app/studio": {
+  "/studio": {
     keys: [
       ["ai", "models"],
       ["ai", "tasks", "image", 1],
