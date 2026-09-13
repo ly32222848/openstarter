@@ -42,6 +42,7 @@ import {
   admin,
   type AiModelMediaType,
   type AiModelRow,
+  aiModelsKeys,
   AI_MODEL_MEDIA_TYPES,
 } from "@/modules/admin/lib/api";
 import { m } from "@/paraglide/messages.js";
@@ -106,7 +107,7 @@ function AdminAiModelsPage() {
   };
 
   const invalidate = () => {
-    void queryClient.invalidateQueries({ queryKey: ["admin", "ai-models"] });
+    void queryClient.invalidateQueries({ queryKey: aiModelsKeys.all });
   };
 
   const saveMutation = useMutation({

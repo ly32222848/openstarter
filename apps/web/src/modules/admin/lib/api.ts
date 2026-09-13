@@ -16,6 +16,16 @@ import { LIST_PAGE_SIZE } from "@/lib/list-search";
 
 const PAGE_SIZE = LIST_PAGE_SIZE;
 
+/**
+ * admin 模型分页列表的稳定 key（qk-hierarchical-organization）。
+ * 列表增删改后需整表失效，故在查询工厂外暴露 `all` 前缀；页面侧改用它做
+ * invalidateQueries，避免手写字面量 key 与工厂漂移。
+ */
+export const aiModelsKeys = {
+  all: ["admin", "ai-models"] as const,
+  page: (page: number) => ["admin", "ai-models", page] as const,
+} as const;
+
 /** `ai_model` 目录行的媒体类型（与后端 AI_MEDIA_TYPES 一致）。 */
 export const AI_MODEL_MEDIA_TYPES = ["text", "image", "video", "music", "speech"] as const;
 
@@ -44,7 +54,7 @@ const queries = {
         }
         return (await res.json()).data;
       },
-      queryKey: ["admin", "ai-models", page] as const,
+      queryKey: aiModelsKeys.page(page),
       placeholderData: keepPreviousData,
     }),
   config: () =>

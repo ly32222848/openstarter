@@ -22,7 +22,8 @@ type HistoryPage = {
 };
 
 export const chatKeys = {
-  all: ["chat"] as const,
+  /** 会话历史的前缀；history() 以它为前缀，作整表失效（invalidateQueries）用。 */
+  all: ["ai", "chats"] as const,
   history: (chatId: string) => ["ai", "chats", chatId, "messages"] as const,
 };
 
