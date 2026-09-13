@@ -4,10 +4,11 @@
 // 注意：oneTapClient 需在 createAuthClient 构造期提供 clientId，故此处不走默认
 // authClient，而是经 getOneTapAuthClient(configs) 获取（内部缓存同一实例）。
 
+import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 
 import { getOneTapAuthClient } from "@/lib/auth-client";
-import { usePublicConfig } from "@/lib/use-public-config";
+import { publicConfig } from "@/modules/public-config/lib/api";
 
 interface OneTapPromptProps {
   /** One Tap 登录成功后的跳转地址（默认 /dashboard）。 */
@@ -15,7 +16,7 @@ interface OneTapPromptProps {
 }
 
 export function OneTapPrompt({ callbackURL = "/dashboard" }: OneTapPromptProps) {
-  const configQuery = usePublicConfig();
+  const configQuery = useQuery(publicConfig.queries.get());
   const configs = configQuery.data;
 
   useEffect(() => {

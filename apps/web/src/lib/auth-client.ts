@@ -17,7 +17,7 @@ import {
   passkeyClient,
   twoFactorClient,
 } from "@openstarter/auth/client/web";
-import type { PublicConfig } from "@/lib/use-public-config";
+import type { PublicConfig } from "@/modules/public-config/lib/api";
 
 export const authClient = createAuthClient({
   plugins: [

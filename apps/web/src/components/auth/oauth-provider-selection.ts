@@ -1,4 +1,4 @@
-import type { PublicConfig } from "@/lib/use-public-config";
+import type { PublicConfig } from "@/modules/public-config/lib/api";
 
 export const OAUTH_PROVIDERS = ["google", "github", "apple"] as const;
 

@@ -2,6 +2,7 @@ import { Button } from "@openstarter/ui-web/components/button";
 import { Input } from "@openstarter/ui-web/components/input";
 import { Label } from "@openstarter/ui-web/components/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@openstarter/ui-web/components/tabs";
+import { useQuery } from "@tanstack/react-query";
 import { useForm } from "@tanstack/react-form";
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
@@ -9,7 +10,7 @@ import { toast } from "sonner";
 import z from "zod";
 
 import { authClient } from "@/lib/auth-client";
-import { usePublicConfig } from "@/lib/use-public-config";
+import { publicConfig } from "@/modules/public-config/lib/api";
 
 import Loader from "../loader";
 import { OAuthButtons } from "./oauth-buttons";
@@ -22,7 +23,7 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
   const navigate = useNavigate({ from: "/" });
   const { isPending } = authClient.useSession();
 
-  const configQuery = usePublicConfig();
+  const configQuery = useQuery(publicConfig.queries.get());
   const configs = configQuery.data ?? {};
   const emailEnabled = configs.email_auth_enabled !== "false";
   const enabledOAuthProviders = getEnabledOAuthProviders(configs);
