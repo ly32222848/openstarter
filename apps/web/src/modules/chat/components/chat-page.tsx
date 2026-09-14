@@ -232,7 +232,7 @@ function ChatSurface({
 
   return (
     <section className="flex flex-1 flex-col gap-3 rounded-lg border p-4" key={chatId}>
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex min-h-0 flex-1 flex-col">
         {/* 长会话不再静默截断：仍有更早消息时提供显式入口（inf-loading-guards：
             fetchNextPage 前判 hasNextPage 与 isFetchingNextPage）。 */}
         {historyQuery.hasNextPage ? (

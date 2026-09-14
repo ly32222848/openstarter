@@ -6,17 +6,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@openstarter/ui-web/components/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@openstarter/ui-web/components/table";
+import { legacyCreateColumnHelper } from "@tanstack/react-table/legacy";
 import { useQuery } from "@tanstack/react-query";
-import { user } from "@/modules/user/lib/api";
+import { useMemo } from "react";
+
+import { DataTable, type DataColumn } from "@/components/admin/data-table";
+import { user, type CreditHistoryRow } from "@/modules/user/lib/api";
 import { m } from "@/paraglide/messages.js";
+
+const columnHelper = legacyCreateColumnHelper<CreditHistoryRow>();
 
 function formatDate(value: string | null | undefined): string {
   if (!value) {
@@ -30,6 +28,42 @@ export function CreditsPage() {
 
   const balance = creditsQuery.data?.balance ?? 0;
   const history = creditsQuery.data?.history ?? [];
+
+  const columns = useMemo<DataColumn<CreditHistoryRow>[]>(
+    () => [
+      columnHelper.accessor("transactionType", {
+        header: () => m["settings.credits.type"](),
+        cell: (info) => (
+          <Badge variant={info.getValue() === "grant" ? "secondary" : "outline"}>
+            {info.getValue()}
+          </Badge>
+        ),
+      }),
+      columnHelper.accessor("credits", {
+        header: () => m["settings.credits.credits"](),
+        cell: (info) => <span className="tabular-nums">{info.getValue()}</span>,
+      }),
+      columnHelper.accessor("remainingCredits", {
+        header: () => m["settings.credits.remaining"](),
+        cell: (info) => (
+          <span className="text-muted-foreground tabular-nums">{info.getValue()}</span>
+        ),
+      }),
+      columnHelper.accessor("expiresAt", {
+        header: () => m["settings.credits.expires_at"](),
+        cell: (info) => (
+          <span className="text-muted-foreground">{formatDate(info.getValue())}</span>
+        ),
+      }),
+      columnHelper.accessor("createdAt", {
+        header: () => m["settings.credits.date"](),
+        cell: (info) => (
+          <span className="text-muted-foreground">{formatDate(info.getValue())}</span>
+        ),
+      }),
+    ],
+    [],
+  );
 
   return (
     <div className="space-y-6">
@@ -51,40 +85,13 @@ export function CreditsPage() {
           ) : null}
 
           {history.length > 0 ? (
-            <div className="rounded-lg border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{m["settings.credits.type"]()}</TableHead>
-                    <TableHead>{m["settings.credits.credits"]()}</TableHead>
-                    <TableHead>{m["settings.credits.remaining"]()}</TableHead>
-                    <TableHead>{m["settings.credits.expires_at"]()}</TableHead>
-                    <TableHead>{m["settings.credits.date"]()}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {history.map((item) => (
-                    <TableRow key={item.id}>
-                      <TableCell>
-                        <Badge variant={item.transactionType === "grant" ? "secondary" : "outline"}>
-                          {item.transactionType}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="tabular-nums">{item.credits}</TableCell>
-                      <TableCell className="text-muted-foreground tabular-nums">
-                        {item.remainingCredits}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {formatDate(item.expiresAt)}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {formatDate(item.createdAt)}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+            <DataTable<CreditHistoryRow>
+              columns={columns}
+              data={history}
+              getRowId={(row) => row.id}
+              tableKey="settings.credits"
+              virtualized
+            />
           ) : null}
 
           {history.length === 0 && !creditsQuery.isPending ? (

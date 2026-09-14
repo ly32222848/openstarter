@@ -453,6 +453,8 @@
   "admin.description": "系统概览",
   "admin.loading": "加载中...",
   "admin.back_to_dashboard": "控制台",
+  "admin.table.columns": "列",
+  "admin.table.no_visible_columns": "没有可见列",
   "admin.nav.overview": "概览",
   "admin.nav.settings": "设置",
   "admin.nav.rbac": "权限管理",

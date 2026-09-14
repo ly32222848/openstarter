@@ -1,22 +1,17 @@
 // apps/web/src/routes/admin/credits.tsx
-// 积分管理（R26.2）：分页列表。
+// 积分管理（R26.2）：分页列表，由通用 DataTable（react-table）渲染。
 
 import { Badge } from "@openstarter/ui-web/components/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@openstarter/ui-web/components/table";
 import { useQuery } from "@tanstack/react-query";
+import { legacyCreateColumnHelper } from "@tanstack/react-table/legacy";
 import { createFileRoute } from "@tanstack/react-router";
+import { useMemo } from "react";
 
 import { AdminHeader, Pagination, StatusText } from "@/components/admin/list";
+import { DataTable, type DataColumn } from "@/components/admin/data-table";
 import { countTotalPages, listSearchParams, LIST_PAGE_SIZE } from "@/lib/list-search";
 import { preloadQueries } from "@/lib/preload";
-import { admin } from "@/modules/admin/lib/api";
+import { admin, type AdminCreditRow } from "@/modules/admin/lib/api";
 import { m } from "@/paraglide/messages.js";
 
 export const Route = createFileRoute("/admin/credits")({
@@ -25,6 +20,8 @@ export const Route = createFileRoute("/admin/credits")({
   loader: preloadQueries((deps) => [admin.queries.credits(Number(deps.page) || 1)]),
   component: AdminCreditsPage,
 });
+
+const columnHelper = legacyCreateColumnHelper<AdminCreditRow>();
 
 function formatDate(value: string | null | undefined): string {
   return value ? new Date(value).toLocaleDateString() : m["common.never"]();
@@ -39,6 +36,47 @@ function AdminCreditsPage() {
   const items = query.data?.items ?? [];
   const total = query.data?.total ?? 0;
   const totalPages = countTotalPages(total, LIST_PAGE_SIZE);
+
+  const columns = useMemo<DataColumn<AdminCreditRow>[]>(
+    () => [
+      columnHelper.accessor((row) => row.userEmail ?? row.userId, {
+        id: "user",
+        header: () => m["admin.credits.user"](),
+        cell: (info) => <span className="text-muted-foreground">{info.getValue()}</span>,
+      }),
+      columnHelper.accessor("transactionType", {
+        header: () => m["admin.credits.type"](),
+        cell: (info) => (
+          <Badge variant={info.getValue() === "grant" ? "secondary" : "outline"}>
+            {info.getValue()}
+          </Badge>
+        ),
+      }),
+      columnHelper.accessor("credits", {
+        header: () => m["admin.credits.amount"](),
+        cell: (info) => <span className="tabular-nums">{info.getValue()}</span>,
+      }),
+      columnHelper.accessor("remainingCredits", {
+        header: () => m["admin.credits.remaining"](),
+        cell: (info) => (
+          <span className="text-muted-foreground tabular-nums">{info.getValue()}</span>
+        ),
+      }),
+      columnHelper.accessor("expiresAt", {
+        header: () => m["admin.credits.expires_at"](),
+        cell: (info) => (
+          <span className="text-muted-foreground">{formatDate(info.getValue())}</span>
+        ),
+      }),
+      columnHelper.accessor("createdAt", {
+        header: () => m["admin.credits.created_at"](),
+        cell: (info) => (
+          <span className="text-muted-foreground">{formatDate(info.getValue())}</span>
+        ),
+      }),
+    ],
+    [],
+  );
 
   const handlePageChange = (next: number) => {
     void navigate({ search: (prev) => ({ ...prev, page: next }), replace: true });
@@ -59,44 +97,12 @@ function AdminCreditsPage() {
       />
 
       {items.length > 0 ? (
-        <div className="rounded-lg border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{m["admin.credits.user"]()}</TableHead>
-                <TableHead>{m["admin.credits.type"]()}</TableHead>
-                <TableHead>{m["admin.credits.amount"]()}</TableHead>
-                <TableHead>{m["admin.credits.remaining"]()}</TableHead>
-                <TableHead>{m["admin.credits.expires_at"]()}</TableHead>
-                <TableHead>{m["admin.credits.created_at"]()}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {items.map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell className="text-muted-foreground">
-                    {item.userEmail ?? item.userId}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={item.transactionType === "grant" ? "secondary" : "outline"}>
-                      {item.transactionType}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="tabular-nums">{item.credits}</TableCell>
-                  <TableCell className="text-muted-foreground tabular-nums">
-                    {item.remainingCredits}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {formatDate(item.expiresAt)}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {formatDate(item.createdAt)}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+        <DataTable<AdminCreditRow>
+          columns={columns}
+          data={items}
+          getRowId={(row) => row.id}
+          tableKey="admin.credits"
+        />
       ) : null}
 
       <Pagination onPageChange={handlePageChange} page={page} totalPages={totalPages} />

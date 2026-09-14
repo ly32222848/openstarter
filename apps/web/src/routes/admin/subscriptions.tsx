@@ -1,22 +1,17 @@
 // apps/web/src/routes/admin/subscriptions.tsx
-// 订阅管理（R26.2）：分页列表。
+// 订阅管理（R26.2）：分页列表，由通用 DataTable（react-table）渲染。
 
 import { Badge } from "@openstarter/ui-web/components/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@openstarter/ui-web/components/table";
 import { useQuery } from "@tanstack/react-query";
+import { legacyCreateColumnHelper } from "@tanstack/react-table/legacy";
 import { createFileRoute } from "@tanstack/react-router";
+import { useMemo } from "react";
 
 import { AdminHeader, Pagination, StatusText } from "@/components/admin/list";
+import { DataTable, type DataColumn } from "@/components/admin/data-table";
 import { countTotalPages, listSearchParams, LIST_PAGE_SIZE } from "@/lib/list-search";
 import { preloadQueries } from "@/lib/preload";
-import { admin } from "@/modules/admin/lib/api";
+import { admin, type AdminSubscriptionRow } from "@/modules/admin/lib/api";
 import { m } from "@/paraglide/messages.js";
 
 export const Route = createFileRoute("/admin/subscriptions")({
@@ -25,6 +20,8 @@ export const Route = createFileRoute("/admin/subscriptions")({
   loader: preloadQueries((deps) => [admin.queries.subscriptions(Number(deps.page) || 1)]),
   component: AdminSubscriptionsPage,
 });
+
+const columnHelper = legacyCreateColumnHelper<AdminSubscriptionRow>();
 
 function formatDate(value: string | null | undefined): string {
   return value ? new Date(value).toLocaleDateString() : "—";
@@ -39,6 +36,40 @@ function AdminSubscriptionsPage() {
   const items = query.data?.items ?? [];
   const total = query.data?.total ?? 0;
   const totalPages = countTotalPages(total, LIST_PAGE_SIZE);
+
+  const columns = useMemo<DataColumn<AdminSubscriptionRow>[]>(
+    () => [
+      columnHelper.accessor((row) => row.userEmail ?? row.userId, {
+        id: "user",
+        header: () => m["admin.subscriptions.user"](),
+        cell: (info) => <span className="text-muted-foreground">{info.getValue()}</span>,
+      }),
+      columnHelper.accessor((row) => row.planName ?? row.productName ?? "—", {
+        id: "plan",
+        header: () => m["admin.subscriptions.plan_col"](),
+        cell: (info) => <span className="font-medium">{info.getValue()}</span>,
+      }),
+      columnHelper.accessor("paymentProvider", {
+        header: () => m["admin.subscriptions.provider"](),
+        cell: (info) => <span className="text-muted-foreground">{info.getValue()}</span>,
+      }),
+      columnHelper.accessor("status", {
+        header: () => m["admin.subscriptions.status"](),
+        cell: (info) => (
+          <Badge variant={info.getValue() === "active" ? "secondary" : "outline"}>
+            {info.getValue()}
+          </Badge>
+        ),
+      }),
+      columnHelper.accessor("currentPeriodEnd", {
+        header: () => m["admin.subscriptions.period_end_col"](),
+        cell: (info) => (
+          <span className="text-muted-foreground">{formatDate(info.getValue())}</span>
+        ),
+      }),
+    ],
+    [],
+  );
 
   const handlePageChange = (next: number) => {
     void navigate({ search: (prev) => ({ ...prev, page: next }), replace: true });
@@ -59,40 +90,12 @@ function AdminSubscriptionsPage() {
       />
 
       {items.length > 0 ? (
-        <div className="rounded-lg border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{m["admin.subscriptions.user"]()}</TableHead>
-                <TableHead>{m["admin.subscriptions.plan_col"]()}</TableHead>
-                <TableHead>{m["admin.subscriptions.provider"]()}</TableHead>
-                <TableHead>{m["admin.subscriptions.status"]()}</TableHead>
-                <TableHead>{m["admin.subscriptions.period_end_col"]()}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {items.map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell className="text-muted-foreground">
-                    {item.userEmail ?? item.userId}
-                  </TableCell>
-                  <TableCell className="font-medium">
-                    {item.planName ?? item.productName ?? "—"}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">{item.paymentProvider}</TableCell>
-                  <TableCell>
-                    <Badge variant={item.status === "active" ? "secondary" : "outline"}>
-                      {item.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {formatDate(item.currentPeriodEnd)}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+        <DataTable<AdminSubscriptionRow>
+          columns={columns}
+          data={items}
+          getRowId={(row) => row.id}
+          tableKey="admin.subscriptions"
+        />
       ) : null}
 
       <Pagination onPageChange={handlePageChange} page={page} totalPages={totalPages} />

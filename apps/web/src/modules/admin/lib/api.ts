@@ -39,6 +39,28 @@ type AiModelListData = NonNullable<InferResponseType<typeof getAiModels, 200>["d
 /** admin 模型列表行，直接从 RPC 响应推导。 */
 export type AiModelRow = AiModelListData["items"][number];
 
+// 各分页管理列表的行类型，直接从对应 RPC 响应推导，供页面列定义使用。
+type OrderListData = NonNullable<
+  InferResponseType<typeof client.api.admin.orders.$get, 200>["data"]
+>;
+export type AdminOrderRow = OrderListData["items"][number];
+
+type SubscriptionListData = NonNullable<
+  InferResponseType<typeof client.api.admin.subscriptions.$get, 200>["data"]
+>;
+export type AdminSubscriptionRow = SubscriptionListData["items"][number];
+
+type CreditListData = NonNullable<
+  InferResponseType<typeof client.api.admin.credits.$get, 200>["data"]
+>;
+export type AdminCreditRow = CreditListData["items"][number];
+
+type UserListData = NonNullable<
+  InferResponseType<typeof client.api.admin.users.$get, 200>["data"]
+>;
+export type AdminUserRow = UserListData["items"][number];
+
+
 /** admin 模型创建请求体，直接从后端 zod schema 推导。 */
 export type AiModelPayload = InferRequestType<typeof createAiModel>["json"];
 

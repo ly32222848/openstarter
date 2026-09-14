@@ -453,6 +453,8 @@
   "admin.description": "System overview",
   "admin.loading": "Loading...",
   "admin.back_to_dashboard": "Dashboard",
+  "admin.table.columns": "Columns",
+  "admin.table.no_visible_columns": "No visible columns",
   "admin.nav.overview": "Overview",
   "admin.nav.settings": "Settings",
   "admin.nav.rbac": "RBAC",

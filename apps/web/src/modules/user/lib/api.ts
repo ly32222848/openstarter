@@ -15,6 +15,11 @@ type ApiKeyRow = NonNullable<
   InferResponseType<typeof client.api.apikeys.$post, 200>["data"]
 >;
 
+/** 用户积分流水行（积分历史列表），从 user.credits 响应推导。 */
+export type CreditHistoryRow = NonNullable<
+  InferResponseType<typeof client.api.user.credits.$get, 200>["data"]
+>["history"][number];
+
 const PAGE_SIZE = LIST_PAGE_SIZE;
 
 /** user 域 query key 工厂（分层前缀，失效可粗可细；tickets 等相邻模块共用）。 */
