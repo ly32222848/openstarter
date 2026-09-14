@@ -752,6 +752,75 @@ export const userInvite = table(
   ],
 );
 
+// ─── Referral（分销：推荐码 / 关系 / 佣金） ────────────────────────────────────
+
+export const referral = table(
+  "referral",
+  {
+    code: text("code").notNull().unique(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    customRate: integer("custom_rate"),
+    id: text("id").primaryKey(),
+    note: text("note").default(""),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+    userId: text("user_id")
+      .notNull()
+      .unique()
+      .references(() => user.id),
+  },
+  (t) => [index("idx_referral_code").on(t.code)],
+);
+
+export const referralRelation = table(
+  "referral_relation",
+  {
+    code: text("code").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    id: text("id").primaryKey(),
+    referrerId: text("referrer_id")
+      .notNull()
+      .references(() => user.id),
+    referredUserId: text("referred_user_id")
+      .notNull()
+      .unique()
+      .references(() => user.id),
+  },
+  (t) => [
+    index("idx_referral_relation_referrer").on(t.referrerId),
+    index("idx_referral_relation_code").on(t.code),
+  ],
+);
+
+export const commission = table(
+  "commission",
+  {
+    baseAmount: integer("base_amount").notNull(),
+    baseCurrency: text("base_currency"),
+    cashAmount: integer("cash_amount"),
+    commissionCredits: integer("commission_credits").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    id: text("id").primaryKey(),
+    note: text("note"),
+    orderNo: text("order_no").notNull().unique(),
+    rate: integer("rate").notNull(),
+    referredUserId: text("referred_user_id")
+      .notNull()
+      .references(() => user.id),
+    referrerId: text("referrer_id")
+      .notNull()
+      .references(() => user.id),
+    settledAt: timestamp("settled_at"),
+    settledBy: text("settled_by"),
+    status: text("status").notNull(),
+    transactionNo: text("transaction_no"),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (t) => [
+    index("idx_commission_referrer_status").on(t.referrerId, t.status),
+    index("idx_commission_status").on(t.status),
+  ],
+);
+
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 export type User = typeof user.$inferSelect;
@@ -797,3 +866,9 @@ export type UserInvite = typeof userInvite.$inferSelect;
 export type NewUserInvite = typeof userInvite.$inferInsert;
 export type DeviceCode = typeof deviceCode.$inferSelect;
 export type NewDeviceCode = typeof deviceCode.$inferInsert;
+export type Referral = typeof referral.$inferSelect;
+export type NewReferral = typeof referral.$inferInsert;
+export type ReferralRelation = typeof referralRelation.$inferSelect;
+export type NewReferralRelation = typeof referralRelation.$inferInsert;
+export type Commission = typeof commission.$inferSelect;
+export type NewCommission = typeof commission.$inferInsert;
