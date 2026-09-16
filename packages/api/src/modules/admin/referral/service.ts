@@ -3,8 +3,7 @@
 import { and, count, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 
-import { CommissionStatus } from "@openstarter/billing-web";
-import { getReferralConfig, referralConfigSchema } from "@openstarter/billing-web";
+import { CommissionStatus, getReferralConfig, REFERRAL_CONFIG_KEY, referralConfigSchema } from "@openstarter/billing-web";
 import { grant } from "@openstarter/billing-web";
 import { getUuid } from "@openstarter/shared/id";
 import { logger } from "@openstarter/shared/logger";
@@ -210,8 +209,6 @@ export async function listRelations(params: ListRelationsParams): Promise<ListRe
 }
 
 // ─── 配置读写 ──────────────────────────────────────────────────────────────────
-
-const REFERRAL_CONFIG_KEY = "referral";
 
 export async function getReferralConfigForAdmin(): Promise<ReferralConfigResult> {
   const cfg = await getReferralConfig();
