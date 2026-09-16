@@ -12,6 +12,7 @@
 import type { Database } from "@openstarter/db/server";
 import { db } from "@openstarter/db/server";
 import { getUuid } from "@openstarter/shared/id";
+import { logger } from "@openstarter/shared/logger";
 import { eq } from "drizzle-orm";
 
 import {
@@ -33,8 +34,8 @@ import {
 /** 已支付订单的最小字段（来自 webhook 编排的 {@link NewOrder} 子集，避免硬依赖 payment 模块）。 */
 export interface PaidOrder {
   orderNo: string;
-  paymentAmount?: number | null;
-  paymentCurrency?: string | null;
+  paymentAmount: number | null;
+  paymentCurrency: string | null;
   userId: string;
 }
 
@@ -162,21 +163,25 @@ export async function recordCommission(
     const credits = calcCommissionCredits(amount, rate);
     const id = getUuid();
 
-    await tx.insert(commission).values({
-      baseAmount: amount,
-      baseCurrency: paidOrder.paymentCurrency ?? null,
-      commissionCredits: credits,
-      id,
-      orderNo: paidOrder.orderNo,
-      rate,
-      referredUserId: paidOrder.userId,
-      referrerId: chain.referrerId,
-      status: CommissionStatus.PENDING,
-    });
+    await tx
+      .insert(commission)
+      .values({
+        baseAmount: amount,
+        baseCurrency: paidOrder.paymentCurrency ?? null,
+        commissionCredits: credits,
+        id,
+        orderNo: paidOrder.orderNo,
+        rate,
+        referredUserId: paidOrder.userId,
+        referrerId: chain.referrerId,
+        status: CommissionStatus.PENDING,
+      })
+      .onConflictDoNothing({ target: commission.orderNo });
 
     return { commissionId: id };
-  } catch {
-    // 旁路：分销记账失败不影响主支付流程。
+  } catch (err) {
+    // 旁路：分销记账失败不影响主支付流程；记录日志供人工补记。
+    logger.warn("[referral] 记账旁路失败（订单号 %s）：", paidOrder.orderNo, err);
     return { reason: "error", skipped: true };
   }
 }
