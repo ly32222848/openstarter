@@ -3,6 +3,7 @@ import { Hono } from "hono";
 // 注意：必须引入 adminAiModelsRouter（admin CRUD 子路由），而非同文件的 aiModelsRouter（前台门面）。
 // Task 10 发现此前的别名导入挂错对象，导致 /api/admin/ai-models 实际暴露的是门面分组目录（仅 GET）。
 import { adminAiModelsRouter } from "../ai-catalog/router";
+import { referralAdminRouter } from "./referral/router";
 import { analyticsRouter } from "./analytics/router";
 import { adminTicketsRouter } from "./tickets/router";
 import { overviewRouter } from "./overview/router";
@@ -16,4 +17,5 @@ export const adminRouter = new Hono()
   .route("/", overviewRouter)
   .route("/analytics", analyticsRouter)
   .route("/tickets", adminTicketsRouter)
-  .route("/ai-models", adminAiModelsRouter);
+  .route("/ai-models", adminAiModelsRouter)
+  .route("/referral", referralAdminRouter);
