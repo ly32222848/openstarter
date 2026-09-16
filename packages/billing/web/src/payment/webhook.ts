@@ -22,6 +22,7 @@ import { db } from "@openstarter/db/server";
 import { getUniSeq, getUuid } from "@openstarter/shared/id";
 import { and, eq, inArray, isNull, or, type SQL } from "drizzle-orm";
 import { calculateCreditExpirationTime, CreditTransactionScene, grant } from "../credits";
+import { recordCommission } from "../referral/service";
 import {
   cancelSubscription,
   createSubscription,
@@ -250,6 +251,14 @@ export async function handleCheckoutSuccess(
           : null,
       })
       .where(eq(order.id, existingOrder.id));
+
+    // 分销记账（旁路）：支付事务末尾记 pending 佣金；失败不影响支付。
+    await recordCommission(tx, {
+      orderNo: existingOrder.orderNo,
+      paymentAmount: paymentInfo?.paymentAmount ?? null,
+      paymentCurrency: paymentInfo?.paymentCurrency ?? null,
+      userId: existingOrder.userId,
+    });
   });
 }
 
@@ -358,6 +367,14 @@ export async function handleSubscriptionRenewal(
     paymentUserId: paymentInfo?.paymentUserId ?? null,
   };
   await db().insert(order).values(renewalOrder);
+
+  // 分销记账（旁路）：续费订单同样记佣金。
+  await recordCommission(db(), {
+    orderNo: renewalOrder.orderNo,
+    paymentAmount: session.paymentInfo?.paymentAmount ?? null,
+    paymentCurrency: session.paymentInfo?.paymentCurrency ?? null,
+    userId: existingSub.userId,
+  });
 
   await renewSubscription({
     subscriptionNo: existingSub.subscriptionNo,
