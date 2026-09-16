@@ -17,6 +17,7 @@ import { HTTPException } from "hono/http-exception";
 
 import { registerAiSaveFiles } from "./modules/ai-tasks";
 import { adminRouter } from "./modules/admin/router";
+import { referralRouter } from "./modules/referral";
 import { aiModelsRouter } from "./modules/ai-catalog/router";
 import { aiRouter } from "./modules/ai/router";
 import { llmRouter } from "./modules/llm";
@@ -76,6 +77,7 @@ const routes = api
   .route("/", aiModelsRouter) // GET /api/ai/models
   .route("/", supportRouter) // /api/tickets*, /api/apikeys
   .route("/", contentRouter) // /api/posts*, /api/blog*, /api/taxonomy*, /api/seo*
+  .route("/", referralRouter) // GET/POST /api/referral/*
   .route("/mcp", mcpRouter) // ALL /api/mcp — MCP streamable HTTP 端点（API Key 鉴权）
   .route("/admin", adminRouter); // /api/admin/*
 
