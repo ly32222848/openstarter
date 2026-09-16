@@ -1,7 +1,8 @@
 // In-memory SQLite test harness for packages/billing property tests.
 //
 // Returns a createDb()-backed handle with the subset of Phase 0-5 tables used
-// by billing service tests (subscription, order, credit, user).
+// by billing service tests (subscription, order, credit, user) plus the
+// referral-domain tables (referral, referral_relation, commission, config).
 
 import { rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -107,9 +108,56 @@ const CREATE_TABLE_STATEMENTS: readonly string[] = [
     consumed_detail TEXT,
     metadata TEXT
   )`,
+  `CREATE TABLE referral (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL UNIQUE,
+    code TEXT NOT NULL UNIQUE,
+    custom_rate INTEGER,
+    note TEXT DEFAULT '',
+    created_at INTEGER NOT NULL DEFAULT ${NOW_EXPR},
+    updated_at INTEGER NOT NULL DEFAULT ${NOW_EXPR}
+  )`,
+  `CREATE TABLE referral_relation (
+    id TEXT PRIMARY KEY,
+    referrer_id TEXT NOT NULL,
+    referred_user_id TEXT NOT NULL UNIQUE,
+    code TEXT NOT NULL,
+    created_at INTEGER NOT NULL DEFAULT ${NOW_EXPR}
+  )`,
+  `CREATE TABLE commission (
+    id TEXT PRIMARY KEY,
+    order_no TEXT NOT NULL UNIQUE,
+    referrer_id TEXT NOT NULL,
+    referred_user_id TEXT NOT NULL,
+    base_amount INTEGER NOT NULL,
+    base_currency TEXT,
+    rate INTEGER NOT NULL,
+    commission_credits INTEGER NOT NULL,
+    cash_amount INTEGER,
+    status TEXT NOT NULL,
+    settled_at INTEGER,
+    settled_by TEXT,
+    transaction_no TEXT,
+    note TEXT,
+    created_at INTEGER NOT NULL DEFAULT ${NOW_EXPR},
+    updated_at INTEGER NOT NULL DEFAULT ${NOW_EXPR}
+  )`,
+  `CREATE TABLE config (
+    name TEXT NOT NULL UNIQUE,
+    value TEXT
+  )`,
 ];
 
-const DATA_TABLES = ['"order"', "credit", "subscription", "user"] as const;
+const DATA_TABLES = [
+  '"order"',
+  "commission",
+  "config",
+  "credit",
+  "referral",
+  "referral_relation",
+  "subscription",
+  "user",
+] as const;
 
 const databasePaths = new WeakMap<object, string>();
 
