@@ -13,9 +13,9 @@ catalog:
   '@ai-sdk/anthropic': 3.0.108
   '@ai-sdk/google': 3.0.105
   '@ai-sdk/openai': 3.0.92
-  '@better-auth/drizzle-adapter': 1.6.11
-  '@better-auth/expo': 1.6.11
-  '@better-auth/passkey': 1.6.11
+  '@better-auth/drizzle-adapter': 1.6.33
+  '@better-auth/expo': 1.6.33
+  '@better-auth/passkey': 1.6.33
   '@inlang/paraglide-js': 2.18.2
   '@mdx-js/react': 3.1.1
   '@mdx-js/rollup': 3.1.1
@@ -28,10 +28,10 @@ catalog:
   '@types/react-dom': ^19.2.3
   ai: 6.0.247
   aws4fetch: 1.0.20
-  better-auth: 1.6.11
+  better-auth: 1.6.33
   dotenv: ^17.2.2
   envin: ^1.2.0
-  hono: 4.12.27
+  hono: 4.13.8
   i18next: 26.4.0
   lucide-react: 0.546.0
   mysql2: ^3.14.0
