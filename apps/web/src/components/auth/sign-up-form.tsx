@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import z from "zod";
 
 import { authClient } from "@/lib/auth-client";
+import { bindReferralAfterSignup } from "@/lib/referral-attribution";
 import { publicConfig } from "@/modules/public-config/lib/api";
 
 import Loader from "../loader";
@@ -67,6 +68,7 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
             }
             navigate({ to: "/dashboard" });
             toast.success("Sign up successful");
+            void bindReferralAfterSignup();
           },
         },
       );
