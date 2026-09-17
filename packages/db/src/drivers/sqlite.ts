@@ -1,39 +1,15 @@
 import { dirname, resolve } from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { fileURLToPath } from "node:url";
 import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
 
+import { resolveFileUrl } from "../config/resolve-file-url";
 import { isCloudflareWorker } from "../utils/runtime";
 import * as schema from "../schema";
 import type { Database, DbConfig } from "../types";
 
 // libsql/SQLite singleton (Node only).
 let sqliteDbInstance: Database | null = null;
-
-/**
- * Resolve relative `file:` URLs against the monorepo root.
- * This ensures that DATABASE_URL=file:local.db resolves to the repo root
- * regardless of the current working directory.
- */
-function resolveFileUrl(url: string): string {
-  // Only process file: URLs that are relative (not file:// absolute URLs)
-  if (!url.startsWith("file:") || url.startsWith("file://")) {
-    return url;
-  }
-
-  const pathPart = url.slice(5); // Remove "file:" prefix
-  if (pathPart.startsWith("/")) {
-    // Absolute path, return as-is
-    return url;
-  }
-
-  // Relative path — resolve against monorepo root
-  // From packages/db/src/drivers/sqlite.ts, repo root is ../../..
-  const moduleDir = dirname(fileURLToPath(import.meta.url));
-  const repoRoot = resolve(moduleDir, "../../../..");
-  const absolutePath = resolve(repoRoot, pathPart);
-  return pathToFileURL(absolutePath).href;
-}
 
 /**
  * Create a libsql-backed Drizzle database (SQLite local file or Turso remote).
@@ -47,8 +23,9 @@ export function createSqliteDb(config: DbConfig): Database {
     throw new Error("DATABASE_URL is not set");
   }
 
-  // Resolve relative file: URLs to absolute paths
-  url = resolveFileUrl(url);
+  // Resolve relative file: URLs against the monorepo root so the runtime and
+  // drizzle-kit always land on the same database file.
+  url = resolveFileUrl(url, resolve(dirname(fileURLToPath(import.meta.url)), "../../../.."));
 
   const clientConfig = authToken ? { url, authToken } : { url };
 
