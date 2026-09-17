@@ -1,0 +1,99 @@
+/**
+ * Shared helpers for the drizzle-kit config files (`drizzle.config.ts` for
+ * local development, `drizzle.config.prod.ts` for the cloud production
+ * database).
+ *
+ * Both configs resolve `file:` DATABASE_URLs against the monorepo root — the
+ * same rule the runtime sqlite driver applies — so drizzle-kit commands and
+ * the running app always land on the same database file.
+ */
+
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { defineConfig, type Config } from "drizzle-kit";
+
+import { resolveFileUrl } from "./resolve-file-url";
+
+/**
+ * drizzle-kit dialects supported by this workspace, resolved from
+ * `DATABASE_PROVIDER`.
+ */
+export type DrizzleDialect = "sqlite" | "postgresql" | "mysql" | "turso";
+
+/**
+ * Map `DATABASE_PROVIDER` to the matching drizzle-kit dialect.
+ *
+ * Kept in lockstep with the runtime driver dispatch (`create-db.ts`) and the
+ * active schema barrel (`scripts/setup-schema.mjs`) so `db:generate` /
+ * `db:migrate` always target the same dialect the app runs on:
+ *
+ *   postgres            -> postgresql
+ *   mysql               -> mysql
+ *   turso               -> turso (libsql)
+ *   sqlite | d1 | unset -> sqlite
+ *
+ * Any other value throws immediately, mirroring the connection factory's
+ * config-error contract (R1.4).
+ */
+export function resolveDialect(provider: string | undefined): DrizzleDialect {
+  switch (provider) {
+    case "postgres":
+      return "postgresql";
+    case "mysql":
+      return "mysql";
+    case "turso":
+      return "turso";
+    case undefined:
+    case "":
+    case "sqlite":
+    case "d1":
+      return "sqlite";
+    default:
+      throw new Error(
+        `Unsupported DATABASE_PROVIDER: ${provider}. Expected one of: sqlite, turso, postgres, mysql (or d1).`,
+      );
+  }
+}
+
+/** Absolute path of the monorepo root, computed from this module's location. */
+export const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
+
+/**
+ * Normalize a raw `DATABASE_URL` for drizzle-kit: relative `file:` URLs are
+ * resolved against the monorepo root, everything else passes through.
+ */
+export function resolveDbUrl(url: string): string {
+  return resolveFileUrl(url, repoRoot);
+}
+
+/** The repo-root-relative migrations output directory for a dialect. */
+export function migrationsOut(dialect: DrizzleDialect): string {
+  return `./src/migrations/${dialect}`;
+}
+
+/**
+ * Build the drizzle-kit config for the given dialect from a resolved URL (and
+ * optional Turso auth token). Each branch passes a literal `dialect`,
+ * satisfying drizzle-kit's discriminated `Config` union (and its per-dialect
+ * `dbCredentials` shape) without casts.
+ */
+export function buildConfigFor(dialect: DrizzleDialect, url: string, authToken?: string): Config {
+  const schema = "./src/schema/index.ts";
+  const out = migrationsOut(dialect);
+
+  switch (dialect) {
+    case "postgresql":
+      return defineConfig({ schema, out, dialect: "postgresql", dbCredentials: { url } });
+    case "mysql":
+      return defineConfig({ schema, out, dialect: "mysql", dbCredentials: { url } });
+    case "turso":
+      return defineConfig({
+        schema,
+        out,
+        dialect: "turso",
+        dbCredentials: { url, authToken },
+      });
+    default:
+      return defineConfig({ schema, out, dialect: "sqlite", dbCredentials: { url } });
+  }
+}
