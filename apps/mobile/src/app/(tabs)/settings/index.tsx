@@ -87,6 +87,11 @@ export default function SettingsScreen() {
       href: "/settings/orders",
       title: t("mobile.settings.orders_entry"),
     },
+    {
+      description: t("settings.referral.entry_description"),
+      href: "/(tabs)/profile/referral",
+      title: t("settings.referral.title"),
+    },
   ];
 
   return (

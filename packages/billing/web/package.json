@@ -21,7 +21,8 @@
     "@openstarter/db": "workspace:*",
     "@openstarter/shared": "workspace:*",
     "drizzle-orm": "^0.45.1",
-    "stripe": "catalog:"
+    "stripe": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "typescript": "catalog:"

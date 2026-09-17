@@ -13,6 +13,7 @@ import { initAnalyticsFromEnv } from "@/lib/analytics";
 import { BillingProvider } from "@/lib/use-billing";
 import { useAppLocale } from "@/lib/i18n";
 import { useThemePreference } from "@/lib/theme";
+import { captureReferralAttribution } from "@/lib/referral-attribution";
 
 export default function RootLayout() {
   // QueryClient 必须在渲染之间保持同一实例，否则每次重渲染都会丢掉全部缓存。
@@ -27,6 +28,24 @@ export default function RootLayout() {
   // 解析层永不抛错，未配置等价于 noop（fire-and-forget）。
   useEffect(() => {
     void initAnalyticsFromEnv();
+  }, []);
+
+  // Deep link ?ref= 归因捕获：仅在首次挂载时读取初始 URL 的 ref 参数。
+  useEffect(() => {
+    (async () => {
+      try {
+        const { Linking } = await import("react-native");
+        const initialUrl = await Linking.getInitialURL();
+        if (!initialUrl) return;
+        const url = new URL(initialUrl);
+        const ref = url.searchParams.get("ref");
+        if (typeof ref === "string" && ref.length > 0) {
+          captureReferralAttribution(ref);
+        }
+      } catch {
+        // URL 解析失败或 Linking 不可用：静默
+      }
+    })();
   }, []);
 
   if (!env.ok) {

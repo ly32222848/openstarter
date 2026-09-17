@@ -965,6 +965,9 @@ importers:
       stripe:
         specifier: 'catalog:'
         version: 18.5.0(@types/node@26.0.1)
+      zod:
+        specifier: 'catalog:'
+        version: 4.4.3
     devDependencies:
       typescript:
         specifier: 'catalog:'

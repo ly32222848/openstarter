@@ -1,4 +1,5 @@
 import { useForm } from "@tanstack/react-form";
+import { useRouter } from "expo-router";
 import { useState } from "react";
 import { View } from "react-native";
 import { useTranslation } from "@openstarter/i18n-mobile";
@@ -9,6 +10,21 @@ import { Screen } from "@/components/ui/screen";
 import { authClient } from "@/lib/auth-client";
 
 const MIN_NAME_LENGTH = 2;
+
+/** 分销入口行。 */
+function ReferralEntryRow() {
+  const router = useRouter();
+  const { t } = useTranslation();
+
+  return (
+    <Button
+      onPress={() => router.push("/(tabs)/profile/referral")}
+      variant="outline"
+    >
+      <Text>{t("settings.referral.title")}</Text>
+    </Button>
+  );
+}
 
 export default function ProfileScreen() {
   const { t } = useTranslation();
@@ -94,6 +110,8 @@ export default function ProfileScreen() {
             ) : null}
           </CardContent>
         </Card>
+
+        <ReferralEntryRow />
       </View>
     </Screen>
   );
