@@ -33,6 +33,7 @@
     "build:desktop": "pnpm with-env turbo run -F desktop build",
     "package:desktop": "pnpm with-env turbo run -F desktop package",
     "release:desktop": "pnpm with-env turbo run -F desktop release",
+    "env:init": "node scripts/setup-env.mjs",
     "db:push": "pnpm with-env turbo run -F @openstarter/db db:push",
     "db:studio": "pnpm with-env turbo run -F @openstarter/db db:studio",
     "db:generate": "pnpm with-env turbo run -F @openstarter/db db:generate",
