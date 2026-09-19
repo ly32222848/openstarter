@@ -50,7 +50,7 @@ export function ReferralPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-5xl space-y-6 p-6">
+    <div className="flex w-full flex-col gap-6">
       <h1 className="text-2xl font-bold">{m["referral_title"]()}</h1>
 
       {/* 统计卡片 */}
