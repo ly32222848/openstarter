@@ -5,14 +5,16 @@ import { Menu, X } from "lucide-react";
 import { useCallback, useState } from "react";
 
 import { Drawer } from "@/components/drawer";
+import { LocaleToggle } from "@/components/locale/locale-toggle";
 import { ThemeToggleIcon } from "@/components/theme/theme-toggle-icon";
 import { authClient } from "@/lib/auth-client";
 import { BRAND_NAME } from "@/lib/branding";
+import { m } from "@/paraglide/messages.js";
 
 const NAV_LINKS = [
-  { hash: "features", label: "Features", to: "/" },
-  { hash: undefined, label: "Pricing", to: "/pricing" },
-  { hash: "faq", label: "FAQ", to: "/" },
+  { hash: "features", key: "landing.nav.features", to: "/" },
+  { hash: undefined, key: "landing.nav.pricing", to: "/pricing" },
+  { hash: "faq", key: "landing.nav.faq", to: "/" },
 ] as const;
 
 function AuthCta() {
@@ -24,17 +26,17 @@ function AuthCta() {
   if (session) {
     return (
       <Button asChild>
-        <Link to="/dashboard">Go to dashboard</Link>
+        <Link to="/dashboard">{m["landing.header.dashboard"]()}</Link>
       </Button>
     );
   }
   return (
     <div className="flex items-center gap-2">
       <Button asChild variant="ghost">
-        <Link to="/login">Sign in</Link>
+        <Link to="/login">{m["landing.header.sign_in"]()}</Link>
       </Button>
       <Button asChild>
-        <Link to="/login">Sign up</Link>
+        <Link to="/login">{m["landing.header.sign_up"]()}</Link>
       </Button>
     </div>
   );
@@ -56,20 +58,22 @@ export function MarketingHeader() {
             <Link
               className="text-muted-foreground text-sm hover:text-foreground"
               hash={link.hash}
-              key={link.label}
+              key={link.key}
               to={link.to}
             >
-              {link.label}
+              {m[link.key]()}
             </Link>
           ))}
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
+          <LocaleToggle />
           <ThemeToggleIcon />
           <AuthCta />
         </div>
 
         <div className="flex items-center gap-2 md:hidden">
+          <LocaleToggle />
           <ThemeToggleIcon />
           <Button
             aria-expanded={open}
@@ -96,11 +100,11 @@ export function MarketingHeader() {
             <Link
               className="text-sm"
               hash={link.hash}
-              key={link.label}
+              key={link.key}
               onClick={close}
               to={link.to}
             >
-              {link.label}
+              {m[link.key]()}
             </Link>
           ))}
         </nav>

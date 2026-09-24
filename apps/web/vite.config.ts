@@ -88,9 +88,10 @@ export default defineConfig({
       outdir: "./src/paraglide",
       outputStructure: "message-modules",
       cookieName: "PARAGLIDE_LOCALE",
-      // url: locale from the path prefix (/zh/...); cookie: user preference set
-      // via setLocale(); baseLocale: fall back to en when neither is present.
+      // url: locale from the path prefix (/en/...); cookie: user preference set
+      // via setLocale(); baseLocale: fall back to zh when neither is present.
       strategy: ["url", "cookie", "baseLocale"],
+      baseLocale: "zh",
       urlPatterns: [
         // API endpoints are never locale-prefixed.
         {
@@ -100,20 +101,19 @@ export default defineConfig({
             ["zh", "/api/:path(.*)?"],
           ],
         },
-        // Bare locale homes match without a trailing-slash redirect.
+        // zh unprefixed (default), en under /en.
         {
           pattern: "/",
           localized: [
-            ["zh", "/zh"],
-            ["en", "/"],
+            ["zh", "/"],
+            ["en", "/en"],
           ],
         },
-        // "as-needed" prefix: zh under /zh, en (default) unprefixed.
         {
           pattern: "/:path(.*)?",
           localized: [
-            ["zh", "/zh/:path(.*)?"],
-            ["en", "/:path(.*)?"],
+            ["en", "/en/:path(.*)?"],
+            ["zh", "/:path(.*)?"],
           ],
         },
       ],

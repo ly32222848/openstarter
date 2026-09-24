@@ -14,6 +14,7 @@ import { Check } from "lucide-react";
 import { lazy, Suspense, useState } from "react";
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
+import { m } from "@/paraglide/messages.js";
 import { PRICING_TIERS, type PricingCheckout, type PricingTier } from "@/lib/marketing/pricing";
 import { checkout } from "@/modules/checkout/lib/api";
 
@@ -27,13 +28,36 @@ const WechatQrOverlay = lazy(() =>
 
 function formatPrice(price: number | "custom"): string {
   if (price === "custom") {
-    return "Custom";
+    return m["landing.pricing.enterprise.custom"]();
   }
   if (price === 0) {
-    return "Free";
+    return m["landing.pricing.starter.free"]();
   }
-  return `$${price}/mo`;
+  return `$${price}/${m["landing.pricing.monthly.unit"]()}`;
 }
+
+// 每个套餐展示的 feature 消息键（zh/en 语言包已内置对应词条）。
+const PRICING_FEATURE_KEYS: Record<PricingTier["id"], string[]> = {
+  starter: ["feature_1_project", "feature_5k_credits", "feature_email_support"],
+  pro: [
+    "feature_unlimited_projects",
+    "feature_50k_credits",
+    "feature_priority_support",
+    "feature_email_support",
+  ],
+  enterprise: [
+    "feature_unlimited_credits",
+    "feature_api_access",
+    "feature_custom_integrations",
+    "feature_dedicated_support",
+  ],
+};
+
+const PRICING_CTA_KEYS: Record<PricingTier["id"], string> = {
+  starter: "starter_cta",
+  pro: "pro_cta",
+  enterprise: "enterprise_cta",
+};
 
 function TierCard({
   tier,
@@ -53,20 +77,22 @@ function TierCard({
           <Icon aria-hidden="true" className="size-5 text-primary" />
           {tier.highlight ? (
             <span className="rounded-full bg-primary px-2 py-0.5 text-primary-foreground text-xs">
-              Most popular
+              {m["landing.pricing.popular"]()}
             </span>
           ) : null}
         </div>
-        <CardTitle className="mt-2 text-lg">{tier.name}</CardTitle>
-        <CardDescription>{tier.description}</CardDescription>
+        <CardTitle className="mt-2 text-lg">
+          {m[`landing.pricing.${tier.id}`]()}
+        </CardTitle>
+        <CardDescription>{m[`landing.pricing.${tier.id}_desc`]()}</CardDescription>
         <div className="mt-2 font-bold text-2xl">{formatPrice(tier.priceMonthly)}</div>
       </CardHeader>
       <CardContent className="flex-1">
         <ul className="flex flex-col gap-2">
-          {tier.features.map((feature) => (
-            <li className="flex items-center gap-2" key={feature}>
+          {PRICING_FEATURE_KEYS[tier.id].map((key) => (
+            <li className="flex items-center gap-2" key={key}>
               <Check aria-hidden="true" className="size-4 text-primary" />
-              <span>{feature}</span>
+              <span>{m[`landing.pricing.${key}`]()}</span>
             </li>
           ))}
         </ul>
@@ -74,7 +100,7 @@ function TierCard({
       <CardFooter>
         {cta.kind === "link" ? (
           <Button asChild className="w-full" variant={tier.highlight ? "default" : "outline"}>
-            <Link to={cta.to}>{cta.label}</Link>
+            <Link to={cta.to}>{m[`landing.pricing.${PRICING_CTA_KEYS[tier.id]}`]()}</Link>
           </Button>
         ) : (
           <Button
@@ -84,7 +110,7 @@ function TierCard({
             type="button"
             variant={tier.highlight ? "default" : "outline"}
           >
-            {cta.label}
+            {m[`landing.pricing.${PRICING_CTA_KEYS[tier.id]}`]()}
           </Button>
         )}
       </CardFooter>
@@ -106,7 +132,7 @@ export function PricingSection() {
       // 微信 Native 渠道：渲染二维码扫码支付；其余渠道：跳转结账链接（R10.3）。
       if (data.qrData?.codeUrl) {
         if (!data.orderNo) {
-          toast.error("Checkout failed: missing order number");
+          toast.error(m["landing.pricing.error_missing_order"]());
           return;
         }
         setWechatQr({
@@ -120,7 +146,7 @@ export function PricingSection() {
         window.location.href = data.checkoutUrl;
         return;
       }
-      toast.error("Checkout failed");
+      toast.error(m["landing.pricing.error_checkout"]());
     },
   });
 
@@ -136,8 +162,8 @@ export function PricingSection() {
   return (
     <section className="mx-auto max-w-6xl px-4 py-20" id="pricing">
       <div className="mb-12 text-center">
-        <h2 className="font-bold text-3xl tracking-tight">Simple, transparent pricing</h2>
-        <p className="mt-2 text-muted-foreground">Start free. Upgrade when you grow.</p>
+        <h2 className="font-bold text-3xl tracking-tight">{m["landing.pricing.title"]()}</h2>
+        <p className="mt-2 text-muted-foreground">{m["landing.pricing.description"]()}</p>
       </div>
       <div className="grid gap-6 lg:grid-cols-3">
         {PRICING_TIERS.map((tier) => (

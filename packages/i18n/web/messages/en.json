@@ -1127,5 +1127,21 @@
   "referral_relations_title": "My invites",
   "referral_status_pending": "Pending",
   "referral_status_settled": "Settled",
-  "referral_status_void": "Voided"
+  "referral_status_void": "Voided",
+  "common.sign.magic_link": "Magic link",
+  "common.sign.email_otp": "OTP",
+  "common.sign.submitting": "Submitting...",
+  "landing.hero.preview": "Your product preview goes here",
+  "landing.header.dashboard": "Go to dashboard",
+  "landing.header.sign_in": "Sign in",
+  "landing.header.sign_up": "Sign up",
+  "landing.nav.faq": "FAQ",
+  "landing.pricing.enterprise.custom": "Custom",
+  "landing.pricing.enterprise_cta": "Contact sales",
+  "landing.pricing.error_checkout": "Checkout failed",
+  "landing.pricing.error_missing_order": "Checkout failed: missing order number",
+  "landing.pricing.monthly.unit": "mo",
+  "landing.pricing.pro_cta": "Start free trial",
+  "landing.pricing.starter.free": "Free",
+  "landing.pricing.starter_cta": "Get started"
 }

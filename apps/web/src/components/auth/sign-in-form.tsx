@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import z from "zod";
 
 import { authClient } from "@/lib/auth-client";
+import { m } from "@/paraglide/messages.js";
 import { publicConfig } from "@/modules/public-config/lib/api";
 
 import Loader from "../loader";
@@ -86,7 +87,7 @@ export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () 
 
   return (
     <div className="mx-auto mt-10 w-full max-w-md p-6">
-      <h1 className="mb-6 text-center font-bold text-3xl">Welcome Back</h1>
+      <h1 className="mb-6 text-center font-bold text-3xl">{m["common.sign.sign_in_description"]()}</h1>
 
       {hasSocial && (
         <div className="mb-4">
@@ -105,7 +106,7 @@ export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () 
       {hasSocial && signInModes.length > 0 ? (
         <div className="my-4 flex items-center gap-3 text-muted-foreground text-xs">
           <span className="h-px flex-1 bg-border" />
-          or
+          {m["common.sign.or"]()}
           <span className="h-px flex-1 bg-border" />
         </div>
       ) : null}
@@ -117,9 +118,9 @@ export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () 
           value={activeMode}
         >
           <TabsList className="w-full">
-            {emailEnabled ? <TabsTrigger value="password">Password</TabsTrigger> : null}
-            {magicLinkEnabled ? <TabsTrigger value="magic-link">Magic link</TabsTrigger> : null}
-            {emailOtpEnabled ? <TabsTrigger value="email-otp">OTP</TabsTrigger> : null}
+            {emailEnabled ? <TabsTrigger value="password">{m["common.sign.password_title"]()}</TabsTrigger> : null}
+            {magicLinkEnabled ? <TabsTrigger value="magic-link">{m["common.sign.magic_link"]()}</TabsTrigger> : null}
+            {emailOtpEnabled ? <TabsTrigger value="email-otp">{m["common.sign.email_otp"]()}</TabsTrigger> : null}
           </TabsList>
 
           <TabsContent className="mt-4" value="password">
@@ -135,7 +136,7 @@ export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () 
                 <form.Field name="email">
                   {(field) => (
                     <div className="space-y-2">
-                      <Label htmlFor={field.name}>Email</Label>
+                      <Label htmlFor={field.name}>{m["common.sign.email_title"]()}</Label>
                       <Input
                         id={field.name}
                         name={field.name}
@@ -159,13 +160,13 @@ export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () 
                   {(field) => (
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <Label htmlFor={field.name}>Password</Label>
+                        <Label htmlFor={field.name}>{m["common.sign.password_title"]()}</Label>
                         {passwordResetEnabled && (
                           <Link
                             className="text-muted-foreground text-sm underline underline-offset-4 hover:text-foreground"
                             to="/forgot-password"
                           >
-                            Forgot password?
+                            {m["common.sign.forgot_password"]()}
                           </Link>
                         )}
                       </div>
@@ -196,7 +197,7 @@ export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () 
                 {({ canSubmit, isSubmitting }) => (
                   <>
                     <Button className="w-full" disabled={!canSubmit || isSubmitting} type="submit">
-                      {isSubmitting ? "Submitting..." : "Sign In"}
+                      {isSubmitting ? m["common.sign.submitting"]() : m["common.sign.sign_in_title"]()}
                     </Button>
                     {anonymousEnabled ? <AnonymousButton /> : null}
                   </>
@@ -230,7 +231,7 @@ export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () 
           type="button"
           variant="link"
         >
-          Need an account? Sign Up
+          {m["common.sign.no_account"]()}{m["common.sign.sign_up_title"]()}
         </Button>
       </div>
     </div>

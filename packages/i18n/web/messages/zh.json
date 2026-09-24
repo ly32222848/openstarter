@@ -1127,5 +1127,21 @@
   "referral_relations_title": "我的邀请",
   "referral_status_pending": "待结算",
   "referral_status_settled": "已结算",
-  "referral_status_void": "已作废"
+  "referral_status_void": "已作废",
+  "common.sign.magic_link": "魔法链接",
+  "common.sign.email_otp": "验证码",
+  "common.sign.submitting": "提交中…",
+  "landing.hero.preview": "你的产品预览将展示在这里",
+  "landing.header.dashboard": "进入控制台",
+  "landing.header.sign_in": "登录",
+  "landing.header.sign_up": "注册",
+  "landing.nav.faq": "常见问题",
+  "landing.pricing.enterprise.custom": "定制",
+  "landing.pricing.enterprise_cta": "联系销售",
+  "landing.pricing.error_checkout": "结账失败",
+  "landing.pricing.error_missing_order": "结账失败：缺少订单号",
+  "landing.pricing.monthly.unit": "月",
+  "landing.pricing.pro_cta": "开始免费试用",
+  "landing.pricing.starter.free": "免费",
+  "landing.pricing.starter_cta": "免费开始"
 }
